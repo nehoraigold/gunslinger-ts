@@ -1,0 +1,13 @@
+//region imports
+import { Describable } from "../generic/Describable";
+import { IBlocker } from "./IBlocker";
+import { MoveDirection } from "../../actions/action_types/action_data/MoveDirection";
+//endregion
+
+
+export interface IRoom extends Describable {
+    HasVisited: boolean
+    Visit(): string
+    AddBlocker(direction: MoveDirection, blocker: IBlocker): void
+    GetBlocker(direction: MoveDirection): IBlocker | undefined
+}
