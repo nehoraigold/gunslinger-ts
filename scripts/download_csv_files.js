@@ -1,15 +1,11 @@
 #!/usr/local/bin/node
 //region imports
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { join } = require("path");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fs = require('fs');
+const path = require("path");
 const process = require("process");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { google } = require("googleapis");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { authorize } = require("./authorize");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { spreadsheetId, destinationDir, credentialsDir } = require("../config");
+const { spreadsheetId, destinationDir, credentialsDir } = require("../config.local.json");
 //endregion
 
 const GOOGLE_SHEETS_API_VERSION = "v4";
@@ -22,29 +18,56 @@ async function main() {
             process.exit(1);
         }
 
-        const rows = await retrieveSpreadsheet(auth);
-        if (!rows) {
-            console.error("Could not retrieve spreadsheet!");
+        const successful = await downloadSpreadsheet(auth, spreadsheetId);
+        if (!successful) {
+            console.error("Could not download spreadsheet tabs!");
             process.exit(1);
         }
 
-        console.log(rows);
-
+        console.log("Downloaded successfully!")
     } catch (e) {
         console.error(e);
     }
 }
 
-async function retrieveSpreadsheet(auth) {
+async function downloadSpreadsheet(auth, spreadsheetId) {
     try {
-        console.log(auth);
+        console.log(`Retrieving spreadsheet with ID ${spreadsheetId}...`);
         const sheets = google.sheets({ version: GOOGLE_SHEETS_API_VERSION, auth });
         const { data } = await sheets.spreadsheets.get({ spreadsheetId });
-        return data.items;
+        const sheetTitles = data.sheets.map((sheet) => sheet.properties.title);
+        for (const title of sheetTitles) {
+            console.log(`Exporting "${title}"...`);
+
+            const res = await sheets.spreadsheets.values.get({
+                spreadsheetId,
+                range: title,
+                valueRenderOption: "UNFORMATTED_VALUE",
+            });
+
+            const rows = res.data.values || [];
+            const csv = rowsToCsv(rows);
+
+            const filePath = path.join(destinationDir, `${title}.csv`);
+            fs.writeFileSync(filePath, csv, "utf8");
+        }
+        return true;
     } catch (e) {
         console.error(e);
-        return null;
+        return false;
     }
+}
+
+function rowsToCsv(rows) {
+    return rows
+        .map(row =>
+            row.map(cell => {
+                const value = cell ?? "";
+                const str = String(value).replace(/"/g, '""');
+                return `"${str}"`;
+            }).join(",")
+        )
+        .join("\n");
 }
 
 main();

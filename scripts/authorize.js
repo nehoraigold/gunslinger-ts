@@ -9,7 +9,7 @@ const { google } = require("googleapis");
 const { getUserInput, getJsonFromFile, JSON_SPACING } = require("./utils");
 //endregion
 
-const SCOPES = ["https://www.googleapis.com/auth/drive.readonly"];
+const SCOPES = ["https://www.googleapis.com/auth/drive.readonly", "https://www.googleapis.com/auth/spreadsheets.readonly"];
 const TOKEN_JSON_NAME = "token.json";
 const CREDENTIALS_JSON_NAME = "credentials.json";
 
@@ -37,22 +37,23 @@ async function authorize(credentialsDir) {
 }
 
 async function createAndStoreToken(oAuth2Client, tokenPath) {
-    const token = await createNewToken(oAuth2Client);
-    if (!token) {
+    const { tokens } = await createNewToken(oAuth2Client);
+    if (!tokens) {
         console.log("Unable to create new token.");
         return false;
     }
-    if (!storeToken(token, tokenPath)) {
-        console.log(`Unable to store new token '${token}'.`);
+    if (!storeToken(tokens, tokenPath)) {
+        console.log(`Unable to store new token '${tokens}'.`);
         return false;
     }
-    oAuth2Client.setCredentials(token);
+    oAuth2Client.setCredentials(tokens);
     return true;
 }
 
 async function createNewToken(oAuth2Client) {
     const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: "online",
+        access_type: "offline",
+        prompt: "consent",
         scope: SCOPES,
     });
     console.log(`Authorize this app by visiting this url: ${authUrl}`);

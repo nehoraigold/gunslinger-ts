@@ -5,8 +5,11 @@
 credentials/credentials.json
 credentials/token.json
 
+### Content ###
+content/*
+
 ### Local Config ###
-config.json
+*.local.json
 
 ### .DS_Store ###
 .DS_Store
@@ -129,8 +132,5 @@ dist
 .idea/
 .vs/
 .vscode/
-
-# Local config file
-config.json
 
 # End of https://www.toptal.com/developers/gitignore/api/node
