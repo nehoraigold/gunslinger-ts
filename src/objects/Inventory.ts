@@ -10,29 +10,29 @@ export class Inventory implements IInventory {
         this.items = [];
     }
 
-    Add(item: IItem): void {
+    add(item: IItem): void {
         this.items.push(item);
     }
 
-    Peek(name: string): IItem | undefined {
-        return this.items.find((item: IItem) => item.Name === name);
+    peek(name: string): IItem | undefined {
+        return this.items.find((item: IItem) => item.name === name);
     }
 
-    Pop(name: string): IItem | undefined {
-        const item = this.Peek(name);
+    pop(name: string): IItem | undefined {
+        const item = this.peek(name);
         if (item) {
-            this.Remove(item);
+            this.remove(item);
         }
         return item;
     }
 
-    Remove(itemToRemove: IItem): boolean {
-        const preRemoveSize = this.Size;
+    remove(itemToRemove: IItem): boolean {
+        const preRemoveSize = this.size;
         this.items = this.items.filter((item: IItem) => item !== itemToRemove);
-        return this.Size < preRemoveSize;
+        return this.size < preRemoveSize;
     }
 
-    get Size(): number {
+    get size(): number {
         return this.items.length;
     }
 }

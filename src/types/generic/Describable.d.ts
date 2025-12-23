@@ -1,4 +1,4 @@
 export interface Describable {
-    Name: string
-    Description: string
+    name: string
+    description: string
 }

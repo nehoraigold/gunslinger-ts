@@ -4,11 +4,8 @@ import { ActionType } from "../ActionType";
 import { MoveDirection } from "./action_data/MoveDirection";
 //endregion
 
-export class MoveAction extends ActionBase {
-    public readonly Data: MoveDirection;
-
+export class MoveAction extends ActionBase<ActionType.MOVE> {
     constructor(direction: MoveDirection) {
-        super(ActionType.MOVE);
-        this.Data = direction;
+        super(ActionType.MOVE, direction);
     }
 }

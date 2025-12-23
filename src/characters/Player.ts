@@ -9,40 +9,36 @@ import { Inventory } from "../objects/Inventory";
 //endregion
 
 export class Player implements IPlayer {
-    private readonly name: string;
+    public name: string;
+    public description: string;
     private coordinate: Coordinate;
     private inventory: IInventory;
-    public Description: string;
 
     constructor(name: string, location: Coordinate) {
         this.name = name;
-        this.Description = "";
+        this.description = "";
         this.coordinate = location;
         this.inventory = new Inventory();
     }
 
-    get Name(): string {
-        return this.name;
-    }
-
-    get Location(): Coordinate {
+    get location(): Coordinate {
         return this.coordinate;
     }
 
-    Move(direction: MoveDirection): Coordinate {
-        this.coordinate = AddCoordinates(this.coordinate, direction.Value);
+    move(direction: MoveDirection): Coordinate {
+        this.coordinate = AddCoordinates(this.coordinate, direction.value);
         return this.coordinate;
     }
 
-    Drop(item: IItem): void {
-        this.inventory.Remove(item);
+    drop(item: IItem): void {
+        this.inventory.remove(item);
     }
 
-    Has(itemName: string): boolean {
-        return this.inventory.Peek(itemName) !== undefined;
+    has(itemName: string): boolean {
+        return this.inventory.peek(itemName) !== undefined;
     }
 
-    Take(item: IItem): void {
-        this.inventory.Add(item);
+    take(item: IItem): void {
+        this.inventory.add(item);
     }
 }

@@ -13,25 +13,19 @@ import { Print } from "./utils/print";
 
 async function main() {
     const worldMap = new Map<Coordinate, IRoom>();
-    const WORLD_DIMENSIONS = 10;
-    for (let i = 0; i < WORLD_DIMENSIONS; i++) {
-        for (let j = 0; j < WORLD_DIMENSIONS; j++) {
-            worldMap.set({ X: i, Y: j }, new Room(`(${i},${j})`));
-        }
-    }
     const world = new World(worldMap);
     const player = new Player("Roland", { X: 1, Y: 5 });
-    const currentRoom = world.GetRoom(player.Location) as IRoom;
+    const currentRoom = world.getRoom(player.location) as IRoom;
     const actionParser = new ActionParser();
     const actionHandler = new ActionHandler(world, player);
-    Print.Message(currentRoom.Visit());
+    Print.Message(currentRoom.visit());
     while (true) {
         try {
-            const action = actionParser.Parse(await GetUserInput());
+            const action = actionParser.parse(await GetUserInput());
             Print.NewLine();
-            await actionHandler.Handle(action, currentRoom);
-        } catch (e) {
-            Print.Message(e);
+            await actionHandler.handle(action, currentRoom);
+        } catch (e: any) {
+            Print.Message(e.message);
         }
     }
 }

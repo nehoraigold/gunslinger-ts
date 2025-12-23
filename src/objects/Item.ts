@@ -3,10 +3,10 @@ import { IItem } from "../types/objects/IItem";
 //endregion
 
 export class Item implements IItem {
-    private readonly name: string;
-    private description: string;
-    private isTransferable: boolean;
-    private value: number;
+    public readonly name: string;
+    public description: string;
+    public isTransferable: boolean;
+    public value: number;
     private interactions: Map<string, string>;
 
     constructor(name: string, description?: string, isTransferable?: boolean, value?: number) {
@@ -17,41 +17,13 @@ export class Item implements IItem {
         this.interactions = new Map<string, string>();
     }
 
-    get Name(): string {
-        return this.name;
-    }
-
-    get Description(): string {
-        return this.description;
-    }
-
-    set Description(description: string) {
-        this.description = description;
-    }
-
-    get IsTransferable(): boolean {
-        return this.isTransferable;
-    }
-
-    set IsTransferable(isTransferable: boolean) {
-        this.isTransferable = isTransferable;
-    }
-
-    get Value(): number {
-        return this.value;
-    }
-
-    set Value(value: number) {
-        this.value = value;
-    }
-
-    AddInteraction(interaction: string, interactionDescription: string): void {
+    addInteraction(interaction: string, interactionDescription: string): void {
         this.interactions.set(interaction, interactionDescription);
     }
 
-    Interact(interaction: string, interactionData?: unknown): string {
+    interact(interaction: string, interactionData?: unknown): string {
         if (interaction === "examine") {
-            return this.Description;
+            return this.description;
         }
         return this.interactions.get(interaction) || "";
     }

@@ -15,7 +15,7 @@ export class World implements IWorld {
         }
     }
 
-    GetRoom(coordinate: Coordinate): IRoom | undefined {
+    getRoom(coordinate: Coordinate): IRoom | undefined {
         return this.board.get(CoordinateToString(coordinate));
     }
 }

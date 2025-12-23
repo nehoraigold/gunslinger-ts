@@ -1,4 +1,4 @@
 export interface Interactable {
-    AddInteraction(interaction: string, interactionDescription: string): void
-    Interact(interaction: string, interactionData?: unknown): string
+    addInteraction(interaction: string, interactionDescription: string): void
+    interact(interaction: string, interactionData?: unknown): string
 }

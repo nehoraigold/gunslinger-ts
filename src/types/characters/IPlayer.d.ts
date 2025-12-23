@@ -6,6 +6,6 @@ import { Describable } from "../generic/Describable";
 //endregion
 
 export interface IPlayer extends Describable, Transactor {
-    Location: Coordinate
-    Move(direction: MoveDirection): Coordinate
+    location: Coordinate
+    move(direction: MoveDirection): Coordinate
 }

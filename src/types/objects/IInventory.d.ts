@@ -4,9 +4,9 @@ import { IItem } from "./IItem";
 //endregion
 
 export interface IInventory {
-    Size: number
-    Add(item: IItem): void
-    Remove(itemToRemove: IItem): boolean
-    Pop(name: string): IItem | undefined;
-    Peek(name: string): IItem | undefined;
+    size: number
+    add(item: IItem): void
+    remove(itemToRemove: IItem): boolean
+    pop(name: string): IItem | undefined;
+    peek(name: string): IItem | undefined;
 }

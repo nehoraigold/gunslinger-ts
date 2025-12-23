@@ -6,48 +6,37 @@ import { FormatToHeader } from "../utils/utils";
 //endregion
 
 export class Room implements IRoom {
-    private readonly name: string;
-    private description: string;
-    private hasVisited: boolean;
+    public readonly name: string;
+    public description: string;
+    private visited: boolean;
     private blockers: Map<MoveDirection, IBlocker>;
 
     constructor(name: string, description?: string) {
         this.name = name;
         this.description = description || "Default description";
         this.blockers = new Map();
-        this.hasVisited = false;
+        this.visited = false;
     }
 
-    get Name(): string {
-        return this.name;
+
+    get hasVisited(): boolean {
+        return this.visited;
     }
 
-    get Description(): string {
-        return this.description;
-    }
-
-    set Description(description: string) {
-        this.description = description;
-    }
-
-    get HasVisited(): boolean {
-        return this.hasVisited;
-    }
-
-    Visit(): string {
-        let message = FormatToHeader(this.Name);
-        if (!this.hasVisited) {
-            message += `\n${this.Description}`;
+    visit(): string {
+        let message = FormatToHeader(this.name);
+        if (!this.visited) {
+            message += `\n${this.description}`;
         }
-        this.hasVisited = true;
+        this.visited = true;
         return message;
     }
 
-    AddBlocker(direction: MoveDirection, blocker: IBlocker): void {
+    addBlocker(direction: MoveDirection, blocker: IBlocker): void {
         this.blockers.set(direction, blocker);
     }
 
-    GetBlocker(direction: MoveDirection): IBlocker | undefined {
+    getBlocker(direction: MoveDirection): IBlocker | undefined {
         return this.blockers.get(direction);
     }
 }

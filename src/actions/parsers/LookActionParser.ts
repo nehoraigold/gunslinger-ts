@@ -2,12 +2,13 @@
 import { IActionParser } from "../../types/actions/IActionParser";
 import { IAction } from "../../types/actions/IAction";
 import { LookAction } from "../action_types/LookAction";
+import { ActionType } from "../ActionType";
 //endregion
 
 export class LookActionParser implements IActionParser {
-    Words: Array<string> = ["look", "describe", "observe"];
+    words: Array<string> = ["look", "describe", "observe"];
 
-    Parse(): IAction {
+    parse(): IAction<ActionType.LOOK> {
         return new LookAction();
     }
 }

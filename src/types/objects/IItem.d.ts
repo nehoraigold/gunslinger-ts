@@ -4,6 +4,6 @@ import { Interactable } from "../generic/Interactable";
 //endregion
 
 export interface IItem extends Describable, Interactable {
-    Value: number
-    IsTransferable: boolean
+    value: number
+    isTransferable: boolean
 }

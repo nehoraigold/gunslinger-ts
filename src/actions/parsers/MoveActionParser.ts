@@ -3,6 +3,7 @@ import { IActionParser } from "../../types/actions/IActionParser";
 import { IAction } from "../../types/actions/IAction";
 import { MoveDirection } from "../action_types/action_data/MoveDirection";
 import { MoveAction } from "../action_types/MoveAction";
+import { ActionType } from "../ActionType";
 //endregion
 
 
@@ -13,7 +14,7 @@ export class MoveActionParser implements IActionParser {
     private readonly LEFT_WORDS = ["l", "w", "west", "left"];
     private readonly RIGHT_WORDS = ["r", "e", "east", "right"];
 
-    get Words(): Array<string> {
+    get words(): Array<string> {
         return [
             ...this.MOVE_WORDS,
             ...this.UP_WORDS,
@@ -23,7 +24,7 @@ export class MoveActionParser implements IActionParser {
         ];
     }
 
-    Parse(string: string): IAction {
+    parse(string: string): IAction<ActionType> {
         const words = string.split(" ");
         for (const word of words) {
             const direction = this.tryParseToDirection(word);

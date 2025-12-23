@@ -3,10 +3,8 @@ import { ActionType } from "../ActionType";
 import { ActionBase } from "../ActionBase";
 //endregion
 
-export class LookAction extends ActionBase {
-    public Data: null;
-
+export class LookAction extends ActionBase<ActionType.LOOK> {
     constructor() {
-        super(ActionType.LOOK);
+        super(ActionType.LOOK, null);
     }
 }

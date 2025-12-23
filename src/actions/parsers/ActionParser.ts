@@ -9,24 +9,26 @@ import { LookActionParser } from "./LookActionParser";
 //endregion
 
 export class ActionParser implements IActionParser {
-    public readonly Words: Array<string>;
-    private readonly actionParsers: Map<ActionType, IActionParser>;
+    public readonly words: Array<string>;
+    private readonly actionParsers: Partial<{
+        [K in ActionType]: IActionParser;
+    }>;
 
     constructor() {
-        this.Words = [];
-        this.actionParsers = new Map<ActionType, IActionParser>([
-            [ActionType.MOVE, new MoveActionParser()],
-            [ActionType.QUIT, new QuitActionParser()],
-            [ActionType.LOOK, new LookActionParser()]
-        ]);
+        this.words = [];
+        this.actionParsers = {
+            [ActionType.MOVE]: new MoveActionParser(),
+            [ActionType.QUIT]: new QuitActionParser(),
+            [ActionType.LOOK]: new LookActionParser(),
+        };
     }
 
-    Parse(string: string): IAction {
+    parse(string: string): IAction {
         string = string.trim().toLowerCase();
         const firstWord = ActionParser.getFirstWord(string);
-        for (const parser of this.actionParsers.values()) {
-            if (parser.Words.includes(firstWord)) {
-                return parser.Parse(string);
+        for (const parser of Object.values(this.actionParsers)) {
+            if (parser.words.includes(firstWord)) {
+                return parser.parse(string);
             }
         }
         throw new Error(`Unable to parse "${string}"`);

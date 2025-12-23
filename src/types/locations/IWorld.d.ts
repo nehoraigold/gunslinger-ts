@@ -4,5 +4,5 @@ import { IRoom } from "./IRoom";
 //endregion
 
 export interface IWorld {
-    GetRoom(coordinate: Coordinate): IRoom | undefined
+    getRoom(coordinate: Coordinate): IRoom | undefined
 }

@@ -4,7 +4,7 @@ import { Describable } from "../generic/Describable";
 //endregion
 
 export interface IBlocker extends Describable {
-    BlockMessage: string
-    Interact(interaction: string, context: any): string | null
-    AllowPassage(player: IPlayer): boolean
+    blockMessage: string
+    interact(interaction: string, context: any): string | null
+    allowPassage(player: IPlayer): boolean
 }

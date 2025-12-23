@@ -1,13 +1,15 @@
 //region imports
 import { IAction } from "../types/actions/IAction";
+import { ActionData } from "./action_types/action_data/ActionData";
 import { ActionType } from "./ActionType";
 //endregion
 
-export abstract class ActionBase implements IAction {
-    public readonly Type: ActionType;
-    public abstract readonly Data: unknown;
+export class ActionBase<ActionT> implements IAction<ActionT> {
+    public readonly type: ActionT;
+    public readonly data: ActionData<ActionT>;
 
-    protected constructor(type: ActionType) {
-        this.Type = type;
+    protected constructor(type: ActionT, data: ActionData<ActionT>) {
+        this.type = type;
+        this.data = data;
     }
 }
