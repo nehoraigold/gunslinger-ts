@@ -11,8 +11,8 @@ export const CoordinateToString = (coordinate: Coordinate): string => {
 export const AddCoordinates = (...coordinates: Array<Coordinate>): Coordinate => {
     return coordinates.reduce(((sum, point) => {
         return {
-            X: sum.X + point.X,
-            Y: sum.Y + point.Y
+            x: sum.x + point.x,
+            y: sum.y + point.y
         };
     }));
 };
