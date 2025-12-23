@@ -1,8 +1,8 @@
 //region imports
-import { IPlayer } from "../types/characters/IPlayer";
-import { Coordinate } from "../types/utils/Coordinate";
-import { IInventory } from "../types/objects/IInventory";
-import { IItem } from "../types/objects/IItem";
+import { IPlayer } from "./IPlayer";
+import { Coordinate } from "../utils/Coordinate";
+import { IInventory } from "../objects/IInventory";
+import { IItem } from "../objects/IItem";
 import { MoveDirection } from "../actions/action_types/action_data/MoveDirection";
 import { AddCoordinates } from "../utils/utils";
 import { Inventory } from "../objects/Inventory";

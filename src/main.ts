@@ -1,6 +1,6 @@
 //region imports
-import { Coordinate } from "./types/utils/Coordinate";
-import { IRoom } from "./types/locations/IRoom";
+import { Coordinate } from "./utils/Coordinate";
+import { IRoom } from "./locations/IRoom";
 import { World } from "./locations/World";
 import { Room } from "./locations/Room";
 import { Player } from "./characters/Player";
@@ -13,6 +13,12 @@ import { Print } from "./utils/print";
 
 async function main() {
     const worldMap = new Map<Coordinate, IRoom>();
+    const WORLD_DIMENSIONS = 10;
+    for (let i = 0; i < WORLD_DIMENSIONS; i++) {
+        for (let j = 0; j < WORLD_DIMENSIONS; j++) {
+            worldMap.set({ X: i, Y: j }, new Room(`(${i},${j})`));
+        }
+    }
     const world = new World(worldMap);
     const player = new Player("Roland", { X: 1, Y: 5 });
     const currentRoom = world.getRoom(player.location) as IRoom;

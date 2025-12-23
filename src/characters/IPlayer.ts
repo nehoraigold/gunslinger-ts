@@ -1,8 +1,8 @@
 //region imports
-import { Transactor } from "../generic/Transactor";
+import { Transactor } from "../utils/Transactor";
 import { Coordinate } from "../utils/Coordinate";
-import { MoveDirection } from "../../actions/action_types/action_data/MoveDirection";
-import { Describable } from "../generic/Describable";
+import { Describable } from "../utils/Describable";
+import { MoveDirection } from "../actions/action_types/action_data/MoveDirection";
 //endregion
 
 export interface IPlayer extends Describable, Transactor {

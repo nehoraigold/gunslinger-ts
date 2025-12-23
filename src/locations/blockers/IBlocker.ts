@@ -1,6 +1,6 @@
 //region imports
-import { IPlayer } from "../characters/IPlayer";
-import { Describable } from "../generic/Describable";
+import { IPlayer } from "../../characters/IPlayer";
+import { Describable } from "../../utils/Describable";
 //endregion
 
 export interface IBlocker extends Describable {

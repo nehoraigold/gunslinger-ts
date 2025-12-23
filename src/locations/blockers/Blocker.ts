@@ -1,5 +1,5 @@
 //region imports
-import { IBlocker } from "../../types/locations/IBlocker";
+import { IBlocker } from "./IBlocker";
 //endregion
 
 export class Blocker implements IBlocker {

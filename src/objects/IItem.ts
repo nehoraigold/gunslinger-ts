@@ -1,6 +1,6 @@
 //region imports
-import { Describable } from "../generic/Describable";
-import { Interactable } from "../generic/Interactable";
+import { Describable } from "../utils/Describable";
+import { Interactable } from "../utils/Interactable";
 //endregion
 
 export interface IItem extends Describable, Interactable {

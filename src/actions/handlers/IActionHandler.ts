@@ -1,6 +1,6 @@
 //region imports
-import { IAction } from "./IAction";
-import { IRoom } from "../locations/IRoom";
+import { IAction } from "../IAction";
+import { IRoom } from "../../locations/IRoom";
 //endregion
 
 export interface IActionHandler<ActionT> {

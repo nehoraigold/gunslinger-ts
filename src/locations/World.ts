@@ -1,7 +1,7 @@
 //region imports
-import { Coordinate } from "../types/utils/Coordinate";
-import { IRoom } from "../types/locations/IRoom";
-import { IWorld } from "../types/locations/IWorld";
+import { Coordinate } from "../utils/Coordinate";
+import { IRoom } from "./IRoom";
+import { IWorld } from "./IWorld";
 import { CoordinateToString } from "../utils/utils";
 //endregion
 

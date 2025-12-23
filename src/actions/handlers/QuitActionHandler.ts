@@ -1,6 +1,6 @@
 //region imports
 import { exit } from "process";
-import { IActionHandler } from "../../types/actions/IActionHandler";
+import { IActionHandler } from "./IActionHandler";
 import { GetUserInput } from "../../utils/utils";
 import { Print } from "../../utils/print";
 import { ActionType } from "../ActionType";

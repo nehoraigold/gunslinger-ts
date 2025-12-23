@@ -1,6 +1,6 @@
 //region imports
 import * as readline from "readline";
-import { Coordinate } from "../types/utils/Coordinate";
+import { Coordinate } from "./Coordinate";
 import { Print } from "./print";
 //endregion
 

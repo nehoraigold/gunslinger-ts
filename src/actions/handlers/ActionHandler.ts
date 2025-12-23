@@ -1,9 +1,9 @@
 //region imports
-import { IActionHandler } from "../../types/actions/IActionHandler";
-import { IAction } from "../../types/actions/IAction";
-import { IRoom } from "../../types/locations/IRoom";
-import { IPlayer } from "../../types/characters/IPlayer";
-import { IWorld } from "../../types/locations/IWorld";
+import { IActionHandler } from "./IActionHandler";
+import { IAction } from "../IAction";
+import { IRoom } from "../../locations/IRoom";
+import { IPlayer } from "../../characters/IPlayer";
+import { IWorld } from "../../locations/IWorld";
 import { ActionType } from "../ActionType";
 import { MoveActionHandler } from "./MoveActionHandler";
 import { QuitActionHandler } from "./QuitActionHandler";

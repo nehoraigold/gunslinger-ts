@@ -1,5 +1,5 @@
 //region imports
-import { IItem } from "../types/objects/IItem";
+import { IItem } from "./IItem";
 //endregion
 
 export class Item implements IItem {

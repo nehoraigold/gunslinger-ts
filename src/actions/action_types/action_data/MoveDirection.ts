@@ -1,5 +1,5 @@
 //region imports
-import { Coordinate } from "../../../types/utils/Coordinate";
+import { Coordinate } from "../../../utils/Coordinate";
 //endregion
 
 export type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';

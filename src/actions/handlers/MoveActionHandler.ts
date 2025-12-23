@@ -1,8 +1,8 @@
 //region imports
-import { IActionHandler } from "../../types/actions/IActionHandler";
-import { IRoom } from "../../types/locations/IRoom";
-import { IPlayer } from "../../types/characters/IPlayer";
-import { IWorld } from "../../types/locations/IWorld";
+import { IActionHandler } from "./IActionHandler";
+import { IRoom } from "../../locations/IRoom";
+import { IPlayer } from "../../characters/IPlayer";
+import { IWorld } from "../../locations/IWorld";
 import { MoveAction } from "../action_types/MoveAction";
 import { MoveDirection } from "../action_types/action_data/MoveDirection";
 import { AddCoordinates } from "../../utils/utils";

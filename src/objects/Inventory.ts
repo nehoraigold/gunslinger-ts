@@ -1,6 +1,6 @@
 //region imports
-import { IItem } from "../types/objects/IItem";
-import { IInventory } from "../types/objects/IInventory";
+import { IItem } from "./IItem";
+import { IInventory } from "./IInventory";
 //endregion
 
 export class Inventory implements IInventory {

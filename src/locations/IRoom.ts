@@ -1,7 +1,7 @@
 //region imports
-import { Describable } from "../generic/Describable";
-import { IBlocker } from "./IBlocker";
-import { MoveDirection } from "../../actions/action_types/action_data/MoveDirection";
+import { Describable } from "../utils/Describable";
+import { IBlocker } from "./blockers/IBlocker";
+import { MoveDirection } from "../actions/action_types/action_data/MoveDirection";
 //endregion
 
 

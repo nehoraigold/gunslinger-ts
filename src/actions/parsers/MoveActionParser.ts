@@ -1,6 +1,6 @@
 //region imports
-import { IActionParser } from "../../types/actions/IActionParser";
-import { IAction } from "../../types/actions/IAction";
+import { IActionParser } from "./IActionParser";
+import { IAction } from "../IAction";
 import { MoveDirection } from "../action_types/action_data/MoveDirection";
 import { MoveAction } from "../action_types/MoveAction";
 import { ActionType } from "../ActionType";

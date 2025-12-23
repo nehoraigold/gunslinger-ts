@@ -1,5 +1,5 @@
 //region imports
-import { IRoom } from "../types/locations/IRoom";
+import { IRoom } from "../locations/IRoom";
 //endregion
 
 export class Print {

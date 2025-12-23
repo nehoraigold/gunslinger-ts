@@ -1,6 +1,6 @@
 //region imports
-import { IRoom }  from "../types/locations/IRoom";
-import { IBlocker } from "../types/locations/IBlocker";
+import { IRoom }  from "./IRoom";
+import { IBlocker } from "./blockers/IBlocker";
 import { MoveDirection } from "../actions/action_types/action_data/MoveDirection";
 import { FormatToHeader } from "../utils/utils";
 //endregion

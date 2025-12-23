@@ -1,5 +1,5 @@
 //region imports
-import { IAction } from "../types/actions/IAction";
+import { IAction } from "./IAction";
 import { ActionData } from "./action_types/action_data/ActionData";
 import { ActionType } from "./ActionType";
 //endregion
