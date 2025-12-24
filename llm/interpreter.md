@@ -54,9 +54,8 @@ The Interpreter emits **human-legible, engine-resolved JSON**. The game engine i
 }
 ```
 
-* Direction is a **string literal**, not coordinates.
+* Direction is a **string literal** and can only be one of the following: "north", "south", "east", or "west"
 * Translate relative directions (e.g., up, right) into cardinal directions (e.g., north, east)
-* The game engine maps directions to movement vectors.
 
 ---
 
@@ -107,6 +106,7 @@ The Interpreter emits **human-legible, engine-resolved JSON**. The game engine i
 
 * Item and inventory names must exist in the current game state.
 * The engine resolves names to internal IDs and validates legality.
+* Some examples of common transfer verbs: "take", "drop", "grab", "retrieve"
 
 ---
 
