@@ -1,14 +1,14 @@
 //region imports
 import * as readline from "readline";
-import { Coordinate } from "./Coordinate";
+import { Coordinate } from "./coordinate";
 import { Print } from "./print";
 //endregion
 
-export const CoordinateToString = (coordinate: Coordinate): string => {
+export const coordinateToString = (coordinate: Coordinate): string => {
     return JSON.stringify(coordinate);
 };
 
-export const AddCoordinates = (...coordinates: Array<Coordinate>): Coordinate => {
+export const addCoordinates = (...coordinates: Array<Coordinate>): Coordinate => {
     return coordinates.reduce(((sum, point) => {
         return {
             x: sum.x + point.x,
@@ -17,7 +17,7 @@ export const AddCoordinates = (...coordinates: Array<Coordinate>): Coordinate =>
     }));
 };
 
-export const GetUserInput = (query?: string): Promise<string> => {
+export const getUserInput = (query?: string): Promise<string> => {
     const rl = readline.createInterface({
         input: process.stdin,
     });
@@ -25,14 +25,14 @@ export const GetUserInput = (query?: string): Promise<string> => {
         if (query) {
             Print.Message(query);
         }
-        rl.question("", (answer) => {
+        rl.question("", (answer) => {``
             rl.close();
             resolve(answer);
         });
     });
 };
 
-export const FormatToHeader = (string: string): string => {
+export const formatToHeader = (string: string): string => {
     if (!string) {
         return "";
     }
