@@ -3,8 +3,6 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
-    "outDir": "./build",
-    "rootDir": "./src",
     "downlevelIteration": true,
     "strict": true,
     "noImplicitAny": true,

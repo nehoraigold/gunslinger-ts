@@ -27,8 +27,8 @@ export interface TransferAction extends IAction {
     type: ActionType.TRANSFER;
     data: {
         itemId: string;
-        from: string;
-        to: string;
+        fromInventoryId: string;
+        toInventoryId: string;
         quantity?: number;
     };
 }

@@ -8,6 +8,6 @@ export interface RoomState {
     description: string;
     visited: boolean;
     exits: Partial<Record<Direction, ExitState>>;
-    inventoryIds: string[];
+    inventoryId: string;
     npcIds: string[];
 }
