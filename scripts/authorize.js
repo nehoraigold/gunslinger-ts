@@ -1,11 +1,7 @@
 //region imports
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { join } = require("path");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { existsSync, writeFileSync } = require("fs");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { google } = require("googleapis");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { getUserInput, getJsonFromFile, JSON_SPACING } = require("./utils");
 //endregion
 

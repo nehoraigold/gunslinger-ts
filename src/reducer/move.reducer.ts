@@ -1,14 +1,48 @@
-import { Direction, directionToCoordinate } from "../action";
-import { GameState } from "../engine";
-import { addCoordinates } from "../utils";
+import { Direction } from '../action';
+import { GameState } from '../engine';
 
-export const move = (gameState: GameState, direction: Direction): GameState => {
-    const newCoordinate = addCoordinates(gameState.player.location, directionToCoordinate(direction));
+export const applyMove = (gameState: GameState, direction: Direction): GameState => {
+    const { player, world } = gameState;
+    const currentRoom = world.rooms[player.currentRoomId];
+
+    if (!currentRoom) {
+        // Invalid state — fail safely
+        return gameState;
+    }
+
+    const exit = currentRoom.exits[direction];
+    if (!exit) {
+        // No exit in that direction
+        return gameState;
+    }
+
+    //   if (exit.condition && !evaluateCondition(exit.condition, gameState)) {
+    //     // Exit exists but is blocked
+    //     return gameState;
+    //   }
+
+    const nextRoom = world.rooms[exit.toRoomId];
+    if (!nextRoom) {
+        ``;
+        // Broken world graph — still fail safely
+        return gameState;
+    }
+
     return {
         ...gameState,
         player: {
-            ...gameState.player,
-            location: newCoordinate,
+            ...player,
+            currentRoomId: exit.toRoomId,
+        },
+        world: {
+            ...world,
+            rooms: {
+                ...world.rooms,
+                [exit.toRoomId]: {
+                    ...nextRoom,
+                    visited: true,
+                },
+            },
         },
     };
-}
+};

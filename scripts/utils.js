@@ -1,9 +1,6 @@
 //region imports
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { readFileSync } = require("fs");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const readline = require("readline");
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const process = require("process");
 //endregion
 

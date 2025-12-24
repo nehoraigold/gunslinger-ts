@@ -1,6 +1,6 @@
 // region imports
-import { Direction } from "./direction";
-import { ActionType } from "./action.type";
+import { Direction } from './direction';
+import { ActionType } from './action.type';
 // endregion
 
 interface IAction {
@@ -10,27 +10,27 @@ interface IAction {
 export interface MoveAction extends IAction {
     type: ActionType.MOVE;
     data: {
-        direction: Direction
+        direction: Direction;
     };
 }
 
 export interface InteractAction extends IAction {
-    type: ActionType.INTERACT,
+    type: ActionType.INTERACT;
     data: {
         with: string;
         interaction: string;
         interactionData: any;
-    }
+    };
 }
 
 export interface TransferAction extends IAction {
-    type: ActionType.TRANSFER,
+    type: ActionType.TRANSFER;
     data: {
         itemId: string;
         from: string;
         to: string;
         quantity?: number;
-    }
+    };
 }
 
 export interface LookAction extends IAction {
@@ -50,13 +50,21 @@ export interface HelpAction extends IAction {
 }
 
 export interface UnknownAction extends IAction {
-    type: ActionType.UNKNOWN
+    type: ActionType.UNKNOWN;
     data: {
         reason: 'ambiguous' | 'unsupported' | 'unparsable';
-        candidates?: Exclude<Action, UnknownAction>[]
-    }
+        candidates?: Exclude<Action, UnknownAction>[];
+    };
 }
 
-export type Action = MoveAction | LookAction | InventoryAction | TransferAction | QuitAction | HelpAction | InteractAction | UnknownAction;
+export type Action =
+    | MoveAction
+    | LookAction
+    | InventoryAction
+    | TransferAction
+    | QuitAction
+    | HelpAction
+    | InteractAction
+    | UnknownAction;
 
-export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>
+export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>;
