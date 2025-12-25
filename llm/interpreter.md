@@ -170,13 +170,17 @@ The Interpreter emits **human-legible, engine-resolved JSON**. The game engine i
   "type": "unknown",
   "data": {
     "reason": "ambiguous" | "unsupported" | "unparsable", 
-    "intent": "<freeform verb>"
+    "message": "<freeform text>"
   }
 }
 ```
 
 * Use when intent cannot be confidently determined or if none of the provided options match.
-* `intent` is an optional field that describes the intent using a single verb.
+* Possible `reason` values:
+  * `unparsable` - The action text itself is not understandable
+  * `ambiguous` - The intent of the action text is vague, unclear, or does not include enough information
+  * `unsupported` - The intent of the action text is clear, but is not supported by the game state
+* The `message` field is optional human-readable text providing explanation or context for the `reason` value to be used sparingly
 
 ---
 

@@ -3,4 +3,5 @@ export type NPCState = {
     name: string;
     aliases: string[];
     description: string;
+    inventoryId?: string;
 };

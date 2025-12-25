@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-import { Action, ActionType } from '../src/action';
+import { Action, ActionType, UnknownAction } from '../src/action';
 import { ActionInterpreter } from '../src/interpreter';
 import { GameState, initializeGameState } from '../src/engine';
 
@@ -35,7 +35,10 @@ const MOVE_TEST_CASES: InterpreterTestCase[] = [
     },
 ];
 
-const UNKNOWN_TEST_CASES: Omit<InterpreterTestCase, 'expected'>[] = [
+const UNKNOWN_TEST_CASES: Omit<
+    InterpreterTestCase & { unknownReason?: UnknownAction['data']['reason'] },
+    'expected'
+>[] = [
     {
         name: 'should return unknown action for empty prompt',
         prompt: '',
@@ -45,11 +48,25 @@ const UNKNOWN_TEST_CASES: Omit<InterpreterTestCase, 'expected'>[] = [
         name: 'should return unknown action for unparsable input',
         prompt: 'a;dlfkjaghdufenvadhjfh3487624398fhcjcasdfkj',
         state,
+        unknownReason: 'unparsable',
     },
     {
-        name: 'should return unknown action for uncategorizable intent',
-        prompt: 'I frolic through the fields',
+        name: 'should return unknown action for unsupported intent',
+        prompt: 'I talk to the dragon',
         state,
+        unknownReason: 'unsupported',
+    },
+    {
+        name: 'should return unknown action for ambiguous input',
+        prompt: 'do it',
+        state,
+        unknownReason: 'ambiguous',
+    },
+    {
+        name: 'should return unknown if action references entities not in state',
+        prompt: 'read the sign',
+        state,
+        unknownReason: 'unsupported',
     },
 ];
 
@@ -82,13 +99,16 @@ describe('ActionInterpreter', () => {
         });
 
         describe('unknown action', () => {
-            UNKNOWN_TEST_CASES.forEach(({ name, prompt, state }) => {
+            UNKNOWN_TEST_CASES.forEach(({ name, prompt, state, unknownReason }) => {
                 it(name, async () => {
                     // act
                     const action = await interpreter.parse(prompt, state);
 
                     // assert
                     expect(action.type).to.equal(ActionType.UNKNOWN);
+                    if (unknownReason) {
+                        expect((action as UnknownAction).data.reason).to.equal(unknownReason);
+                    }
                 });
             });
         });

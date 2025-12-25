@@ -1,5 +1,26 @@
 import { GameState } from '../engine';
-import { InterpreterGameState } from './interpreter.game.state';
+import { InterpreterGameState, InterpreterItemState } from './interpreter.game.state';
+
+const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterItemState[] => {
+    const { inventories, items } = state.world;
+    const inventory = inventories[inventoryId];
+    if (!inventory) {
+        return [];
+    }
+    return Object.entries(inventory.items)
+        .map(([itemId, qty]) => {
+            const item = items[itemId];
+            if (!item) {
+                return null;
+            }
+            return {
+                name: item.name,
+                aliases: item.aliases,
+                quantity: qty,
+            };
+        })
+        .filter((item) => !!item);
+};
 
 export const selectInterpreterGameState = (gameState: GameState): InterpreterGameState => {
     const { player, world } = gameState;
@@ -9,44 +30,24 @@ export const selectInterpreterGameState = (gameState: GameState): InterpreterGam
         throw new Error(`Invalid game state: room ${player.currentRoomId} not found`);
     }
 
-    const roomInventory = world.inventories[room.inventoryId];
-
-    const visibleItems = roomInventory
-        ? Object.entries(roomInventory.items).map(([itemId, quantity]) => {
-              const item = world.items[itemId];
-              return {
-                  name: item.name,
-                  aliases: item.aliases,
-                  quantity,
-              };
-          })
-        : [];
-
-    const playerInventory = world.inventories[player.inventoryId];
-
-    const inventory = Object.entries(playerInventory.items).map(([itemId, quantity]) => {
-        const item = world.items[itemId];
-        return {
-            name: item.name,
-            aliases: item.aliases,
-            quantity,
-        };
-    });
+    const inventory = inventoryToVisibleItems(player.inventoryId, gameState);
+    const visibleItems = inventoryToVisibleItems(room.inventoryId, gameState);
 
     const visibleNPCs = room.npcIds
         .map((npcId) => world.npcs[npcId])
         .map((npc) => ({
             name: npc.name,
             aliases: npc.aliases,
+            items: npc.inventoryId ? inventoryToVisibleItems(npc.inventoryId, gameState) : [],
         }));
 
     return {
         location: {
             name: room.name,
             description: room.visited ? undefined : room.description,
+            visibleNPCs,
+            visibleItems,
         },
-        visibleNPCs,
-        visibleItems,
         inventory,
     };
 };
