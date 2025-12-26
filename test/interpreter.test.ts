@@ -22,13 +22,13 @@ const MOVE_TEST_CASES: InterpreterTestCase[] = [
         expected: { type: ActionType.MOVE, data: { direction: 'north' } },
     },
     {
-        name: 'should be tolerant of noise',
+        name: 'should return move action with noisy input',
         prompt: "I guess I'll walk toward the east now",
         state,
         expected: { type: ActionType.MOVE, data: { direction: 'east' } },
     },
     {
-        name: 'should handle abbreviations',
+        name: 'should return move action with abbreviations',
         prompt: 'walk S',
         state,
         expected: { type: ActionType.MOVE, data: { direction: 'south' } },
@@ -51,8 +51,14 @@ const UNKNOWN_TEST_CASES: Omit<
         unknownReason: 'unparsable',
     },
     {
-        name: 'should return unknown action for unsupported intent',
+        name: 'should return unknown action for actions that deviate from state',
         prompt: 'I talk to the dragon',
+        state,
+        unknownReason: 'unsupported',
+    },
+    {
+        name: 'should return unknown action for unsupported direction',
+        prompt: 'I walk southeast',
         state,
         unknownReason: 'unsupported',
     },
@@ -62,17 +68,11 @@ const UNKNOWN_TEST_CASES: Omit<
         state,
         unknownReason: 'ambiguous',
     },
-    {
-        name: 'should return unknown if action references entities not in state',
-        prompt: 'read the sign',
-        state,
-        unknownReason: 'unsupported',
-    },
 ];
 
 const LOOK_TEST_CASES: Omit<InterpreterTestCase, 'expected'>[] = [
     {
-        name: 'should return look for the word "look"',
+        name: 'should return look action for the word "look"',
         prompt: 'look',
         state,
     },
@@ -80,6 +80,50 @@ const LOOK_TEST_CASES: Omit<InterpreterTestCase, 'expected'>[] = [
         name: 'should return look for more verbose language',
         prompt: 'I examine the room carefully...',
         state,
+    },
+];
+
+const TRANSFER_TEST_CASES: InterpreterTestCase[] = [
+    {
+        name: 'take single item by name',
+        prompt: 'take coin',
+        state,
+        expected: {
+            type: ActionType.TRANSFER,
+            data: {
+                item: 'coin',
+                from: 'room',
+                to: 'player',
+                quantity: 1,
+            },
+        },
+    },
+    {
+        name: 'take multiple items by explicit quantity',
+        prompt: 'take 2 coins',
+        state,
+        expected: {
+            type: ActionType.TRANSFER,
+            data: {
+                item: 'coin',
+                from: 'room',
+                to: 'player',
+                quantity: 2,
+            },
+        },
+    },
+    {
+        name: 'take all items',
+        prompt: 'take all coins',
+        state,
+        expected: {
+            type: ActionType.TRANSFER,
+            data: {
+                item: 'coin',
+                from: 'room',
+                to: 'player',
+            },
+        },
     },
 ];
 

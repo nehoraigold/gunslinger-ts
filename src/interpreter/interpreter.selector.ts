@@ -1,5 +1,5 @@
 import { GameState } from '../engine';
-import { InterpreterGameState, InterpreterItemState } from './interpreter.game.state';
+import { InterpreterState, InterpreterItemState } from './interpreter.state';
 
 const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterItemState[] => {
     const { inventories, items } = state.world;
@@ -22,7 +22,7 @@ const inventoryToVisibleItems = (inventoryId: string, state: GameState): Interpr
         .filter((item) => !!item);
 };
 
-export const selectInterpreterGameState = (gameState: GameState): InterpreterGameState => {
+export const selectInterpreterGameState = (gameState: GameState): InterpreterState => {
     const { player, world } = gameState;
     const room = world.rooms[player.currentRoomId];
 

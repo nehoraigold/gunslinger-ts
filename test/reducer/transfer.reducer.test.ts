@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { applyTransfer } from '../../src/reducer';
 import { GameState } from '../../src/engine';
 import { ActionType } from '../../src/action';
+import { InventoryState } from '../../src/domain/inventory';
 
 const deepFreeze = <T>(obj: T): T => {
     Object.freeze(obj);
@@ -17,108 +18,160 @@ const deepFreeze = <T>(obj: T): T => {
 };
 
 const baseState = (): GameState => ({
-    player: {
-        name: 'Hero',
-        currentRoomId: 'room',
-        inventoryId: 'playerInv',
-        description: 'The hero of the game',
-    },
     world: {
-        rooms: {},
-        inventories: {
-            roomInv: {
-                id: 'roomInv',
-                items: { coin: 3 },
+        rooms: {
+            'room-1': {
+                id: 'room-1',
+                name: 'Room 1',
+                description: 'A simple room.',
+                inventoryId: 'inv-room-1',
+                visited: false,
+                npcIds: [],
+                exits: {},
             },
-            playerInv: {
-                id: 'playerInv',
+        },
+        inventories: {
+            'inv-player': {
+                id: 'inv-player',
+                items: {
+                    'item-mule': 1,
+                    'item-coin': 2,
+                },
+            },
+            'inv-room-1': {
+                id: 'inv-room-1',
+                items: {
+                    'item-coin': 8,
+                },
+            },
+            'inv-kennerly': {
+                id: 'inv-kennerly',
                 items: {},
             },
         },
         items: {
-            coin: {
-                id: 'coin',
+            'item-coin': {
+                id: 'item-coin',
                 name: 'coin',
                 aliases: ['gold', 'money'],
-                description: 'Old golden coin',
+                description: 'An old coin',
+            },
+            'item-mule': {
+                id: 'item-mule',
+                name: 'mule',
+                aliases: ['donkey', 'ass', 'horse'],
+                description: 'An old mule',
             },
         },
-        npcs: {},
+        npcs: {
+            'npc-kennerly': {
+                id: 'npc-kennerly',
+                name: 'Kennerly',
+                aliases: ['barman', 'bartender', 'barkeep', 'man'],
+                description: 'An old man, wrinkled and leathery, polishing a dirty glass behind the bar',
+                inventoryId: 'inv-kennerly',
+            },
+        },
+    },
+    player: {
+        currentRoomId: 'room-1',
+        name: 'Hero',
+        description: 'The hero',
+        inventoryId: 'inv-player',
     },
 });
 
 describe('applyTransfer', () => {
-    it('moves items from source to target', () => {
+    it('should move items from source to target', () => {
         const state = baseState();
 
         const next = applyTransfer(state, {
             type: ActionType.TRANSFER,
-            data: { itemId: 'coin', fromInventoryId: 'roomInv', toInventoryId: 'playerInv', quantity: 2 },
+            data: { item: 'coin', from: 'room', to: 'player', quantity: 2 },
         });
 
-        expect(next.world.inventories.roomInv.items.coin).to.equal(1);
-        expect(next.world.inventories.playerInv.items.coin).to.equal(2);
+        expect(next.world.inventories['inv-player'].items['item-coin']).to.equal(4);
+        expect(next.world.inventories['inv-room-1'].items['item-coin']).to.equal(6);
     });
 
-    it('removes source entry when transferring entire stack', () => {
+    it('should remove source entry when transferring entire stack', () => {
         const state = baseState();
 
         const next = applyTransfer(state, {
             type: ActionType.TRANSFER,
-            data: { itemId: 'coin', fromInventoryId: 'roomInv', toInventoryId: 'playerInv', quantity: 3 },
+            data: { item: 'coin', from: 'room', to: 'player', quantity: 8 },
         });
 
-        expect(next.world.inventories.roomInv.items.coin).to.be.undefined;
+        expect(next.world.inventories['inv-room-1'].items['item-coin']).to.be.undefined;
     });
 
-    it('clamps quantity to available amount', () => {
+    it('should clamp quantity to available amount', () => {
         const state = baseState();
 
         const next = applyTransfer(state, {
             type: ActionType.TRANSFER,
-            data: { itemId: 'coin', fromInventoryId: 'roomInv', toInventoryId: 'playerInv', quantity: 10 },
+            data: { item: 'coin', from: 'room', to: 'player', quantity: 10 },
         });
 
-        expect(next.world.inventories.playerInv.items.coin).to.be.undefined;
-        expect(next.world.inventories.roomInv.items.coin).to.equal(3);
+        expect(next.world.inventories['inv-player'].items['item-coin']).to.equal(2);
+        expect(next.world.inventories['inv-room-1'].items['item-coin']).to.equal(8);
     });
 
-    it('fails safely when source inventory is missing', () => {
+    it('should fail safely when source is missing', () => {
         const state = baseState();
 
         const next = applyTransfer(state, {
             type: ActionType.TRANSFER,
-            data: { itemId: 'coin', fromInventoryId: 'missing', toInventoryId: 'playerInv' },
+            data: { item: 'coin', from: 'npc:nonexistent', to: 'player' },
         });
 
-        expect(next).to.equal(state);
+        expect(next).to.deep.equal(state);
     });
 
-    it('conserves total item quantity', () => {
+    it('should fail safely when target is missing', () => {
         const state = baseState();
-
-        const totalBefore = state.world.inventories.roomInv.items.coin;
 
         const next = applyTransfer(state, {
             type: ActionType.TRANSFER,
-            data: { itemId: 'coin', fromInventoryId: 'roomInv', toInventoryId: 'playerInv', quantity: 2 },
+            data: { item: 'coin', from: 'player', to: 'npc:nonexistent' },
         });
 
-        const totalAfter =
-            (next.world.inventories.roomInv.items.coin ?? 0) + (next.world.inventories.playerInv.items.coin ?? 0);
+        expect(next).to.deep.equal(state);
+    });
+
+    it('should conserve total item quantity', () => {
+        const state = baseState();
+
+        const getTotalQuantity = (itemId: string): ((inventories: Record<string, InventoryState>) => number) => {
+            return (inventories: Record<string, InventoryState>): number => {
+                return Object.values(inventories).reduce((total, inventoryState) => {
+                    return total + (inventoryState.items[itemId] ?? 0);
+                }, 0);
+            };
+        };
+
+        const getTotalCoinQuantity = getTotalQuantity('item-coin');
+        const totalBefore = getTotalCoinQuantity(state.world.inventories);
+
+        const next = applyTransfer(state, {
+            type: ActionType.TRANSFER,
+            data: { item: 'coin', from: 'player', to: 'npc:kennerly', quantity: 2 },
+        });
+
+        const totalAfter = getTotalCoinQuantity(next.world.inventories);
 
         expect(totalAfter).to.equal(totalBefore);
     });
 
-    it('does not mutate the original state', () => {
+    it('should not mutate the original state', () => {
         const state = deepFreeze(baseState());
 
         const next = applyTransfer(state, {
             type: ActionType.TRANSFER,
-            data: { itemId: 'coin', fromInventoryId: 'roomInv', toInventoryId: 'playerInv', quantity: 1 },
+            data: { item: 'coin', from: 'room', to: 'player', quantity: 1 },
         });
 
         expect(next).not.to.equal(state);
-        expect(state.world.inventories.playerInv.items.coin).to.be.undefined;
+        expect(state).to.deep.equal(state);
     });
 });

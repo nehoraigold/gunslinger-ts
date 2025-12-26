@@ -1,15 +1,56 @@
-import { TransferAction } from '../action';
+import { TransferAction, TransferLocation } from '../action';
 import { GameState } from '../engine';
 
+const getInventoryId = (transferLocation: TransferLocation, { player, world }: GameState): string => {
+    if (transferLocation === 'player') {
+        return player.inventoryId;
+    }
+    if (transferLocation === 'room') {
+        return world.rooms[player.currentRoomId]?.inventoryId ?? '';
+    }
+    if (!transferLocation.startsWith('npc:')) {
+        // unknown!
+        return '';
+    }
+    const npcName = transferLocation.replace(/^npc:/, '');
+    const npc = Object.values(world.npcs).find((npc) => npc.name === npcName);
+    if (!npc) {
+        // npc not found
+        return '';
+    }
+    if (!world.rooms[player.currentRoomId]?.npcIds.includes(npc.id)) {
+        // npc not in current room
+        return '';
+    }
+    return npc.inventoryId ?? '';
+};
+
+const getItemId = (itemName: string, { world }: GameState): string => {
+    return Object.values(world.items).find(({ name }) => name === itemName)?.id || '';
+};
+
 export const applyTransfer = (state: GameState, action: TransferAction): GameState => {
-    const { itemId, fromInventoryId, toInventoryId, quantity } = action.data;
+    const { item, from, to, quantity } = action.data;
     const inventories = state.world.inventories;
+
+    const fromInventoryId = getInventoryId(from, state);
+    const toInventoryId = getInventoryId(to, state);
+    if (!fromInventoryId || !toInventoryId) {
+        // could not find inventory ids
+        return state;
+    }
 
     const source = inventories[fromInventoryId];
     const target = inventories[toInventoryId];
 
     if (!source || !target) {
-        // source or target inventories not found
+        // could not find inventories
+        return state;
+    }
+
+    const itemId = getItemId(item, state);
+    if (!itemId) {
+        // could not find item id
         return state;
     }
 

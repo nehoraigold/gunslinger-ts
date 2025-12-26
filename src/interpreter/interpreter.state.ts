@@ -4,7 +4,7 @@ export type InterpreterItemState = {
     quantity?: number;
 };
 
-export type InterpreterGameState = {
+export type InterpreterState = {
     location: {
         name: string;
         description?: string;

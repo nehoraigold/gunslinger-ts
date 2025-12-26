@@ -46,21 +46,34 @@ export const INVENTORIES: WorldState['inventories'] = {
         items: {
             'item-revolver': 1,
             'item-bullet': 6,
+            'item-coin': 19,
         },
     },
     'inv-room-town-square': {
         id: 'inv-room-town-square',
         items: {
             'item-horseshoe': 1,
+            'item-coin': 1,
         },
     },
     'inv-room-saloon': {
         id: 'inv-room-saloon',
-        items: {},
+        items: {
+            'item-coin': 3,
+        },
     },
     'inv-room-main-street': {
         id: 'inv-room-main-street',
-        items: {},
+        items: {
+            'item-coin': 12,
+        },
+    },
+    'inv-npc-bartender': {
+        id: 'inv-npc-bartender',
+        items: {
+            'item-revolver': 1,
+            'item-coin': 200,
+        },
     },
 };
 
@@ -69,7 +82,8 @@ const NPCS: WorldState['npcs'] = {
         id: 'npc-bartender',
         name: 'Kennerly',
         aliases: ['barman', 'man', 'old man', 'bartender'],
-        description: 'A wrinkled old man with a mustached wipes a dirty glass behind the bar',
+        description: 'A wrinkled old man with a mustached wipes a dirty glass behind the bar.',
+        inventoryId: 'inv-npc-bartender',
     },
 };
 
@@ -84,13 +98,19 @@ const ITEMS: WorldState['items'] = {
         id: 'item-bullet',
         name: 'bullet',
         aliases: ['bullet', 'shell'],
-        description: 'A bullet made for the revolver. Hard to come by, harder to recover from.',
+        description: 'A silver bullet made for old revolvers. Hard to come by, harder to recover from.',
     },
     'item-horseshoe': {
         id: 'item-horseshoe',
         name: 'horseshoe',
         aliases: [],
         description: 'An iron horseshoe, bent and mangled, said to offer good luck to its bearer.',
+    },
+    'item-coin': {
+        id: 'item-coin',
+        name: 'coin',
+        aliases: ['gold', 'money'],
+        description: 'An old coin made of gold.',
     },
 };
 

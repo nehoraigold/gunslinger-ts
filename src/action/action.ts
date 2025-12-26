@@ -23,12 +23,14 @@ export interface InteractAction extends IAction {
     };
 }
 
+export type TransferLocation = 'player' | 'room' | `npc:${string}`;
+
 export interface TransferAction extends IAction {
     type: ActionType.TRANSFER;
     data: {
-        itemId: string;
-        fromInventoryId: string;
-        toInventoryId: string;
+        item: string;
+        from: TransferLocation;
+        to: TransferLocation;
         quantity?: number;
     };
 }
