@@ -10,7 +10,7 @@ import { selectInterpreterGameState } from './interpreter.selector';
 import { InterpreterModel } from './interpreter.model';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const INTERPRETER_INSTRUCTIONS_FILE_PATH = path.resolve(__dirname, '../../llm/interpreter.md');
+const INTERPRETER_INSTRUCTIONS_FILE_PATH = path.resolve(__dirname, '../../llm/interpreter.instructions.md');
 
 const INSTRUCTIONS = readFileSync(INTERPRETER_INSTRUCTIONS_FILE_PATH, 'utf8');
 const INTERPRETER_MODEL: InterpreterModel = 'gpt-oss:20b';
