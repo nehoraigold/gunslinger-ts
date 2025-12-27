@@ -105,9 +105,9 @@ The Interpreter emits **human-legible, engine-resolved JSON**. The game engine i
   "type": "transfer",
   "data": {
     "item": "<item name>",
-    "from": "<inventory name>",
-    "to": "<inventory name>",
-    "quantity": 1
+    "from": "player" | "room" | "npc:<name>",
+    "to": "player" | "room" | "npc:<name>",
+    "quantity": <number>
   }
 }
 ```

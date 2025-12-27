@@ -9,7 +9,7 @@
         "dev": "",
         "clean": "rm -rf dist",
         "prebuild": "npm run clean",
-        "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=esnext --minify --outfile=dist/index.js",
+        "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=esnext --minify --outfile=dist/index.js --loader:.md=text",
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
         "test": "mocha",

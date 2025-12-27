@@ -8,7 +8,7 @@ const inventoryToVisibleItems = (inventoryId: string, state: GameState): Interpr
         return [];
     }
     return Object.entries(inventory.items)
-        .map(([itemId, qty]) => {
+        .map(([itemId, qty]): InterpreterItemState | null => {
             const item = items[itemId];
             if (!item) {
                 return null;
@@ -40,13 +40,19 @@ export const selectInterpreterGameState = (gameState: GameState): InterpreterSta
             aliases: npc.aliases,
             items: npc.inventoryId ? inventoryToVisibleItems(npc.inventoryId, gameState) : [],
         }));
+    const visibleExits = Object.fromEntries(
+        Object.entries(room.exits).map(([direction, exitState]) => {
+            return [direction, world.rooms[exitState.toRoomId].name];
+        }),
+    );
 
     return {
         location: {
             name: room.name,
-            description: room.visited ? undefined : room.description,
+            description: room.description,
             visibleNPCs,
             visibleItems,
+            visibleExits,
         },
         inventory,
     };

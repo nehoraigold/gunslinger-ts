@@ -1,35 +1,43 @@
 //region imports
-import { ActionType, Direction } from './action';
+import ora from 'ora';
+import { ActionType } from './action';
 import { RoomState } from './domain/room';
 import { applyAction, GameState, initializeGameState } from './engine';
 import { getUserInput } from './utils';
-import { ActionInterpreter } from './interpreter/interperter';
-import ora from 'ora';
+import { ActionInterpreter } from './interpreter';
+import { Narrator } from './narrator';
+import { GameMaster } from './gm';
+
 //endregion
 
 async function main() {
+    const interpreter = new ActionInterpreter();
+    const narrator = new Narrator();
+    let spinner = ora({ spinner: 'simpleDots' });
     let state = initializeGameState();
-    const interpreter = new ActionInterpreter('gpt-oss:20b');
+
+    spinner = spinner.start();
+    let text = await narrator.begin(state);
+    console.log(text);
+    spinner = spinner.clear().stop();
 
     while (true) {
-        const room = getCurrentRoom(state);
-        console.log(room.name, room.description);
         const input = await getUserInput('');
-        const spinner = ora({ spinner: 'simpleDots' }).start();
+        spinner = spinner.start();
         const action = await interpreter.parse(input, state);
-        spinner.stop();
+
         console.log(JSON.stringify(action));
+
         if (action.type === ActionType.QUIT) {
+            spinner.clear().stop();
             break;
         }
-        state = applyAction(state, action);
+        const newState = applyAction(state, action);
+        text = await narrator.narrate(state, newState, action, '');
+        spinner = spinner.clear().stop();
+        console.log(text);
+        state = newState;
     }
 }
-
-const getCurrentRoom = (gameState: GameState): RoomState => {
-    const roomId = gameState.player.currentRoomId;
-    const room = gameState.world.rooms[roomId];
-    return room;
-};
 
 main();
