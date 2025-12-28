@@ -3,10 +3,10 @@ import { ToolLoopAgent } from 'ai';
 import { Action, ActionType } from '../action';
 import { GameState } from '../engine';
 import { selectInterpreterGameState } from './interpreter.selector';
-import { InterpreterModel } from './interpreter.model';
+import { AvailableLLMs } from '../availableLLMs';
 import INSTRUCTIONS from './interpreter.instructions';
 
-const INTERPRETER_MODEL: InterpreterModel = 'gpt-oss:20b';
+const INTERPRETER_MODEL: AvailableLLMs = 'qwen3:8b';
 
 export class ActionInterpreter {
     protected agent: ToolLoopAgent;
@@ -31,9 +31,9 @@ export class ActionInterpreter {
             });
             // @ts-ignore
             return JSON.parse(response.steps[0].content[0].text);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            return { type: ActionType.UNKNOWN, data: { reason: 'unparsable' } };
+            return { type: ActionType.UNKNOWN, data: { reason: 'unparsable', message: error.message } };
         }
     }
 }

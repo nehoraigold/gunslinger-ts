@@ -27,12 +27,14 @@ async function main() {
         const action = await interpreter.parse(input, state);
         spinner.stop();
 
-        console.log(JSON.stringify(action));
+        console.log('action:', JSON.stringify(action));
 
         if (action.type === ActionType.QUIT) {
             break;
         }
         const { state: newState, outcome } = applyAction(state, action);
+
+        console.log('outcome:', JSON.stringify(outcome));
 
         spinner = spinner.start();
         text = await narrator.narrate(state, newState, action, outcome);

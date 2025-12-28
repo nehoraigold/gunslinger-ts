@@ -5,9 +5,9 @@ import { GameState, Outcome } from '../engine';
 import INSTRUCTIONS from './narrator.instructions';
 import { NarratorInput } from './narrator.input';
 import { selectNarratorGameState } from './narrator.selector';
+import { AvailableLLMs } from '../availableLLMs';
 
-type NarratorModel = 'gpt-oss:20b';
-const NARRATOR_MODEL: NarratorModel = 'gpt-oss:20b';
+const NARRATOR_MODEL: AvailableLLMs = 'gpt-oss:20b';
 
 export class Narrator {
     protected readonly agent: ToolLoopAgent;
