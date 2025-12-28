@@ -1,10 +1,9 @@
 #!/usr/local/bin/node
-//region imports
 const fs = require('fs');
 const path = require("path");
 const process = require("process");
 const { google } = require("googleapis");
-const { authorize } = require("./authorize");
+const { authorize } = require("./authorize.cjs");
 const { spreadsheetId, destinationDir, credentialsDir } = require("../config.local.json");
 //endregion
 

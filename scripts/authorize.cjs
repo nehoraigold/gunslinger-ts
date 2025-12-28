@@ -2,7 +2,7 @@
 const { join } = require("path");
 const { existsSync, writeFileSync } = require("fs");
 const { google } = require("googleapis");
-const { getUserInput, getJsonFromFile, JSON_SPACING } = require("./utils");
+const { getUserInput, getJsonFromFile, JSON_SPACING } = require("./utils.cjs");
 //endregion
 
 const SCOPES = ["https://www.googleapis.com/auth/drive.readonly", "https://www.googleapis.com/auth/spreadsheets.readonly"];

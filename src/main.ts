@@ -1,7 +1,7 @@
 //region imports
 import ora from 'ora';
 import { ActionType } from './action';
-import { applyAction, initializeGameState } from './engine';
+import { applyAction, initGameState } from './engine';
 import { getUserInput } from './utils';
 import { ActionInterpreter } from './interpreter';
 import { Narrator } from './narrator';
@@ -12,7 +12,7 @@ async function main() {
     const interpreter = new ActionInterpreter();
     const narrator = new Narrator();
     let spinner = ora({ spinner: 'simpleDots' });
-    let state = initializeGameState();
+    let state = initGameState();
 
     spinner = spinner.start();
     let text = await narrator.narrate(state, state, { type: ActionType.START }, { result: 'success' });

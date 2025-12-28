@@ -1,6 +1,4 @@
-import { RoomState, ExitState } from '../domain/room';
 import { GameState } from './game.state';
-import { InventoryState } from '../domain/inventory';
 import { WorldState } from '../domain/world';
 
 export const ROOMS: WorldState['rooms'] = {
