@@ -1,20 +1,32 @@
 import { GameState } from './game.state';
 import { Action, ActionType } from '../action';
-import { applyMove, applyTransfer } from '../reducer';
+import { applyMove, applyTransfer, ReducerResult } from '../reducer';
 
-export const applyAction = (gameState: GameState, action: Action): GameState => {
+export const applyAction = (state: GameState, action: Action): ReducerResult => {
     switch (action.type) {
         case ActionType.MOVE:
-            return applyMove(gameState, action.data.direction);
+            return applyMove(state, action.data.direction);
         case ActionType.TRANSFER:
-            return applyTransfer(gameState, action);
+            return applyTransfer(state, action);
+        case ActionType.UNKNOWN:
+            return {
+                state,
+                outcome: {
+                    result: 'no_change',
+                    reasons: [action.data.reason],
+                },
+            };
         case ActionType.LOOK:
         case ActionType.INTERACT:
         case ActionType.INVENTORY:
         case ActionType.HELP:
         case ActionType.QUIT:
-        case ActionType.UNKNOWN:
             break;
     }
-    return gameState;
+    return {
+        state,
+        outcome: {
+            result: 'success',
+        },
+    };
 };

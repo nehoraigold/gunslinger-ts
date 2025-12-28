@@ -1,35 +1,45 @@
 import { Direction } from '../action';
 import { GameState } from '../engine';
+import { ReducerResult } from './reducer.result';
 
-export const applyMove = (gameState: GameState, direction: Direction): GameState => {
-    const { player, world } = gameState;
+export const applyMove = (state: GameState, direction: Direction): ReducerResult => {
+    const { player, world } = state;
     const currentRoom = world.rooms[player.currentRoomId];
 
     if (!currentRoom) {
-        // Invalid state — fail safely
-        return gameState;
+        return {
+            state,
+            outcome: {
+                result: 'invalid',
+                reasons: ['current_room_not_found'],
+            },
+        };
     }
 
     const exit = currentRoom.exits[direction];
     if (!exit) {
-        // No exit in that direction
-        return gameState;
+        return {
+            state,
+            outcome: {
+                result: 'no_change',
+                reasons: ['no_exit'],
+            },
+        };
     }
-
-    //   if (exit.condition && !evaluateCondition(exit.condition, gameState)) {
-    //     // Exit exists but is blocked
-    //     return gameState;
-    //   }
 
     const nextRoom = world.rooms[exit.toRoomId];
     if (!nextRoom) {
-        ``;
-        // Broken world graph — still fail safely
-        return gameState;
+        return {
+            state,
+            outcome: {
+                result: 'invalid',
+                reasons: ['next_room_not_found'],
+            },
+        };
     }
 
-    return {
-        ...gameState,
+    const newState: GameState = {
+        ...state,
         player: {
             ...player,
             currentRoomId: exit.toRoomId,
@@ -43,6 +53,12 @@ export const applyMove = (gameState: GameState, direction: Direction): GameState
                     visited: true,
                 },
             },
+        },
+    };
+    return {
+        state: newState,
+        outcome: {
+            result: 'success',
         },
     };
 };

@@ -4,7 +4,7 @@ import { Action, ActionType } from '../action';
 import { GameState } from '../engine';
 import { selectInterpreterGameState } from './interpreter.selector';
 import { InterpreterModel } from './interpreter.model';
-import INSTRUCTIONS from './interpreter.instructions.md';
+import INSTRUCTIONS from './interpreter.instructions';
 
 const INTERPRETER_MODEL: InterpreterModel = 'gpt-oss:20b';
 

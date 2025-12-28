@@ -1,5 +1,6 @@
 import { TransferAction, TransferLocation } from '../action';
 import { GameState } from '../engine';
+import { ReducerResult } from './reducer.result';
 
 const getInventoryId = (transferLocation: TransferLocation, { player, world }: GameState): string => {
     if (transferLocation === 'player') {
@@ -29,41 +30,73 @@ const getItemId = (itemName: string, { world }: GameState): string => {
     return Object.values(world.items).find(({ name }) => name === itemName)?.id || '';
 };
 
-export const applyTransfer = (state: GameState, action: TransferAction): GameState => {
+export const applyTransfer = (state: GameState, action: TransferAction): ReducerResult => {
     const { item, from, to, quantity } = action.data;
     const inventories = state.world.inventories;
 
     const fromInventoryId = getInventoryId(from, state);
     const toInventoryId = getInventoryId(to, state);
     if (!fromInventoryId || !toInventoryId) {
-        // could not find inventory ids
-        return state;
+        const reason = [
+            !!fromInventoryId ? null : 'from_cannot_hold_items',
+            !!toInventoryId ? null : 'to_cannot_hold_items',
+        ].filter((r) => r !== null);
+        return {
+            state,
+            outcome: {
+                result: 'no_change',
+                reasons: reason,
+            },
+        };
     }
 
     const source = inventories[fromInventoryId];
     const target = inventories[toInventoryId];
 
     if (!source || !target) {
-        // could not find inventories
-        return state;
+        const reason = [!!source ? null : 'no_from_inventory_found', !!target ? null : 'no_to_inventory_found'].filter(
+            (r) => r !== null,
+        );
+        return {
+            state,
+            outcome: {
+                result: 'invalid',
+                reasons: reason,
+            },
+        };
     }
 
     const itemId = getItemId(item, state);
     if (!itemId) {
-        // could not find item id
-        return state;
+        return {
+            state,
+            outcome: {
+                result: 'invalid',
+                reasons: ['item_does_not_exist'],
+            },
+        };
     }
 
     const sourceItemQty = source.items[itemId];
     if (!sourceItemQty) {
-        // item does not exist in source inventory
-        return state;
+        return {
+            state,
+            outcome: {
+                result: 'no_change',
+                reasons: ['item_not_found_in_from_inventory'],
+            },
+        };
     }
 
     const qtyToTransfer = quantity ?? 1;
     if (!qtyToTransfer || sourceItemQty < qtyToTransfer) {
-        // source inventory does not have enough to transfer
-        return state;
+        return {
+            state,
+            outcome: {
+                result: 'no_change',
+                reasons: ['item_quantity_insufficient'],
+            },
+        };
     }
 
     const newSourceItemQty = sourceItemQty - qtyToTransfer;
@@ -82,7 +115,7 @@ export const applyTransfer = (state: GameState, action: TransferAction): GameSta
         [itemId]: newTargetItemQty,
     };
 
-    return {
+    const newState: GameState = {
         ...state,
         world: {
             ...state.world,
@@ -91,6 +124,13 @@ export const applyTransfer = (state: GameState, action: TransferAction): GameSta
                 [fromInventoryId]: { ...source, items: sourceItems },
                 [toInventoryId]: { ...target, items: targetItems },
             },
+        },
+    };
+
+    return {
+        state: newState,
+        outcome: {
+            result: 'success',
         },
     };
 };

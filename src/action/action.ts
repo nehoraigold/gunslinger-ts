@@ -7,6 +7,10 @@ interface IAction {
     type: ActionType;
 }
 
+export interface StartAction extends IAction {
+    type: ActionType.START;
+}
+
 export interface MoveAction extends IAction {
     type: ActionType.MOVE;
     data: {
@@ -60,6 +64,7 @@ export interface UnknownAction extends IAction {
 }
 
 export type Action =
+    | StartAction
     | MoveAction
     | LookAction
     | InventoryAction

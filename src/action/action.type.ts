@@ -1,4 +1,5 @@
 export enum ActionType {
+    START = 'start', // start the game, used only for the very first turn
     MOVE = 'move', // move in a direction (north, south, east, west)
     LOOK = 'look', // examine the current room you're in
     TRANSFER = 'transfer', // move an item from the player's inventory to another inventory (room, npc) or vice versa
