@@ -59,7 +59,7 @@ export interface UnknownAction extends IAction {
     type: ActionType.UNKNOWN;
     data: {
         reason: 'ambiguous' | 'unsupported' | 'unparsable';
-        candidates?: Exclude<Action, UnknownAction>[];
+        message?: string;
     };
 }
 

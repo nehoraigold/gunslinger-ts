@@ -1,6 +1,7 @@
 import { GameState } from './game.state';
 import { Action, ActionType } from '../action';
 import { applyMove, applyTransfer, ReducerResult } from '../reducer';
+import { applyUnknown } from '../reducer/unknown.reducer';
 
 export const applyAction = (state: GameState, action: Action): ReducerResult => {
     switch (action.type) {
@@ -9,24 +10,18 @@ export const applyAction = (state: GameState, action: Action): ReducerResult => 
         case ActionType.TRANSFER:
             return applyTransfer(state, action);
         case ActionType.UNKNOWN:
-            return {
-                state,
-                outcome: {
-                    result: 'no_change',
-                    reasons: [action.data.reason],
-                },
-            };
+            return applyUnknown(state, action);
         case ActionType.LOOK:
         case ActionType.INTERACT:
         case ActionType.INVENTORY:
         case ActionType.HELP:
         case ActionType.QUIT:
-            break;
+        default:
+            return {
+                state,
+                outcome: {
+                    result: 'success',
+                },
+            };
     }
-    return {
-        state,
-        outcome: {
-            result: 'success',
-        },
-    };
 };
