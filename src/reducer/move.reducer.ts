@@ -10,7 +10,7 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
         return {
             state,
             outcome: {
-                result: 'invalid',
+                result: 'error',
                 reasons: ['current_room_not_found'],
             },
         };
@@ -21,7 +21,7 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
         return {
             state,
             outcome: {
-                result: 'no_change',
+                result: 'failure',
                 reasons: ['no_exit'],
             },
         };
@@ -32,7 +32,7 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
         return {
             state,
             outcome: {
-                result: 'invalid',
+                result: 'error',
                 reasons: ['next_room_not_found'],
             },
         };

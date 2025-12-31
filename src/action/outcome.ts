@@ -1,4 +1,4 @@
 export type Outcome = {
-    result: 'success' | 'invalid' | 'no_change';
+    result: 'success' | 'failure' | 'error';
     reasons?: string[];
 };

@@ -33,7 +33,7 @@ async function main() {
         const actions = [await interpreter.parse(input, state)].flat();
         spinner.stop();
 
-        console.log('action:', JSON.stringify(actions));
+        console.log('action:', JSON.stringify(actions, null, 2));
 
         if (actions.some((action) => action.type === ActionType.QUIT)) {
             break;
@@ -41,7 +41,7 @@ async function main() {
 
         const { state: newState, resolvedActions } = resolveActions(state, actions);
 
-        console.log('resolvedActions:', JSON.stringify(resolvedActions));
+        console.log('resolvedActions:', JSON.stringify(resolvedActions, null, 2));
 
         spinner = spinner.start();
         text = await narrator.narrate(state, newState, resolvedActions);
@@ -69,7 +69,7 @@ const resolveActions = (
         const { state: nextState, outcome } = applyAction(newState, action);
         newState = nextState;
         resolvedActions.push({ action, outcome });
-        if (outcome.result === 'invalid') {
+        if (outcome.result === 'error') {
             // if invalid, do not process any further actions
             break;
         }

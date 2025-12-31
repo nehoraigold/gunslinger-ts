@@ -38,13 +38,13 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
     const toInventoryId = getInventoryId(to, state);
     if (!fromInventoryId || !toInventoryId) {
         const reason = [
-            !!fromInventoryId ? null : 'from_cannot_hold_items',
-            !!toInventoryId ? null : 'to_cannot_hold_items',
+            !!fromInventoryId ? null : `${from}_cannot_hold_items`,
+            !!toInventoryId ? null : `${to}_cannot_hold_items`,
         ].filter((r) => r !== null);
         return {
             state,
             outcome: {
-                result: 'no_change',
+                result: 'error',
                 reasons: reason,
             },
         };
@@ -54,13 +54,14 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
     const target = inventories[toInventoryId];
 
     if (!source || !target) {
-        const reason = [!!source ? null : 'no_from_inventory_found', !!target ? null : 'no_to_inventory_found'].filter(
-            (r) => r !== null,
-        );
+        const reason = [
+            !!source ? null : `no_${from}_inventory_found`,
+            !!target ? null : `no_${to}_inventory_found`,
+        ].filter((r) => r !== null);
         return {
             state,
             outcome: {
-                result: 'invalid',
+                result: 'error',
                 reasons: reason,
             },
         };
@@ -71,7 +72,7 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
         return {
             state,
             outcome: {
-                result: 'invalid',
+                result: 'error',
                 reasons: ['item_does_not_exist'],
             },
         };
@@ -82,7 +83,7 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
         return {
             state,
             outcome: {
-                result: 'no_change',
+                result: 'failure',
                 reasons: ['item_not_found_in_from_inventory'],
             },
         };
@@ -93,7 +94,7 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
         return {
             state,
             outcome: {
-                result: 'no_change',
+                result: 'failure',
                 reasons: ['item_quantity_insufficient'],
             },
         };

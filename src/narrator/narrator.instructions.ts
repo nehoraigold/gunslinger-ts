@@ -65,13 +65,27 @@ When in doubt: **say less, not more**.
 ## Outcome Handling (Mandatory)
 
 - If \`resolvedAction.outcome.result\` is \`"success"\`:
+   - The intended action was executed successfully.
+   - Examples:
+     - Player successfully picks up the key from the ground.
+     - Player successfully moves north.
+     - Player successfully talks to the merchant and buys the potion.
    - You may describe changes reflected in \`after_state\`.
 
-- If \`resolvedAction.outcome.result\` is \`"no_change"\`:
-   - Do **not** describe new locations, items, NPCs, or state changes.
+- If \`resolvedAction.outcome.result\` is \`"failure"\`:
+   - The intended action was executed but the intent was not achieved.
+   - Examples:
+     - Player tries to move north, but there is a locked door preventing them from doing so.
+     - Player lunges at the guard, but he blocks the attack.
+     - Player attempts to pickpocket the merchant, but he notices their hands.
    - Use \`resolvedAction.outcome.reasons\` (if present) to explain why.
 
-- If \`resolvedAction.outcome.result\` is \`"invalid"\`:
+- If \`resolvedAction.outcome.result\` is \`"error"\`:
+   - The intended action could not be performed by the game engine.
+   - Examples:
+     - Player tries to talk to an NPC that is not present.
+     - Player tries to move in a direction that is unparsable.
+     - Player tries to perform an action that is not recognized.
    - Do **not** describe new information.
    - Keep narration minimal and neutral.
  

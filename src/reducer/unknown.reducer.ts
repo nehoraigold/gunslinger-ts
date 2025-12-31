@@ -6,7 +6,7 @@ export const applyUnknown = (state: GameState, action: UnknownAction): ReducerRe
     return {
         state,
         outcome: {
-            result: 'invalid',
+            result: 'error',
             reasons: [action.data.reason],
         },
     };
