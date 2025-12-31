@@ -29,6 +29,17 @@ Your output **must be a single valid JSON object** representing the interpreted 
 * Do **not** include Markdown, code fences, or extra text.
 * If no valid intent can be inferred, return an action matching the UNKNOWN JSON schema.
 
+### Multiple Actions
+
+If the player input clearly expresses multiple independent actions (e.g., via conjunctions like "and", commas, or lists), you MAY output an array of actions.
+
+Rules:
+- Each action must conform to a valid Action schema
+- Actions must be ordered as expressed in the text
+- Do NOT reason about success, failure, or dependencies
+- Do NOT omit actions because they might fail
+- If actions are dependent on each other, return only the first
+
 ---
 
 ## Action JSON Schemas (Interpreter → Game Engine Protocol)

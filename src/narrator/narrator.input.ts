@@ -1,10 +1,8 @@
 import { NarratorGameState } from './narrator.state';
-import { Action } from '../action';
-import { Outcome } from '../engine';
+import { ResolvedAction } from '../action';
 
 export type NarratorInput = {
     before_state: NarratorGameState;
     after_state: NarratorGameState;
-    action: Action;
-    outcome: Outcome;
+    resolved_actions: ResolvedAction[];
 };

@@ -1,8 +1,12 @@
-import { GameState } from './game.state';
-import { WorldState } from '../domain/world';
+import { GameState } from '../src/engine';
+import { WorldState } from '../src/domain/world';
+import { RoomState } from '../src/domain/room';
+import { InventoryState } from '../src/domain/inventory';
+import { NPCState } from '../src/domain/npc';
+import { ItemState } from '../src/domain/item';
 
-export const ROOMS: WorldState['rooms'] = {
-    'room-town-square': {
+export const ROOMS: RoomState[] = [
+    {
         id: 'room-town-square',
         name: 'Town Square',
         description: 'A dusty town square with a fountain in the middle.',
@@ -14,7 +18,7 @@ export const ROOMS: WorldState['rooms'] = {
         inventoryId: 'inv-room-town-square',
         npcIds: [],
     },
-    'room-saloon': {
+    {
         id: 'room-saloon',
         name: 'The Saloon',
         description: 'A noisy saloon filled with rowdy patrons and the smell of whiskey.',
@@ -25,7 +29,7 @@ export const ROOMS: WorldState['rooms'] = {
         inventoryId: 'inv-room-saloon',
         npcIds: ['npc-bartender'],
     },
-    'room-main-street': {
+    {
         id: 'room-main-street',
         name: 'Main Street',
         description: 'The main street of town, lined with a few wooden storefronts.',
@@ -36,10 +40,10 @@ export const ROOMS: WorldState['rooms'] = {
         inventoryId: 'inv-room-main-street',
         npcIds: [],
     },
-};
+];
 
-export const INVENTORIES: WorldState['inventories'] = {
-    'inv-player': {
+export const INVENTORIES: InventoryState[] = [
+    {
         id: 'inv-player',
         items: {
             'item-revolver': 1,
@@ -47,70 +51,70 @@ export const INVENTORIES: WorldState['inventories'] = {
             'item-coin': 19,
         },
     },
-    'inv-room-town-square': {
+    {
         id: 'inv-room-town-square',
         items: {
             'item-horseshoe': 1,
             'item-coin': 1,
         },
     },
-    'inv-room-saloon': {
+    {
         id: 'inv-room-saloon',
         items: {
             'item-coin': 3,
         },
     },
-    'inv-room-main-street': {
+    {
         id: 'inv-room-main-street',
         items: {
             'item-coin': 12,
         },
     },
-    'inv-npc-bartender': {
+    {
         id: 'inv-npc-bartender',
         items: {
             'item-revolver': 1,
             'item-coin': 200,
         },
     },
-};
+];
 
-const NPCS: WorldState['npcs'] = {
-    'npc-bartender': {
+const NPCS: NPCState[] = [
+    {
         id: 'npc-bartender',
         name: 'Kennerly',
         aliases: ['barman', 'man', 'old man', 'bartender'],
         description: 'A wrinkled old man with a mustached wipes a dirty glass behind the bar.',
         inventoryId: 'inv-npc-bartender',
     },
-};
+];
 
-const ITEMS: WorldState['items'] = {
-    'item-revolver': {
+const ITEMS: ItemState[] = [
+    {
         id: 'item-revolver',
         name: 'revolver',
         aliases: ['gun', 'revolver', 'firearm'],
         description: 'A worn revolver with a sandalwood grip passed down from father to son for generations.',
     },
-    'item-bullet': {
+    {
         id: 'item-bullet',
         name: 'bullet',
         aliases: ['bullet', 'shell'],
         description: 'A silver bullet made for old revolvers. Hard to come by, harder to recover from.',
     },
-    'item-horseshoe': {
+    {
         id: 'item-horseshoe',
         name: 'horseshoe',
         aliases: [],
         description: 'An iron horseshoe, bent and mangled, said to offer good luck to its bearer.',
     },
-    'item-coin': {
+    {
         id: 'item-coin',
         name: 'coin',
         aliases: ['gold', 'money'],
         description: 'An old coin made of gold.',
     },
-};
+];
 
 export const INITIAL_PLAYER = {
     name: 'Roland',
@@ -119,11 +123,14 @@ export const INITIAL_PLAYER = {
     currentRoomId: 'room-town-square',
 };
 
+const toMap = <T extends { id: string }>(arr: T[]): Record<string, T> =>
+    Object.fromEntries(arr.map((item) => [item.id, item]));
+
 export const INITIAL_WORLD: WorldState = {
-    rooms: ROOMS,
-    inventories: INVENTORIES,
-    items: ITEMS,
-    npcs: NPCS,
+    rooms: toMap(ROOMS),
+    inventories: toMap(INVENTORIES),
+    items: toMap(ITEMS),
+    npcs: toMap(NPCS),
 };
 
 export const INITIAL_GAME_STATE: GameState = {
@@ -131,6 +138,6 @@ export const INITIAL_GAME_STATE: GameState = {
     world: INITIAL_WORLD,
 };
 
-export const initializeGameState = (): GameState => {
+export const testGameState = (): GameState => {
     return INITIAL_GAME_STATE;
 };

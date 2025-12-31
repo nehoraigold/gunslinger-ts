@@ -3,12 +3,12 @@ import { ToolLoopAgent } from 'ai';
 import { Action, ActionType } from '../action';
 import { GameState } from '../engine';
 import { selectInterpreterGameState } from './interpreter.selector';
-import { AvailableLLMs } from '../availableLLMs';
 import INSTRUCTIONS from './interpreter.instructions';
+import { AvailableLLMs } from '../availableLLMs';
 
-const INTERPRETER_MODEL: AvailableLLMs = 'qwen3:8b';
+const INTERPRETER_MODEL: AvailableLLMs = 'gpt-oss:20b';
 
-export class ActionInterpreter {
+export class Interpreter {
     protected agent: ToolLoopAgent;
 
     constructor() {
@@ -19,7 +19,7 @@ export class ActionInterpreter {
         });
     }
 
-    public async parse(prompt: string, state: GameState): Promise<Action> {
+    public async parse(prompt: string, state: GameState): Promise<Action | Action[]> {
         try {
             const interpreterState = selectInterpreterGameState(state);
             const input = JSON.stringify({

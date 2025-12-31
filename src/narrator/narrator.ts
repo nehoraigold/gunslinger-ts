@@ -1,6 +1,6 @@
 import { ollama } from 'ai-sdk-ollama';
 import { ToolLoopAgent } from 'ai';
-import { Action } from '../action';
+import { ResolvedAction } from '../action';
 import { GameState, Outcome } from '../engine';
 import INSTRUCTIONS from './narrator.instructions';
 import { NarratorInput } from './narrator.input';
@@ -23,15 +23,13 @@ export class Narrator {
     public async narrate(
         beforeState: GameState,
         afterState: GameState,
-        action: Action,
-        outcome: Outcome,
+        resolvedActions: ResolvedAction[],
     ): Promise<string> {
         try {
             const input: NarratorInput = {
                 before_state: selectNarratorGameState(beforeState),
                 after_state: selectNarratorGameState(afterState),
-                action,
-                outcome,
+                resolved_actions: resolvedActions,
             };
             return this.sendToAgent(JSON.stringify(input));
         } catch (e: any) {

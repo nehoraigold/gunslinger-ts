@@ -1,48 +1,85 @@
 //region imports
 import ora from 'ora';
-import { ActionType } from './action';
-import { applyAction, initGameState } from './engine';
-import { getUserInput } from './utils';
-import { ActionInterpreter } from './interpreter';
+import { Action, ActionType, ResolvedAction } from './action';
+import { applyAction, GameState, initGameState } from './engine';
+import { formatToHeader, getUserInput } from './utils';
+import { Interpreter } from './interpreter';
 import { Narrator } from './narrator';
-
+import { RoomState } from './domain/room';
 //endregion
 
 async function main() {
-    const interpreter = new ActionInterpreter();
+    const interpreter = new Interpreter();
     const narrator = new Narrator();
     let spinner = ora({ spinner: 'simpleDots' });
     let state = initGameState();
 
     spinner = spinner.start();
-    let text = await narrator.narrate(state, state, { type: ActionType.START }, { result: 'success' });
+    let text = await narrator.narrate(state, state, [
+        {
+            action: { type: ActionType.START },
+            outcome: { result: 'success' },
+        },
+    ]);
     spinner.stop();
 
+    console.log(formatToHeader(getCurrentRoom(state).name));
     console.log(text);
 
     while (true) {
         console.log('');
         const input = await getUserInput('');
         spinner = spinner.start();
-        const action = await interpreter.parse(input, state);
+        const actions = [await interpreter.parse(input, state)].flat();
         spinner.stop();
 
-        console.log('action:', JSON.stringify(action));
+        console.log('action:', JSON.stringify(actions));
 
-        if (action.type === ActionType.QUIT) {
+        if (actions.some((action) => action.type === ActionType.QUIT)) {
             break;
         }
-        const { state: newState, outcome } = applyAction(state, action);
 
-        console.log('outcome:', JSON.stringify(outcome));
+        const { state: newState, resolvedActions } = resolveActions(state, actions);
+
+        console.log('resolvedActions:', JSON.stringify(resolvedActions));
 
         spinner = spinner.start();
-        text = await narrator.narrate(state, newState, action, outcome);
+        text = await narrator.narrate(state, newState, resolvedActions);
         spinner.stop();
 
+        if (
+            resolvedActions.some(
+                ({ action, outcome }) => action.type === ActionType.MOVE && outcome.result === 'success',
+            )
+        ) {
+            console.log(formatToHeader(getCurrentRoom(newState).name));
+        }
         console.log(text);
         state = newState;
     }
 }
+
+const resolveActions = (
+    state: GameState,
+    actions: Action[],
+): { state: GameState; resolvedActions: ResolvedAction[] } => {
+    let newState = state;
+    const resolvedActions: ResolvedAction[] = [];
+    for (const action of actions) {
+        const { state: nextState, outcome } = applyAction(newState, action);
+        newState = nextState;
+        resolvedActions.push({ action, outcome });
+        if (outcome.result === 'invalid') {
+            // if invalid, do not process any further actions
+            break;
+        }
+    }
+    return {
+        state: newState,
+        resolvedActions,
+    };
+};
+
+const getCurrentRoom = ({ world, player }: GameState): RoomState => world.rooms[player.currentRoomId];
 
 main();

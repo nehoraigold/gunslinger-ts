@@ -1,5 +1,5 @@
 export * from './applyAction';
 export * from './game.state';
-export * from './initializeGameState';
+export * from '../../test/testGameState';
 export * from './initGameState';
-export * from './outcome';
+export * from '../action/outcome';

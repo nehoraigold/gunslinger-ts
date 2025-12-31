@@ -2,8 +2,8 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import { Action, ActionType, UnknownAction } from '../src/action';
-import { ActionInterpreter } from '../src/interpreter';
-import { GameState, initializeGameState } from '../src/engine';
+import { Interpreter } from '../src/interpreter';
+import { GameState, testGameState } from '../src/engine';
 
 type InterpreterTestCase = {
     name: string;
@@ -12,7 +12,7 @@ type InterpreterTestCase = {
     expected: Partial<Action>;
 };
 
-const state = initializeGameState();
+const state = testGameState();
 
 const MOVE_TEST_CASES: InterpreterTestCase[] = [
     {
@@ -128,7 +128,7 @@ const TRANSFER_TEST_CASES: InterpreterTestCase[] = [
 ];
 
 describe('ActionInterpreter', () => {
-    const interpreter = new ActionInterpreter();
+    const interpreter = new Interpreter();
     describe('parse', () => {
         describe('move action', () => {
             MOVE_TEST_CASES.forEach(({ name, expected, prompt, state }) => {
