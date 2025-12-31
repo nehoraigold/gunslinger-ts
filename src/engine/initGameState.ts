@@ -6,10 +6,11 @@ import { GameState } from './game.state';
 import { ItemState, itemTableEntryToState } from '../domain/item';
 import { addEmptyRoomInventories, InventoryState, inventoryTableEntryToState } from '../domain/inventory';
 import { NPCState, npcTableEntryToState } from '../domain/npc';
-import { RoomState, roomTableEntryToState } from '../domain/room';
+import { RoomState, RoomTableEntry, roomTableEntryToState } from '../domain/room';
 import { PlayerState } from '../domain/player';
 import { playerTableEntryToState } from '../domain/player/player.table';
 import { WorldState } from '../domain/world';
+import { ExitState, exitTableEntryToState } from '../domain/exit';
 
 const CONTENT_FOLDER = 'content';
 
@@ -36,12 +37,17 @@ const initializeInventories = (rooms: RoomState[]): InventoryState[] => {
     return addEmptyRoomInventories(inventories, rooms);
 };
 
+const initializeExits = (): ExitState[] => {
+    return initializeFromCsvFile('exits.csv', exitTableEntryToState);
+};
+
 const initializeNpcs = (): NPCState[] => {
     return initializeFromCsvFile('npcs.csv', npcTableEntryToState);
 };
 
-const initializeRooms = (): RoomState[] => {
-    return initializeFromCsvFile('rooms.csv', roomTableEntryToState);
+const initializeRooms = (exits: ExitState[]): RoomState[] => {
+    const convert = (data: RoomTableEntry): RoomState => roomTableEntryToState(data, exits);
+    return initializeFromCsvFile('rooms.csv', convert);
 };
 
 const initializePlayer = (): PlayerState => {
@@ -50,12 +56,15 @@ const initializePlayer = (): PlayerState => {
 
 export const initGameState = (): GameState => {
     const items = initializeItems();
-    const rooms = initializeRooms();
+    const exits = initializeExits();
+    const rooms = initializeRooms(exits);
     const inventories = initializeInventories(rooms);
     const npcs = initializeNpcs();
     const player = initializePlayer();
 
     const world: WorldState = {
+        flags: {},
+        exits: fromArrayToMap(exits),
         rooms: fromArrayToMap(rooms),
         inventories: fromArrayToMap(inventories),
         items: fromArrayToMap(items),

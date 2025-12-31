@@ -31,9 +31,8 @@ async function main() {
         const actions = [await interpreter.parse(input, state)].flat();
         spinner.stop();
 
-        console.log('action:', JSON.stringify(actions, null, 2));
-
         if (actions.some((action) => action.type === ActionType.QUIT)) {
+            console.log('Goodbye!');
             break;
         }
 

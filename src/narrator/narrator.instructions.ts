@@ -143,7 +143,7 @@ Adapt your narration based on \`resolvedAction.action.type\`.
    - Focus on transition or familiar atmosphere.
    - Length: **1–2 sentences**
 
-#### On \`no_change\` or \`invalid\`:
+#### On \`failure\` or \`error\`:
 
 - Do not describe a new location.
 - Reflect obstruction, stasis, or failed movement.
@@ -160,7 +160,7 @@ Adapt your narration based on \`resolvedAction.action.type\`.
 - Do not describe emotional significance.
 - Length: **1–2 sentences**
 
-#### On \`no_change\` or \`invalid\`:
+#### On \`failure\` or \`error\`:
 
 - Reflect lack of effect or interruption.
 - Do not explain mechanics.

@@ -1,6 +1,7 @@
 import { Direction } from '../action';
 import { GameState } from '../engine';
 import { ReducerResult } from './reducer.result';
+import { evaluateCondition } from '../engine/condition';
 
 export const applyMove = (state: GameState, direction: Direction): ReducerResult => {
     const { player, world } = state;
@@ -16,8 +17,8 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
         };
     }
 
-    const exit = currentRoom.exits[direction];
-    if (!exit) {
+    const exitId = currentRoom.exits[direction];
+    if (!exitId) {
         return {
             state,
             outcome: {
@@ -27,7 +28,40 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
         };
     }
 
-    const nextRoom = world.rooms[exit.toRoomId];
+    const exitState = world.exits[exitId];
+    if (!exitState) {
+        return {
+            state,
+            outcome: {
+                result: 'error',
+                reasons: ['exit_not_found'],
+            },
+        };
+    }
+
+    const isVisible = evaluateCondition(state, exitState.visibility);
+    if (!isVisible) {
+        return {
+            state,
+            outcome: {
+                result: 'failure',
+                reasons: ['exit_not_visible'],
+            },
+        };
+    }
+
+    const isEligible = evaluateCondition(state, exitState.eligibility);
+    if (!isEligible) {
+        return {
+            state,
+            outcome: {
+                result: 'failure',
+                reasons: ['player_not_eligible_for_exit'],
+            },
+        };
+    }
+
+    const nextRoom = world.rooms[exitState.toRoomId];
     if (!nextRoom) {
         return {
             state,
@@ -42,13 +76,13 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
         ...state,
         player: {
             ...player,
-            currentRoomId: exit.toRoomId,
+            currentRoomId: exitState.toRoomId,
         },
         world: {
             ...world,
             rooms: {
                 ...world.rooms,
-                [exit.toRoomId]: {
+                [nextRoom.id]: {
                     ...nextRoom,
                     visited: true,
                 },

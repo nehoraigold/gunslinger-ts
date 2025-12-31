@@ -39,7 +39,11 @@ export const selectNarratorGameState = (state: GameState): NarratorGameState => 
             };
         });
     const exits = Object.fromEntries(
-        Object.entries(room.exits).map(([direction, exitState]) => {
+        Object.entries(room.exits).map(([direction, exitId]) => {
+            const exitState = world.exits[exitId];
+            if (!exitState) {
+                return [direction, undefined];
+            }
             return [direction, world.rooms[exitState.toRoomId].name];
         }),
     );

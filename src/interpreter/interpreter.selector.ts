@@ -1,5 +1,8 @@
 import { GameState } from '../engine';
 import { InterpreterState, InterpreterItemState } from './interpreter.state';
+import { RoomState } from '../domain/room';
+import { Direction } from 'node:tty';
+import { evaluateCondition } from '../engine/condition';
 
 const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterItemState[] => {
     const { inventories, items } = state.world;
@@ -22,6 +25,21 @@ const inventoryToVisibleItems = (inventoryId: string, state: GameState): Interpr
         .filter((item) => !!item);
 };
 
+const getVisibleExits = (room: RoomState, gameState: GameState): Partial<Record<Direction, string>> => {
+    return Object.fromEntries(
+        Object.entries(room.exits).map(([direction, exitId]) => {
+            const exitState = gameState.world.exits[exitId];
+            if (!exitState) {
+                return [direction, undefined];
+            }
+            if (!evaluateCondition(gameState, exitState.visibility)) {
+                return [direction, undefined];
+            }
+            return [direction, gameState.world.rooms[exitState.toRoomId].name];
+        }),
+    );
+};
+
 export const selectInterpreterGameState = (gameState: GameState): InterpreterState => {
     const { player, world } = gameState;
     const room = world.rooms[player.currentRoomId];
@@ -40,11 +58,7 @@ export const selectInterpreterGameState = (gameState: GameState): InterpreterSta
             aliases: npc.aliases,
             items: npc.inventoryId ? inventoryToVisibleItems(npc.inventoryId, gameState) : [],
         }));
-    const visibleExits = Object.fromEntries(
-        Object.entries(room.exits).map(([direction, exitState]) => {
-            return [direction, world.rooms[exitState.toRoomId].name];
-        }),
-    );
+    const visibleExits = getVisibleExits(room, gameState);
 
     return {
         location: {

@@ -7,12 +7,7 @@ export type InventoryTableEntry = {
 };
 
 const itemsStringToMap = (items: string): Record<string, number> => {
-    return Object.fromEntries(
-        items.split(';').map((itemQtyPair) => {
-            const [id, qty] = itemQtyPair.trim().split(':');
-            return [id.trim(), parseInt(qty.trim(), 10)];
-        }),
-    );
+    return JSON.parse(items);
 };
 
 export const inventoryTableEntryToState = (entry: InventoryTableEntry): InventoryState => {
