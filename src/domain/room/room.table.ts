@@ -6,7 +6,7 @@ export type RoomTableEntry = {
     id: string;
     name: string;
     description: string;
-    inventory_id: string;
+    inventory_id?: string;
     npc_ids: string;
 } & {
     [K in `${Direction}_exit`]?: string;
@@ -31,13 +31,16 @@ const exitColumnsToMap = (entry: RoomTableEntry): RoomState['exits'] => {
     return exits;
 };
 
+export const roomIdToInventoryId = (roomId: string): string => `${roomId}_inventory`;
+
 export const roomTableEntryToState = (entry: RoomTableEntry): RoomState => {
+    const inventoryId = entry.inventory_id ?? roomIdToInventoryId(entry.id);
     return {
         id: entry.id,
         name: entry.name,
         description: entry.description,
         npcIds: entry.npc_ids?.split(';') ?? [],
-        inventoryId: entry.inventory_id ?? undefined,
+        inventoryId,
         visited: false,
         exits: exitColumnsToMap(entry),
     };

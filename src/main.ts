@@ -1,4 +1,3 @@
-//region imports
 import ora from 'ora';
 import { Action, ActionType, ResolvedAction } from './action';
 import { applyAction, GameState, initGameState } from './engine';
@@ -6,7 +5,6 @@ import { formatToHeader, getUserInput } from './utils';
 import { Interpreter } from './interpreter';
 import { Narrator } from './narrator';
 import { RoomState } from './domain/room';
-//endregion
 
 async function main() {
     const interpreter = new Interpreter();
@@ -69,8 +67,8 @@ const resolveActions = (
         const { state: nextState, outcome } = applyAction(newState, action);
         newState = nextState;
         resolvedActions.push({ action, outcome });
-        if (outcome.result === 'error') {
-            // if invalid, do not process any further actions
+        if (outcome.result !== 'success') {
+            // if unsuccessful, do not process any further actions
             break;
         }
     }

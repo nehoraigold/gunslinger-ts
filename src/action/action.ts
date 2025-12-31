@@ -1,7 +1,5 @@
-// region imports
 import { Direction } from './direction';
 import { ActionType } from './action.type';
-// endregion
 
 interface IAction {
     type: ActionType;

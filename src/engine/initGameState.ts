@@ -1,9 +1,10 @@
 import path from 'path';
 import { readFileSync } from 'fs';
 import Papa from 'papaparse';
+
 import { GameState } from './game.state';
 import { ItemState, itemTableEntryToState } from '../domain/item';
-import { InventoryState, inventoryTableEntryToState } from '../domain/inventory';
+import { addEmptyRoomInventories, InventoryState, inventoryTableEntryToState } from '../domain/inventory';
 import { NPCState, npcTableEntryToState } from '../domain/npc';
 import { RoomState, roomTableEntryToState } from '../domain/room';
 import { PlayerState } from '../domain/player';
@@ -30,8 +31,9 @@ const initializeItems = (): ItemState[] => {
     return initializeFromCsvFile('items.csv', itemTableEntryToState);
 };
 
-const initializeInventories = (): InventoryState[] => {
-    return initializeFromCsvFile('inventories.csv', inventoryTableEntryToState);
+const initializeInventories = (rooms: RoomState[]): InventoryState[] => {
+    const inventories = initializeFromCsvFile('inventories.csv', inventoryTableEntryToState);
+    return addEmptyRoomInventories(inventories, rooms);
 };
 
 const initializeNpcs = (): NPCState[] => {
@@ -48,9 +50,9 @@ const initializePlayer = (): PlayerState => {
 
 export const initGameState = (): GameState => {
     const items = initializeItems();
-    const inventories = initializeInventories();
-    const npcs = initializeNpcs();
     const rooms = initializeRooms();
+    const inventories = initializeInventories(rooms);
+    const npcs = initializeNpcs();
     const player = initializePlayer();
 
     const world: WorldState = {
