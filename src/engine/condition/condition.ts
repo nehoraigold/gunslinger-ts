@@ -1,3 +1,5 @@
+import { ExitState } from '../../domain/exit';
+
 export type TrueCondition = { type: 'true' };
 export type FalseCondition = { type: 'false' };
 
@@ -18,7 +20,7 @@ export type LacksItemCondition = {
 export type FlagCondition = {
     type: 'flag';
     flag: string;
-    value: boolean;
+    expectedValue: boolean;
 };
 
 export type AndCondition = {
@@ -31,11 +33,19 @@ export type OrCondition = {
     conditions: Condition[];
 };
 
+export type ExitStateCondition = {
+    type: 'exit_state';
+    exitId: string;
+    stateKey: keyof ExitState['state'];
+    expectedValue: unknown;
+};
+
 export type Condition =
     | AndCondition
     | OrCondition
     | HasItemCondition
     | LacksItemCondition
+    | ExitStateCondition
     | FlagCondition
     | TrueCondition
     | FalseCondition;

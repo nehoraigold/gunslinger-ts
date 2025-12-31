@@ -1,6 +1,7 @@
 import {
     AndCondition,
     Condition,
+    ExitStateCondition,
     FalseCondition,
     FlagCondition,
     HasItemCondition,
@@ -27,6 +28,8 @@ export const evaluateCondition = (state: GameState, condition: Condition): Condi
             return evaluateLacksItem(state, condition);
         case 'flag':
             return evaluateFlag(state, condition);
+        case 'exit_state':
+            return evaluateExitState(state, condition);
     }
 };
 
@@ -156,10 +159,33 @@ const evaluateLacksItem = (state: GameState, condition: LacksItemCondition): Con
 };
 
 const evaluateFlag = ({ world }: GameState, condition: FlagCondition): ConditionResult => {
-    const { flag, value } = condition;
-    const ok = world.flags[flag] === value;
+    const { flag, expectedValue } = condition;
+    const ok = world.flags[flag] === expectedValue;
     return {
         ok,
         reasons: ok ? [] : [{ condition, message: world.flags[flag] ? 'flag_true' : 'flag_false' }],
+    };
+};
+
+const evaluateExitState = ({ world }: GameState, condition: ExitStateCondition): ConditionResult => {
+    const exit = world.exits[condition.exitId];
+    const actualValue = exit.state[condition.stateKey];
+    const ok = actualValue === condition.expectedValue;
+    return {
+        ok,
+        reasons: ok
+            ? []
+            : [
+                  {
+                      condition,
+                      message: 'incorrect_exit_state',
+                      context: {
+                          exitType: exit.type,
+                          stateKey: condition.stateKey,
+                          expected: condition.expectedValue,
+                          actual: actualValue,
+                      },
+                  },
+              ],
     };
 };
