@@ -15,7 +15,8 @@ async function main() {
     let text = await narrator.narrate(state, state, [
         {
             action: { type: ActionType.START },
-            decision: { outcome: { result: 'success' } },
+            outcome: { result: 'success' },
+            effects: [],
         },
     ]);
     spinner.stop();
@@ -41,7 +42,7 @@ async function main() {
         for (const action of actions) {
             const decision = decide(nextState, action);
             nextState = applyEffects(nextState, decision.effects ?? []);
-            events.push({ action, decision });
+            events.push({ action, ...decision });
         }
 
         console.log('events:', JSON.stringify(events, null, 2));
@@ -50,11 +51,7 @@ async function main() {
         text = await narrator.narrate(state, nextState, events);
         spinner.stop();
 
-        if (
-            events.some(
-                ({ action, decision }) => action.type === ActionType.MOVE && decision.outcome.result === 'success',
-            )
-        ) {
+        if (events.some(({ action, outcome }) => action.type === ActionType.MOVE && outcome.result === 'success')) {
             console.log(formatToHeader(getCurrentRoom(nextState).name));
         }
         console.log(text);

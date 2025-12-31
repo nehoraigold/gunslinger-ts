@@ -1,7 +1,8 @@
-import { Action } from './action';
-import { Decision } from './decision';
+import { Action, Outcome } from './action';
+import { Effect } from './effect';
 
 export type Event = {
     action: Action;
-    decision: Decision;
+    outcome: Outcome;
+    effects?: Effect[];
 };

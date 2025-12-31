@@ -13,7 +13,6 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
                 result: 'error',
                 reasons: [{ message: 'current_room_not_found' }],
             },
-            effects: [],
         };
     }
 
@@ -24,7 +23,6 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
                 result: 'failure',
                 reasons: [{ message: 'no_exit' }],
             },
-            effects: [],
         };
     }
 
@@ -35,7 +33,6 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
                 result: 'error',
                 reasons: [{ message: 'exit_not_found' }],
             },
-            effects: [],
         };
     }
 
@@ -46,7 +43,6 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
                 result: 'failure',
                 reasons: isVisible.reasons,
             },
-            effects: [],
         };
     }
 
@@ -57,7 +53,6 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
                 result: 'failure',
                 reasons: isEligible.reasons,
             },
-            effects: [],
         };
     }
 
@@ -68,7 +63,6 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
                 result: 'error',
                 reasons: [{ message: 'next_room_not_found' }],
             },
-            effects: [],
         };
     }
 

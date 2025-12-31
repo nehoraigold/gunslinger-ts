@@ -1,7 +1,3 @@
-import { Outcome } from '../action';
-import { Effect } from '../effect';
+import { Event } from '../event';
 
-export type Decision = {
-    outcome: Outcome;
-    effects?: Effect[];
-};
+export type Decision = Omit<Event, 'action'>;

@@ -42,7 +42,6 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
                 result: 'error',
                 reasons: [{ message: 'invalid_transfer_location', context: { transferLocation: from } }],
             },
-            effects: [],
         };
     }
     const toInventoryId = getInventoryId(to, state);
@@ -53,7 +52,6 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
                 result: 'error',
                 reasons: [{ message: 'invalid_transfer_location', context: { transferLocation: to } }],
             },
-            effects: [],
         };
     }
 
@@ -64,7 +62,6 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
                 result: 'error',
                 reasons: [{ message: 'item_does_not_exist', context: { item } }],
             },
-            effects: [],
         };
     }
 
@@ -75,7 +72,6 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
                 result: 'failure',
                 reasons: [{ message: 'item_not_found_in_inventory', context: { from, item } }],
             },
-            effects: [],
         };
     }
 
@@ -91,7 +87,6 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
                     },
                 ],
             },
-            effects: [],
         };
     }
 
