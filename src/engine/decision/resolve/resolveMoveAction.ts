@@ -1,98 +1,86 @@
-import { Direction } from '../action';
-import { GameState } from '../engine';
-import { ReducerResult } from './reducer.result';
-import { evaluateCondition } from '../engine/condition';
+import { MoveAction } from '../../action';
+import { GameState } from '../../index';
+import { evaluateCondition } from '../../condition';
+import { Decision } from '../decision';
 
-export const applyMove = (state: GameState, direction: Direction): ReducerResult => {
+export const resolveMoveAction = (state: GameState, action: MoveAction): Decision => {
     const { player, world } = state;
     const currentRoom = world.rooms[player.currentRoomId];
 
     if (!currentRoom) {
         return {
-            state,
             outcome: {
                 result: 'error',
                 reasons: [{ message: 'current_room_not_found' }],
             },
+            effects: [],
         };
     }
 
-    const exitId = currentRoom.exits[direction];
+    const exitId = currentRoom.exits[action.data.direction];
     if (!exitId) {
         return {
-            state,
             outcome: {
                 result: 'failure',
                 reasons: [{ message: 'no_exit' }],
             },
+            effects: [],
         };
     }
 
     const exitState = world.exits[exitId];
     if (!exitState) {
         return {
-            state,
             outcome: {
                 result: 'error',
                 reasons: [{ message: 'exit_not_found' }],
             },
+            effects: [],
         };
     }
 
     const isVisible = evaluateCondition(state, exitState.visibility);
     if (!isVisible.ok) {
         return {
-            state,
             outcome: {
                 result: 'failure',
                 reasons: isVisible.reasons,
             },
+            effects: [],
         };
     }
 
     const isEligible = evaluateCondition(state, exitState.eligibility);
     if (!isEligible.ok) {
         return {
-            state,
             outcome: {
                 result: 'failure',
                 reasons: isEligible.reasons,
             },
+            effects: [],
         };
     }
 
     const nextRoom = world.rooms[exitState.toRoomId];
     if (!nextRoom) {
         return {
-            state,
             outcome: {
                 result: 'error',
                 reasons: [{ message: 'next_room_not_found' }],
             },
+            effects: [],
         };
     }
 
-    const newState: GameState = {
-        ...state,
-        player: {
-            ...player,
-            currentRoomId: exitState.toRoomId,
-        },
-        world: {
-            ...world,
-            rooms: {
-                ...world.rooms,
-                [nextRoom.id]: {
-                    ...nextRoom,
-                    visited: true,
-                },
-            },
-        },
-    };
     return {
-        state: newState,
         outcome: {
             result: 'success',
         },
+        effects: [
+            {
+                type: 'move_player',
+                toRoomId: exitState.toRoomId,
+            },
+        ],
     };
 };

@@ -1,4 +1,4 @@
-import { Direction } from '../../action';
+import { Direction } from '../../engine/action';
 import { RoomState } from './room.state';
 import { ExitState } from '../exit';
 

@@ -1,4 +1,4 @@
-import { Direction } from '../action';
+import { Direction } from '../engine/action';
 import { ItemState } from '../domain/item';
 
 export type NarratorGameState = {

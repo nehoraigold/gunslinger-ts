@@ -1,6 +1,5 @@
 import ora from 'ora';
-import { ActionType } from './action';
-import { GameState, initGameState, resolveActions } from './engine';
+import { ActionType, applyEffects, GameState, initGameState, decide, Event } from './engine';
 import { formatToHeader, getUserInput } from './utils';
 import { Interpreter } from './interpreter';
 import { Narrator } from './narrator';
@@ -16,7 +15,7 @@ async function main() {
     let text = await narrator.narrate(state, state, [
         {
             action: { type: ActionType.START },
-            outcome: { result: 'success' },
+            decision: { outcome: { result: 'success' } },
         },
     ]);
     spinner.stop();
@@ -36,23 +35,30 @@ async function main() {
             break;
         }
 
-        const { state: newState, resolvedActions } = resolveActions(state, actions);
+        const events: Event[] = [];
+        let nextState = state;
 
-        console.log('resolvedActions:', JSON.stringify(resolvedActions, null, 2));
+        for (const action of actions) {
+            const decision = decide(nextState, action);
+            nextState = applyEffects(nextState, decision.effects ?? []);
+            events.push({ action, decision });
+        }
+
+        console.log('events:', JSON.stringify(events, null, 2));
 
         spinner = spinner.start();
-        text = await narrator.narrate(state, newState, resolvedActions);
+        text = await narrator.narrate(state, nextState, events);
         spinner.stop();
 
         if (
-            resolvedActions.some(
-                ({ action, outcome }) => action.type === ActionType.MOVE && outcome.result === 'success',
+            events.some(
+                ({ action, decision }) => action.type === ActionType.MOVE && decision.outcome.result === 'success',
             )
         ) {
-            console.log(formatToHeader(getCurrentRoom(newState).name));
+            console.log(formatToHeader(getCurrentRoom(nextState).name));
         }
         console.log(text);
-        state = newState;
+        state = nextState;
     }
 }
 

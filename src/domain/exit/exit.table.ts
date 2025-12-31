@@ -1,6 +1,5 @@
 import { ExitState } from './exit.state';
-import { Direction } from '../../action';
-import { Condition } from '../../engine/condition';
+import { Direction, Condition } from '../../engine';
 
 export type ExitTableEntry = {
     type: string;

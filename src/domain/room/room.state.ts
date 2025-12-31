@@ -1,4 +1,4 @@
-import { Direction } from '../../action';
+import { Direction } from '../../engine/action';
 
 export interface RoomState {
     id: string;

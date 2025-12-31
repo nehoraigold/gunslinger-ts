@@ -1,6 +1,6 @@
 import { ollama } from 'ai-sdk-ollama';
 import { ToolLoopAgent } from 'ai';
-import { Action, ActionType } from '../action';
+import { Action, ActionType } from '../engine/action';
 import { GameState } from '../engine';
 import { selectInterpreterGameState } from './interpreter.selector';
 import INSTRUCTIONS from './interpreter.instructions';

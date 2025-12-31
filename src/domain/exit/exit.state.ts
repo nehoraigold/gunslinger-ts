@@ -1,5 +1,4 @@
-import { Condition } from '../../engine/condition';
-import { Direction } from '../../action';
+import { Direction, Condition } from '../../engine';
 
 export type ExitState = {
     id: string;

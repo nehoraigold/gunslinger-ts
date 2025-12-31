@@ -1,8 +1,7 @@
-import { GameState } from '../engine';
+import { GameState, evaluateCondition } from '../engine';
 import { InterpreterState, InterpreterItemState } from './interpreter.state';
 import { RoomState } from '../domain/room';
 import { Direction } from 'node:tty';
-import { evaluateCondition } from '../engine/condition';
 
 const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterItemState[] => {
     const { inventories, items } = state.world;

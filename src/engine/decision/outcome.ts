@@ -1,4 +1,4 @@
-import { Reason } from '../engine/reason';
+import { Reason } from '../reason';
 
 export type Outcome = {
     result: 'success' | 'failure' | 'error';

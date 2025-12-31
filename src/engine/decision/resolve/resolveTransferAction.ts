@@ -1,6 +1,6 @@
-import { TransferAction, TransferLocation } from '../action';
-import { GameState } from '../engine';
-import { ReducerResult } from './reducer.result';
+import { TransferAction, TransferLocation } from '../../action';
+import { GameState } from '../../game.state';
+import { Decision } from '../decision';
 
 const getInventoryId = (transferLocation: TransferLocation, { player, world }: GameState): string => {
     if (transferLocation === 'player') {
@@ -30,7 +30,7 @@ const getItemId = (itemName: string, { world }: GameState): string => {
     return Object.values(world.items).find(({ name }) => name === itemName)?.id || '';
 };
 
-export const applyTransfer = (state: GameState, action: TransferAction): ReducerResult => {
+export const resolveTransferAction = (state: GameState, action: TransferAction): Decision => {
     const { item, from, to, quantity } = action.data;
     const inventories = state.world.inventories;
 
@@ -38,51 +38,50 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
     const source = inventories[fromInventoryId];
     if (!source) {
         return {
-            state,
             outcome: {
                 result: 'error',
                 reasons: [{ message: 'invalid_transfer_location', context: { transferLocation: from } }],
             },
+            effects: [],
         };
     }
     const toInventoryId = getInventoryId(to, state);
     const target = inventories[toInventoryId];
     if (!target) {
         return {
-            state,
             outcome: {
                 result: 'error',
                 reasons: [{ message: 'invalid_transfer_location', context: { transferLocation: to } }],
             },
+            effects: [],
         };
     }
 
     const itemId = getItemId(item, state);
     if (!itemId) {
         return {
-            state,
             outcome: {
                 result: 'error',
                 reasons: [{ message: 'item_does_not_exist', context: { item } }],
             },
+            effects: [],
         };
     }
 
     const actualQuantity = source.items[itemId];
     if (!actualQuantity) {
         return {
-            state,
             outcome: {
                 result: 'failure',
                 reasons: [{ message: 'item_not_found_in_inventory', context: { from, item } }],
             },
+            effects: [],
         };
     }
 
     const expectedQuantity = quantity ?? 1;
     if (!expectedQuantity || actualQuantity < expectedQuantity) {
         return {
-            state,
             outcome: {
                 result: 'failure',
                 reasons: [
@@ -92,6 +91,7 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
                     },
                 ],
             },
+            effects: [],
         };
     }
 
@@ -124,9 +124,22 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
     };
 
     return {
-        state: newState,
         outcome: {
             result: 'success',
         },
+        effects: [
+            {
+                type: 'set_item_quantity',
+                inventoryId: fromInventoryId,
+                itemId,
+                quantity: newSourceItemQty,
+            },
+            {
+                type: 'set_item_quantity',
+                inventoryId: toInventoryId,
+                itemId,
+                quantity: newTargetItemQty,
+            },
+        ],
     };
 };
