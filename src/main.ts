@@ -1,6 +1,6 @@
 import ora from 'ora';
-import { Action, ActionType, ResolvedAction } from './action';
-import { applyAction, GameState, initGameState } from './engine';
+import { ActionType } from './action';
+import { GameState, initGameState, resolveActions } from './engine';
 import { formatToHeader, getUserInput } from './utils';
 import { Interpreter } from './interpreter';
 import { Narrator } from './narrator';
@@ -55,27 +55,6 @@ async function main() {
         state = newState;
     }
 }
-
-const resolveActions = (
-    state: GameState,
-    actions: Action[],
-): { state: GameState; resolvedActions: ResolvedAction[] } => {
-    let newState = state;
-    const resolvedActions: ResolvedAction[] = [];
-    for (const action of actions) {
-        const { state: nextState, outcome } = applyAction(newState, action);
-        newState = nextState;
-        resolvedActions.push({ action, outcome });
-        if (outcome.result !== 'success') {
-            // if unsuccessful, do not process any further actions
-            break;
-        }
-    }
-    return {
-        state: newState,
-        resolvedActions,
-    };
-};
 
 const getCurrentRoom = ({ world, player }: GameState): RoomState => world.rooms[player.currentRoomId];
 

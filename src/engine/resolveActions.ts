@@ -1,9 +1,30 @@
 import { GameState } from './game.state';
-import { Action, ActionType } from '../action';
+import { Action, ActionType, ResolvedAction } from '../action';
 import { applyMove, applyTransfer, ReducerResult } from '../reducer';
 import { applyUnknown } from '../reducer/unknown.reducer';
 
-export const applyAction = (state: GameState, action: Action): ReducerResult => {
+export const resolveActions = (
+    state: GameState,
+    actions: Action[],
+): { state: GameState; resolvedActions: ResolvedAction[] } => {
+    let newState = state;
+    const resolvedActions: ResolvedAction[] = [];
+    for (const action of actions) {
+        const { state: nextState, outcome } = resolveAction(newState, action);
+        newState = nextState;
+        resolvedActions.push({ action, outcome });
+        if (outcome.result !== 'success') {
+            // if unsuccessful, do not process any further actions
+            break;
+        }
+    }
+    return {
+        state: newState,
+        resolvedActions,
+    };
+};
+
+const resolveAction = (state: GameState, action: Action): ReducerResult => {
     switch (action.type) {
         case ActionType.MOVE:
             return applyMove(state, action.data.direction);

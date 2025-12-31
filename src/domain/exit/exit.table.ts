@@ -5,6 +5,7 @@ import { Condition } from '../../engine/condition';
 export type ExitTableEntry = {
     from_room_id: string;
     direction: string;
+    type: ExitState['type'];
     to_room_id: string;
     visibility_condition: string;
     eligibility_condition: string;
@@ -23,6 +24,7 @@ const exitId = (fromRoomId: string, toRoomId: string): string => `${fromRoomId}_
 export const exitTableEntryToState = (entry: ExitTableEntry): ExitState => {
     return {
         id: exitId(entry.from_room_id, entry.to_room_id),
+        type: entry.type,
         fromRoomId: entry.from_room_id,
         direction: entry.direction as Direction,
         toRoomId: entry.to_room_id,
