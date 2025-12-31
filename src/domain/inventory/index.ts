@@ -1,2 +1,2 @@
-export * from './inventory.state';
+export * from './inventory';
 export * from './inventory.table';

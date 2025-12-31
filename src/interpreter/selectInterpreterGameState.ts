@@ -1,30 +1,37 @@
-import { GameState, evaluateCondition } from '../engine';
-import { InterpreterState, InterpreterItemState } from './interpreter.state';
-import { RoomState } from '../domain/room';
-import { Direction } from 'node:tty';
+import { GameState, evaluateCondition, Direction } from '../engine';
+import { InterpreterState, InterpreterItemState, InterpreterInventory, InterpreterNPCState } from './interpreter.state';
+import { Room } from '../domain/room';
 
-const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterItemState[] => {
+const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterInventory => {
     const { inventories, items } = state.world;
     const inventory = inventories[inventoryId];
     if (!inventory) {
-        return [];
+        return {
+            id: inventoryId,
+            items: [],
+        };
     }
-    return Object.entries(inventory.items)
+    const visibleItems = Object.entries(inventory.items)
         .map(([itemId, qty]): InterpreterItemState | null => {
             const item = items[itemId];
             if (!item) {
                 return null;
             }
             return {
+                id: item.id,
                 name: item.name,
                 aliases: item.aliases,
                 quantity: qty,
             };
         })
         .filter((item) => !!item);
+    return {
+        id: inventoryId,
+        items: visibleItems,
+    };
 };
 
-const getVisibleExits = (room: RoomState, gameState: GameState): Partial<Record<Direction, string>> => {
+const getVisibleExits = (room: Room, gameState: GameState): Partial<Record<Direction, string>> => {
     return Object.fromEntries(
         Object.entries(room.exits).map(([direction, exitId]) => {
             const exitState = gameState.world.exits[exitId];
@@ -51,23 +58,29 @@ export const selectInterpreterGameState = (gameState: GameState): InterpreterSta
     const inventory = inventoryToVisibleItems(player.inventoryId, gameState);
     const visibleItems = inventoryToVisibleItems(room.inventoryId, gameState);
 
-    const visibleNPCs = room.npcIds
+    const visibleNPCs: InterpreterNPCState[] = room.npcIds
         .map((npcId) => world.npcs[npcId])
         .map((npc) => ({
+            id: npc.id,
             name: npc.name,
             aliases: npc.aliases,
-            items: npc.inventoryId ? inventoryToVisibleItems(npc.inventoryId, gameState) : [],
+            inventory: inventoryToVisibleItems(npc.inventoryId, gameState),
         }));
     const visibleExits = getVisibleExits(room, gameState);
 
     return {
-        location: {
+        room: {
+            id: room.id,
             name: room.name,
             description: room.description,
-            visibleNPCs,
-            visibleItems,
-            visibleExits,
+            inventory: visibleItems,
         },
-        inventory,
+        visibleNPCs,
+        visibleExits,
+        player: {
+            name: player.name,
+            description: player.description,
+            inventory: inventory,
+        },
     };
 };

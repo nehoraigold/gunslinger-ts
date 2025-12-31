@@ -1,4 +1,4 @@
-import { PlayerState } from './player.state';
+import { Player } from './player';
 
 export type PlayerTableEntry = {
     name: string;
@@ -7,7 +7,7 @@ export type PlayerTableEntry = {
     current_room_id: string;
 };
 
-export const playerTableEntryToState = (entry: PlayerTableEntry): PlayerState => {
+export const playerTableEntryToState = (entry: PlayerTableEntry): Player => {
     return {
         name: entry.name,
         description: entry.description,

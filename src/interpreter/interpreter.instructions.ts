@@ -51,6 +51,7 @@ The Interpreter emits **human-legible, engine-resolved JSON**. The game engine i
 * All actions must include a \`type\` field.
 * Only actions listed below are valid.
 * The Interpreter may only reference **entities present in the supplied game state**.
+* When referencing items, NPCs, rooms, or inventories, you MUST use the provided \`id\` fields. Do NOT invent IDs and do NOT use names in action output.
 * The Interpreter must never invent items, NPCs, inventories, or locations.
 
 ### Critical Rule: Intent vs Validity
@@ -109,7 +110,7 @@ Rule validation, success, and failure are the sole responsibility of the game en
 {
   "type": "interact",
   "data": {
-    "with": "<entity name>",
+    "with": "<entity id>",
     "interaction": "<freeform verb>"
   }
 }
@@ -129,9 +130,9 @@ Rule validation, success, and failure are the sole responsibility of the game en
 {
   "type": "transfer",
   "data": {
-    "item": "<item name>",
-    "from": "player" | "room" | "npc:<name>",
-    "to": "player" | "room" | "npc:<name>",
+    "itemId": "<item id>",
+    "fromInventoryId": "<source inventory id>",
+    "toInventoryId": "<target inventory id>",
     "quantity": <number>
   }
 }

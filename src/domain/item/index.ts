@@ -1,2 +1,2 @@
-export * from './item.state';
+export * from './item';
 export * from './item.table';

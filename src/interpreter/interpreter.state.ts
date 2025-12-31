@@ -1,23 +1,34 @@
-import { ItemState } from '../domain/item';
-import { NPCState } from '../domain/npc';
-import { Direction } from 'node:tty';
+import { Item } from '../domain/item';
+import { Npc } from '../domain/npc';
+import { Direction } from '../engine';
 
-export type InterpreterItemState = Omit<ItemState, 'id' | 'description'> & {
+export type InterpreterItemState = Omit<Item, 'description' | 'uses'> & {
     quantity: number;
 };
 
-export type InterpreterNPCState = Omit<NPCState, 'id' | 'description' | 'inventoryId'> & {
+export type InterpreterNPCState = Omit<Npc, 'description' | 'inventoryId'> & {
+    inventory: InterpreterInventory;
+};
+
+export type InterpreterInventory = {
+    id: string;
     items: InterpreterItemState[];
 };
 
 export type InterpreterState = {
-    location: {
+    room: {
+        id: string;
         name: string;
         description: string;
-        visibleExits: Partial<Record<Direction, string>>;
-        visibleNPCs: InterpreterNPCState[];
-        visibleItems: InterpreterItemState[];
+        inventory: InterpreterInventory;
     };
 
-    inventory: InterpreterItemState[];
+    visibleExits: Partial<Record<Direction, string>>;
+    visibleNPCs: InterpreterNPCState[];
+
+    player: {
+        name: string;
+        description: string;
+        inventory: InterpreterInventory;
+    };
 };

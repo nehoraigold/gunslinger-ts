@@ -1,2 +1,2 @@
-export * from './npc.state';
+export * from './npc';
 export * from './npc.table';

@@ -1,9 +1,9 @@
 import ora from 'ora';
-import { ActionType, applyEffects, GameState, initGameState, decide, Event } from './engine';
+import { applyEffects, GameState, initGameState, decide, Event } from './engine';
 import { formatToHeader, getUserInput } from './utils';
 import { Interpreter } from './interpreter';
 import { Narrator } from './narrator';
-import { RoomState } from './domain/room';
+import { Room } from './domain/room';
 
 async function main() {
     const interpreter = new Interpreter();
@@ -14,7 +14,7 @@ async function main() {
     spinner = spinner.start();
     let text = await narrator.narrate(state, state, [
         {
-            action: { type: ActionType.START },
+            action: { type: 'start' },
             outcome: { result: 'success' },
             effects: [],
         },
@@ -31,7 +31,7 @@ async function main() {
         const actions = [await interpreter.parse(input, state)].flat();
         spinner.stop();
 
-        if (actions.some((action) => action.type === ActionType.QUIT)) {
+        if (actions.some((action) => action.type === 'quit')) {
             console.log('Goodbye!');
             break;
         }
@@ -43,6 +43,9 @@ async function main() {
             const decision = decide(nextState, action);
             nextState = applyEffects(nextState, decision.effects ?? []);
             events.push({ action, ...decision });
+            if (decision.outcome.result !== 'success') {
+                break;
+            }
         }
 
         console.log('events:', JSON.stringify(events, null, 2));
@@ -51,7 +54,7 @@ async function main() {
         text = await narrator.narrate(state, nextState, events);
         spinner.stop();
 
-        if (events.some(({ action, outcome }) => action.type === ActionType.MOVE && outcome.result === 'success')) {
+        if (events.some(({ action, outcome }) => action.type === 'move' && outcome.result === 'success')) {
             console.log(formatToHeader(getCurrentRoom(nextState).name));
         }
         console.log(text);
@@ -59,6 +62,6 @@ async function main() {
     }
 }
 
-const getCurrentRoom = ({ world, player }: GameState): RoomState => world.rooms[player.currentRoomId];
+const getCurrentRoom = ({ world, player }: GameState): Room => world.rooms[player.currentRoomId];
 
 main();

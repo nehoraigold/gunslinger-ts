@@ -3,14 +3,14 @@ import { readFileSync } from 'fs';
 import Papa from 'papaparse';
 
 import { GameState } from './game.state';
-import { ItemState, itemTableEntryToState } from '../domain/item';
-import { addEmptyRoomInventories, InventoryState, inventoryTableEntryToState } from '../domain/inventory';
-import { NPCState, npcTableEntryToState } from '../domain/npc';
-import { RoomState, RoomTableEntry, roomTableEntryToState } from '../domain/room';
-import { PlayerState } from '../domain/player';
+import { Item, itemTableEntryToState } from '../domain/item';
+import { addEmptyRoomInventories, Inventory, inventoryTableEntryToState } from '../domain/inventory';
+import { Npc, npcTableEntryToState } from '../domain/npc';
+import { Room, RoomTableEntry, roomTableEntryToState } from '../domain/room';
+import { Player } from '../domain/player';
 import { playerTableEntryToState } from '../domain/player/player.table';
-import { WorldState } from '../domain/world';
-import { ExitState, exitTableEntryToState } from '../domain/exit';
+import { World } from '../domain/world';
+import { Exit, exitTableEntryToState } from '../domain/exit';
 
 const CONTENT_FOLDER = 'content';
 
@@ -28,29 +28,29 @@ const fromArrayToMap = <T extends { id: string }>(entries: T[]): Record<string, 
     return Object.fromEntries(entries.map((entry) => [entry.id, entry]));
 };
 
-const initializeItems = (): ItemState[] => {
+const initializeItems = (): Item[] => {
     return initializeFromCsvFile('items.csv', itemTableEntryToState);
 };
 
-const initializeInventories = (rooms: RoomState[]): InventoryState[] => {
+const initializeInventories = (rooms: Room[]): Inventory[] => {
     const inventories = initializeFromCsvFile('inventories.csv', inventoryTableEntryToState);
     return addEmptyRoomInventories(inventories, rooms);
 };
 
-const initializeExits = (): ExitState[] => {
+const initializeExits = (): Exit[] => {
     return initializeFromCsvFile('exits.csv', exitTableEntryToState);
 };
 
-const initializeNpcs = (): NPCState[] => {
+const initializeNpcs = (): Npc[] => {
     return initializeFromCsvFile('npcs.csv', npcTableEntryToState);
 };
 
-const initializeRooms = (exits: ExitState[]): RoomState[] => {
-    const convert = (data: RoomTableEntry): RoomState => roomTableEntryToState(data, exits);
+const initializeRooms = (exits: Exit[]): Room[] => {
+    const convert = (data: RoomTableEntry): Room => roomTableEntryToState(data, exits);
     return initializeFromCsvFile('rooms.csv', convert);
 };
 
-const initializePlayer = (): PlayerState => {
+const initializePlayer = (): Player => {
     return initializeFromCsvFile('player.csv', playerTableEntryToState)[0];
 };
 
@@ -62,7 +62,7 @@ export const initGameState = (): GameState => {
     const npcs = initializeNpcs();
     const player = initializePlayer();
 
-    const world: WorldState = {
+    const world: World = {
         flags: {},
         exits: fromArrayToMap(exits),
         rooms: fromArrayToMap(rooms),

@@ -1,1 +1,1 @@
-export * from './world.state';
+export * from './world';

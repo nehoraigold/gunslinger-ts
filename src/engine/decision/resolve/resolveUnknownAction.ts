@@ -6,7 +6,7 @@ export const resolveUnknownAction = (_state: GameState, { data }: UnknownAction)
     return {
         outcome: {
             result: 'error',
-            reasons: [{ message: data.reason, context: { details: data.message } }],
+            reasons: [{ messageKey: data.reason, context: { details: data.message } }],
         },
     };
 };

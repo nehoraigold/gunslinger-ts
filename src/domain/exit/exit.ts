@@ -1,6 +1,6 @@
 import { Direction, Condition } from '../../engine';
 
-export type ExitState = {
+export type Exit = {
     id: string;
     type: string;
     fromRoomId: string;

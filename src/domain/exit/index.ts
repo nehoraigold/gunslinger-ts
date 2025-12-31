@@ -1,2 +1,2 @@
-export * from './exit.state';
+export * from './exit';
 export * from './exit.table';

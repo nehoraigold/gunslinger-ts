@@ -1,8 +1,8 @@
 import { ollama } from 'ai-sdk-ollama';
 import { ToolLoopAgent } from 'ai';
-import { Action, ActionType } from '../engine/action';
+import { Action } from '../engine';
 import { GameState } from '../engine';
-import { selectInterpreterGameState } from './interpreter.selector';
+import { selectInterpreterGameState } from './selectInterpreterGameState';
 import INSTRUCTIONS from './interpreter.instructions';
 import { AvailableLLMs } from '../availableLLMs';
 
@@ -33,7 +33,7 @@ export class Interpreter {
             return JSON.parse(response.steps[0].content[0].text);
         } catch (error: any) {
             console.error(error);
-            return { type: ActionType.UNKNOWN, data: { reason: 'unparsable', message: error.message } };
+            return { type: 'unknown', data: { reason: 'unparsable', message: error.message } };
         }
     }
 }

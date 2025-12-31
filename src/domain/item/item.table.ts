@@ -1,4 +1,4 @@
-import { ItemState } from './item.state';
+import { Item } from './item';
 
 export type ItemTableEntry = {
     id: string;
@@ -10,11 +10,12 @@ export type ItemTableEntry = {
     value: number | null;
 };
 
-export const itemTableEntryToState = (entry: ItemTableEntry): ItemState => {
+export const itemTableEntryToState = (entry: ItemTableEntry): Item => {
     return {
         id: entry.id,
         name: entry.name,
         description: entry.description,
         aliases: entry.aliases?.split(';') ?? [],
+        uses: [],
     };
 };

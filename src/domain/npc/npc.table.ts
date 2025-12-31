@@ -1,5 +1,5 @@
-import { InventoryState } from '../inventory';
-import { NPCState } from './npc.state';
+import { Inventory } from '../inventory';
+import { Npc } from './npc';
 
 export type NPCTableEntry = {
     id: string;
@@ -9,7 +9,7 @@ export type NPCTableEntry = {
     inventory_id: string;
 };
 
-export const npcTableEntryToState = (entry: NPCTableEntry): NPCState => {
+export const npcTableEntryToState = (entry: NPCTableEntry): Npc => {
     return {
         id: entry.id,
         name: entry.name,

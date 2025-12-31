@@ -1,6 +1,6 @@
-import { Direction } from '../../engine/action';
+import { Direction } from '../../engine';
 
-export interface RoomState {
+export type Room = {
     id: string;
     name: string;
     description: string;
@@ -8,4 +8,4 @@ export interface RoomState {
     exits: Partial<Record<Direction, string>>;
     inventoryId: string;
     npcIds: string[];
-}
+};

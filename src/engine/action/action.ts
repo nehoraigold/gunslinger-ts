@@ -1,75 +1,79 @@
 import { Direction } from './direction';
-import { ActionType } from './action.type';
 
-interface IAction {
-    type: ActionType;
-}
+export type StartAction = {
+    type: 'start';
+};
 
-export interface StartAction extends IAction {
-    type: ActionType.START;
-}
-
-export interface MoveAction extends IAction {
-    type: ActionType.MOVE;
+export type MoveAction = {
+    type: 'move';
     data: {
         direction: Direction;
     };
-}
+};
 
-export interface InteractAction extends IAction {
-    type: ActionType.INTERACT;
+export type InteractAction = {
+    type: 'interact';
     data: {
         with: string;
         interaction: string;
         interactionData: any;
     };
-}
+};
 
-export type TransferLocation = 'player' | 'room' | `npc:${string}`;
-
-export interface TransferAction extends IAction {
-    type: ActionType.TRANSFER;
+export type TransferAction = {
+    type: 'transfer';
     data: {
-        item: string;
-        from: TransferLocation;
-        to: TransferLocation;
-        quantity?: number;
+        itemId: string;
+        fromInventoryId: string;
+        toInventoryId: string;
+        quantity: number;
     };
-}
+};
 
-export interface LookAction extends IAction {
-    type: ActionType.LOOK;
-}
+export type LookAction = {
+    type: 'look';
+};
 
-export interface InventoryAction extends IAction {
-    type: ActionType.INVENTORY;
-}
+export type InventoryAction = {
+    type: 'inventory';
+};
 
-export interface QuitAction extends IAction {
-    type: ActionType.QUIT;
-}
+export type UseItemAction = {
+    type: 'use_item';
+    data: {
+        itemId: string;
+        target?: {
+            type: 'player' | 'room' | 'exit' | 'npc' | 'item';
+            id: string;
+        };
+        intent?: string;
+    };
+};
 
-export interface HelpAction extends IAction {
-    type: ActionType.HELP;
-}
+export type QuitAction = {
+    type: 'quit';
+};
 
-export interface UnknownAction extends IAction {
-    type: ActionType.UNKNOWN;
+export type HelpAction = {
+    type: 'help';
+};
+
+export type UnknownAction = {
+    type: 'unknown';
     data: {
         reason: 'ambiguous' | 'unsupported' | 'unparsable';
         message?: string;
     };
-}
+};
 
 export type Action =
     | StartAction
     | MoveAction
     | LookAction
+    | UseItemAction
     | InventoryAction
     | TransferAction
     | QuitAction
     | HelpAction
     | InteractAction
     | UnknownAction;
-
-export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>;

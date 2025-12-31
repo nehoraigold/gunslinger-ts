@@ -1,6 +1,6 @@
 import { Direction } from '../../engine/action';
-import { RoomState } from './room.state';
-import { ExitState } from '../exit';
+import { Room } from './room';
+import { Exit } from '../exit';
 
 export type RoomTableEntry = {
     id: string;
@@ -12,7 +12,7 @@ export type RoomTableEntry = {
 
 export const roomIdToInventoryId = (roomId: string): string => `${roomId}_inventory`;
 
-export const roomTableEntryToState = (entry: RoomTableEntry, exits: ExitState[]): RoomState => {
+export const roomTableEntryToState = (entry: RoomTableEntry, exits: Exit[]): Room => {
     const roomExits = exits.filter((exit) => exit.fromRoomId === entry.id);
 
     const inventoryId = entry.inventory_id ?? roomIdToInventoryId(entry.id);

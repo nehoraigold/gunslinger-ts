@@ -1,7 +1,7 @@
-import { PlayerState } from '../domain/player';
-import { WorldState } from '../domain/world';
+import { Player } from '../domain/player';
+import { World } from '../domain/world';
 
 export type GameState = {
-    player: PlayerState;
-    world: WorldState;
+    player: Player;
+    world: World;
 };

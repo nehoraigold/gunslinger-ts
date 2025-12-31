@@ -42,7 +42,7 @@ const evaluateTrue = (): ConditionResult => {
 const evaluateFalse = (condition: FalseCondition): ConditionResult => {
     return {
         ok: false,
-        reasons: [{ condition, message: 'condition_always_false' }],
+        reasons: [{ condition, messageKey: 'condition_always_false' }],
     };
 };
 
@@ -67,7 +67,7 @@ const evaluateOr = (state: GameState, condition: OrCondition): ConditionResult =
     for (const sub of condition.conditions) {
         const result = evaluateCondition(state, sub);
         if (result.ok) {
-            return { ok: true, reasons: [{ condition: sub, message: 'subcondition_satisfied' }] };
+            return { ok: true, reasons: [{ condition: sub, messageKey: 'subcondition_satisfied' }] };
         }
         failures.push(...result.reasons);
     }
@@ -81,7 +81,7 @@ const evaluateHasItem = ({ world }: GameState, condition: HasItemCondition): Con
     if (!inventory) {
         return {
             ok: false,
-            reasons: [{ condition, message: 'inventory_not_found' }],
+            reasons: [{ condition, messageKey: 'inventory_not_found' }],
         };
     }
 
@@ -104,7 +104,7 @@ const evaluateHasItemAtLeast = (actualQuantity: number, condition: HasItemCondit
         reasons: [
             {
                 condition,
-                message: 'item_quantity_too_low',
+                messageKey: `not_enough_${condition.itemId}`,
                 context: { actual: actualQuantity },
             },
         ],
@@ -120,7 +120,7 @@ const evaluateHasItemExactly = (actualQuantity: number, condition: HasItemCondit
         reasons: [
             {
                 condition,
-                message: 'item_quantity_wrong',
+                messageKey: `wrong_amount_of_${condition.itemId}`,
                 context: { actual: actualQuantity },
             },
         ],
@@ -136,7 +136,7 @@ const evaluateHasItemAtMost = (actualQuantity: number, condition: HasItemConditi
         reasons: [
             {
                 condition,
-                message: 'item_quantity_too_high',
+                messageKey: `too_many_${condition.itemId}`,
                 context: { actual: actualQuantity },
             },
         ],
@@ -148,13 +148,13 @@ const evaluateLacksItem = (state: GameState, condition: LacksItemCondition): Con
     if (!inventory) {
         return {
             ok: false,
-            reasons: [{ condition, message: 'inventory_not_found' }],
+            reasons: [{ condition, messageKey: 'inventory_not_found' }],
         };
     }
     const ok = !inventory.items[condition.itemId] || inventory.items[condition.itemId] === 0;
     return {
         ok,
-        reasons: ok ? [] : [{ condition, message: 'item_present' }],
+        reasons: ok ? [] : [{ condition, messageKey: `${condition.itemId}_in_inventory` }],
     };
 };
 
@@ -163,7 +163,7 @@ const evaluateFlag = ({ world }: GameState, condition: FlagCondition): Condition
     const ok = world.flags[flag] === expectedValue;
     return {
         ok,
-        reasons: ok ? [] : [{ condition, message: world.flags[flag] ? 'flag_true' : 'flag_false' }],
+        reasons: ok ? [] : [{ condition, messageKey: world.flags[flag] ? 'flag_true' : 'flag_false' }],
     };
 };
 
@@ -178,13 +178,7 @@ const evaluateExitState = ({ world }: GameState, condition: ExitStateCondition):
             : [
                   {
                       condition,
-                      message: 'incorrect_exit_state',
-                      context: {
-                          exitType: exit.type,
-                          stateKey: condition.stateKey,
-                          expected: condition.expectedValue,
-                          actual: actualValue,
-                      },
+                      messageKey: `${exit.type}${actualValue ? '_' : '_not_'}${condition.stateKey}`,
                   },
               ],
     };

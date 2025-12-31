@@ -1,22 +1,24 @@
 import { GameState } from '../game.state';
-import { Action, ActionType } from '../action';
+import { Action } from '../action';
 import { Decision } from './decision';
-import { resolveMoveAction, resolveTransferAction, resolveUnknownAction } from './resolve';
+import { resolveMoveAction, resolveTransferAction, resolveUnknownAction, resolveUseItemAction } from './resolve';
 
 export const decide = (state: GameState, action: Action): Decision => {
     switch (action.type) {
-        case ActionType.MOVE:
+        case 'move':
             return resolveMoveAction(state, action);
-        case ActionType.TRANSFER:
+        case 'transfer':
             return resolveTransferAction(state, action);
-        case ActionType.UNKNOWN:
+        case 'unknown':
             return resolveUnknownAction(state, action);
-        case ActionType.LOOK:
-        case ActionType.INTERACT:
-        case ActionType.INVENTORY:
-        case ActionType.HELP:
-        case ActionType.QUIT:
-        default:
+        case 'use_item':
+            return resolveUseItemAction(state, action);
+        case 'look':
+        case 'interact':
+        case 'inventory':
+        case 'start':
+        case 'help':
+        case 'quit':
             return {
                 outcome: { result: 'success' },
                 effects: [],

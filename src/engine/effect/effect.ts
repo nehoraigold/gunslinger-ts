@@ -1,4 +1,4 @@
-import { ExitState } from '../../domain/exit';
+import { Exit } from '../../domain/exit';
 
 export type MovePlayerEffect = {
     type: 'move_player';
@@ -27,14 +27,14 @@ export type RemoveNpcFromRoomEffect = {
 export type SetExitStateEffect = {
     type: 'set_exit_state';
     exitId: string;
-    stateKey: keyof ExitState['state'];
+    stateKey: keyof Exit['state'];
     value: any;
 };
 
 export type SetFlagEffect = {
     type: 'set_flag';
     flag: string;
-    value: unknown;
+    value: boolean;
 };
 
 export type Effect =

@@ -11,7 +11,7 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
         return {
             outcome: {
                 result: 'error',
-                reasons: [{ message: 'current_room_not_found' }],
+                reasons: [{ messageKey: 'current_room_not_found' }],
             },
         };
     }
@@ -21,7 +21,7 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
         return {
             outcome: {
                 result: 'failure',
-                reasons: [{ message: 'no_exit' }],
+                reasons: [{ messageKey: 'no_exit' }],
             },
         };
     }
@@ -31,7 +31,7 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
         return {
             outcome: {
                 result: 'error',
-                reasons: [{ message: 'exit_not_found' }],
+                reasons: [{ messageKey: 'exit_not_found' }],
             },
         };
     }
@@ -61,7 +61,7 @@ export const resolveMoveAction = (state: GameState, action: MoveAction): Decisio
         return {
             outcome: {
                 result: 'error',
-                reasons: [{ message: 'next_room_not_found' }],
+                reasons: [{ messageKey: 'next_room_not_found' }],
             },
         };
     }

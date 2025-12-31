@@ -1,4 +1,4 @@
-import { ExitState } from '../../domain/exit';
+import { Exit } from '../../domain/exit';
 
 export type TrueCondition = { type: 'true' };
 export type FalseCondition = { type: 'false' };
@@ -36,7 +36,7 @@ export type OrCondition = {
 export type ExitStateCondition = {
     type: 'exit_state';
     exitId: string;
-    stateKey: keyof ExitState['state'];
+    stateKey: keyof Exit['state'];
     expectedValue: unknown;
 };
 

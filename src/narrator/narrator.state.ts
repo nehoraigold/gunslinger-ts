@@ -1,5 +1,5 @@
 import { Direction } from '../engine/action';
-import { ItemState } from '../domain/item';
+import { Item } from '../domain/item';
 
 export type NarratorGameState = {
     player: NarratorPlayerState;
@@ -10,7 +10,7 @@ export type NarratorPlayerState = {
     inventory: NarratorItemState[];
 };
 
-export type NarratorItemState = Omit<ItemState, 'id'> & { quantity: number };
+export type NarratorItemState = Omit<Item, 'id'> & { quantity: number };
 
 export type NarratorLocationState = {
     name: string;

@@ -1,4 +1,4 @@
 export interface Reason {
-    message: string;
+    messageKey: string;
     context?: Record<string, unknown>;
 }

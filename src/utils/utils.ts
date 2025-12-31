@@ -1,7 +1,5 @@
-//region imports
 import * as readline from 'readline';
 import { Print } from './print';
-//endregion
 
 export const getUserInput = (query?: string): Promise<string> => {
     const rl = readline.createInterface({
@@ -12,7 +10,6 @@ export const getUserInput = (query?: string): Promise<string> => {
             Print.Message(query);
         }
         rl.question('', (answer) => {
-            ``;
             rl.close();
             resolve(answer);
         });
