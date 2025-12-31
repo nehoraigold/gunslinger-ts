@@ -32,7 +32,8 @@ const getVisibleExits = (room: RoomState, gameState: GameState): Partial<Record<
             if (!exitState) {
                 return [direction, undefined];
             }
-            if (!evaluateCondition(gameState, exitState.visibility)) {
+            const isVisible = evaluateCondition(gameState, exitState.visibility);
+            if (!isVisible.ok) {
                 return [direction, undefined];
             }
             return [direction, gameState.world.rooms[exitState.toRoomId].name];

@@ -35,34 +35,24 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
     const inventories = state.world.inventories;
 
     const fromInventoryId = getInventoryId(from, state);
-    const toInventoryId = getInventoryId(to, state);
-    if (!fromInventoryId || !toInventoryId) {
-        const reason = [
-            !!fromInventoryId ? null : `${from}_cannot_hold_items`,
-            !!toInventoryId ? null : `${to}_cannot_hold_items`,
-        ].filter((r) => r !== null);
+    const source = inventories[fromInventoryId];
+    if (!source) {
         return {
             state,
             outcome: {
                 result: 'error',
-                reasons: reason,
+                reasons: [{ message: 'invalid_transfer_location', context: { transferLocation: from } }],
             },
         };
     }
-
-    const source = inventories[fromInventoryId];
+    const toInventoryId = getInventoryId(to, state);
     const target = inventories[toInventoryId];
-
-    if (!source || !target) {
-        const reason = [
-            !!source ? null : `no_${from}_inventory_found`,
-            !!target ? null : `no_${to}_inventory_found`,
-        ].filter((r) => r !== null);
+    if (!target) {
         return {
             state,
             outcome: {
                 result: 'error',
-                reasons: reason,
+                reasons: [{ message: 'invalid_transfer_location', context: { transferLocation: to } }],
             },
         };
     }
@@ -73,35 +63,40 @@ export const applyTransfer = (state: GameState, action: TransferAction): Reducer
             state,
             outcome: {
                 result: 'error',
-                reasons: ['item_does_not_exist'],
+                reasons: [{ message: 'item_does_not_exist', context: { item } }],
             },
         };
     }
 
-    const sourceItemQty = source.items[itemId];
-    if (!sourceItemQty) {
+    const actualQuantity = source.items[itemId];
+    if (!actualQuantity) {
         return {
             state,
             outcome: {
                 result: 'failure',
-                reasons: ['item_not_found_in_from_inventory'],
+                reasons: [{ message: 'item_not_found_in_inventory', context: { from, item } }],
             },
         };
     }
 
-    const qtyToTransfer = quantity ?? 1;
-    if (!qtyToTransfer || sourceItemQty < qtyToTransfer) {
+    const expectedQuantity = quantity ?? 1;
+    if (!expectedQuantity || actualQuantity < expectedQuantity) {
         return {
             state,
             outcome: {
                 result: 'failure',
-                reasons: ['item_quantity_insufficient'],
+                reasons: [
+                    {
+                        message: 'item_quantity_insufficient',
+                        context: { from, item, expectedQuantity, actualQuantity },
+                    },
+                ],
             },
         };
     }
 
-    const newSourceItemQty = sourceItemQty - qtyToTransfer;
-    const newTargetItemQty = (target.items[itemId] ?? 0) + qtyToTransfer;
+    const newSourceItemQty = actualQuantity - expectedQuantity;
+    const newTargetItemQty = (target.items[itemId] ?? 0) + expectedQuantity;
 
     const sourceItems = {
         ...source.items,

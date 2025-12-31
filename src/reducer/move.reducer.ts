@@ -12,7 +12,7 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
             state,
             outcome: {
                 result: 'error',
-                reasons: ['current_room_not_found'],
+                reasons: [{ message: 'current_room_not_found' }],
             },
         };
     }
@@ -23,7 +23,7 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
             state,
             outcome: {
                 result: 'failure',
-                reasons: ['no_exit'],
+                reasons: [{ message: 'no_exit' }],
             },
         };
     }
@@ -34,29 +34,29 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
             state,
             outcome: {
                 result: 'error',
-                reasons: ['exit_not_found'],
+                reasons: [{ message: 'exit_not_found' }],
             },
         };
     }
 
     const isVisible = evaluateCondition(state, exitState.visibility);
-    if (!isVisible) {
+    if (!isVisible.ok) {
         return {
             state,
             outcome: {
                 result: 'failure',
-                reasons: ['exit_not_visible'],
+                reasons: isVisible.reasons,
             },
         };
     }
 
     const isEligible = evaluateCondition(state, exitState.eligibility);
-    if (!isEligible) {
+    if (!isEligible.ok) {
         return {
             state,
             outcome: {
                 result: 'failure',
-                reasons: ['player_not_eligible_for_exit'],
+                reasons: isEligible.reasons,
             },
         };
     }
@@ -67,7 +67,7 @@ export const applyMove = (state: GameState, direction: Direction): ReducerResult
             state,
             outcome: {
                 result: 'error',
-                reasons: ['next_room_not_found'],
+                reasons: [{ message: 'next_room_not_found' }],
             },
         };
     }

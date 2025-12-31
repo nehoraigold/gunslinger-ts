@@ -1,5 +1,5 @@
-type TrueCondition = { type: 'true' };
-type FalseCondition = { type: 'false' };
+export type TrueCondition = { type: 'true' };
+export type FalseCondition = { type: 'false' };
 
 export type HasItemCondition = {
     type: 'has_item';
