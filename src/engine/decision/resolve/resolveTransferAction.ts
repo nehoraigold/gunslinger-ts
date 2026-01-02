@@ -62,7 +62,7 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
         return {
             outcome: {
                 result: 'failure',
-                reasons: [{ messageKey: `${itemId}_not_found_in_inventory`, context: { fromInventoryId } }],
+                reasons: [{ messageKey: `${itemId}_not_found_in_${fromInventoryId}` }],
             },
         };
     }

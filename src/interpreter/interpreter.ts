@@ -29,8 +29,15 @@ export class Interpreter {
             const response = await this.agent.generate({
                 prompt: input,
             });
-            // @ts-ignore
-            return JSON.parse(response.steps[0].content[0].text);
+
+            const content = response.steps[0].content;
+            if (content[0]?.type === 'text') {
+                return JSON.parse(content[0].text);
+            }
+            return {
+                type: 'unknown',
+                data: { reason: 'unparsable', message: `Unexpected response type ${content[0]?.type} from LLM` },
+            };
         } catch (error: any) {
             console.error(error);
             return { type: 'unknown', data: { reason: 'unparsable', message: error.message } };
