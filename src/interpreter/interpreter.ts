@@ -6,7 +6,7 @@ import { selectInterpreterGameState } from './selectInterpreterGameState';
 import INSTRUCTIONS from './interpreter.instructions';
 import { AvailableLLMs } from '../availableLLMs';
 
-const INTERPRETER_MODEL: AvailableLLMs = 'gpt-oss:20b';
+const INTERPRETER_MODEL: AvailableLLMs = 'llama3.1:8b';
 
 export class Interpreter {
     protected agent: ToolLoopAgent;

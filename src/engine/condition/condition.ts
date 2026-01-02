@@ -40,6 +40,12 @@ export type ExitStateCondition = {
     expectedValue: unknown;
 };
 
+export type IsValueCondition = {
+    type: 'is_value';
+    actual: any;
+    expected: any;
+};
+
 export type Condition =
     | AndCondition
     | OrCondition
@@ -48,4 +54,5 @@ export type Condition =
     | ExitStateCondition
     | FlagCondition
     | TrueCondition
-    | FalseCondition;
+    | FalseCondition
+    | IsValueCondition;

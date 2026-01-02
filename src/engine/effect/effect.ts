@@ -5,8 +5,15 @@ export type MovePlayerEffect = {
     toRoomId: string;
 };
 
-export type SetItemQuantityEffect = {
-    type: 'set_item_quantity';
+export type AddItemEffect = {
+    type: 'add_item';
+    inventoryId: string;
+    itemId: string;
+    quantity: number;
+};
+
+export type RemoveItemEffect = {
+    type: 'remove_item';
     inventoryId: string;
     itemId: string;
     quantity: number;
@@ -39,7 +46,8 @@ export type SetFlagEffect = {
 
 export type Effect =
     | MovePlayerEffect
-    | SetItemQuantityEffect
+    | AddItemEffect
+    | RemoveItemEffect
     | SetFlagEffect
     | SetExitStateEffect
     | AddNpcToRoomEffect

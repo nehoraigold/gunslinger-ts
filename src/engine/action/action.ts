@@ -42,11 +42,8 @@ export type UseItemAction = {
     type: 'use_item';
     data: {
         itemId: string;
-        target?: {
-            type: 'player' | 'room' | 'exit' | 'npc' | 'item';
-            id: string;
-        };
-        intent?: string;
+        verb: string;
+        targetId?: string;
     };
 };
 

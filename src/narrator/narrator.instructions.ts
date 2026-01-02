@@ -147,6 +147,7 @@ Adapt your narration based on \`event.action.type\`.
 
 - Do not describe a new location.
 - Reflect obstruction, stasis, or failed movement.
+- Use the reason to indicate why movement failed.
 - Length: **1 sentence**
 
 ---
@@ -164,6 +165,7 @@ Adapt your narration based on \`event.action.type\`.
 
 - Reflect lack of effect or interruption.
 - Do not explain mechanics.
+- Use the reason to indicate why transfer failed.
 - Length: **1 sentence**
 
 ---

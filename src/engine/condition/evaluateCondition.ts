@@ -5,6 +5,7 @@ import {
     FalseCondition,
     FlagCondition,
     HasItemCondition,
+    IsValueCondition,
     LacksItemCondition,
     OrCondition,
 } from './condition';
@@ -22,6 +23,8 @@ export const evaluateCondition = (state: GameState, condition: Condition): Condi
             return evaluateAnd(state, condition);
         case 'or':
             return evaluateOr(state, condition);
+        case 'is_value':
+            return evaluateIsValue(state, condition);
         case 'has_item':
             return evaluateHasItem(state, condition);
         case 'lacks_item':
@@ -73,6 +76,11 @@ const evaluateOr = (state: GameState, condition: OrCondition): ConditionResult =
     }
 
     return { ok: false, reasons: failures };
+};
+
+const evaluateIsValue = (_state: GameState, condition: IsValueCondition): ConditionResult => {
+    const ok = condition.actual === condition.expected;
+    return { ok, reasons: ok ? [] : [{ condition, messageKey: 'value_mismatch' }] };
 };
 
 const evaluateHasItem = ({ world }: GameState, condition: HasItemCondition): ConditionResult => {
@@ -148,13 +156,13 @@ const evaluateLacksItem = (state: GameState, condition: LacksItemCondition): Con
     if (!inventory) {
         return {
             ok: false,
-            reasons: [{ condition, messageKey: 'inventory_not_found' }],
+            reasons: [{ condition, messageKey: `${condition.inventoryId}_not_found` }],
         };
     }
     const ok = !inventory.items[condition.itemId] || inventory.items[condition.itemId] === 0;
     return {
         ok,
-        reasons: ok ? [] : [{ condition, messageKey: `${condition.itemId}_in_inventory` }],
+        reasons: ok ? [] : [{ condition, messageKey: `${condition.itemId}_in_${condition.inventoryId}` }],
     };
 };
 
@@ -163,12 +171,18 @@ const evaluateFlag = ({ world }: GameState, condition: FlagCondition): Condition
     const ok = world.flags[flag] === expectedValue;
     return {
         ok,
-        reasons: ok ? [] : [{ condition, messageKey: world.flags[flag] ? 'flag_true' : 'flag_false' }],
+        reasons: ok ? [] : [{ condition, messageKey: world.flags[flag] ? `${flag}_is_true` : `${flag}_is_false` }],
     };
 };
 
 const evaluateExitState = ({ world }: GameState, condition: ExitStateCondition): ConditionResult => {
     const exit = world.exits[condition.exitId];
+    if (!exit) {
+        return {
+            ok: false,
+            reasons: [{ condition, messageKey: `exit_${condition.exitId}_not_found` }],
+        };
+    }
     const actualValue = exit.state[condition.stateKey];
     const ok = actualValue === condition.expectedValue;
     return {

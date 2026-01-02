@@ -19,6 +19,7 @@ const inventoryToVisibleItems = (inventoryId: string, state: GameState): Narrato
                 aliases: item.aliases,
                 quantity: qty,
                 uses: item.uses,
+                transferable: item.transferable,
             };
         })
         .filter((item) => !!item);

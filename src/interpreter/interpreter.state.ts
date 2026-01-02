@@ -4,6 +4,7 @@ import { Direction } from '../engine';
 
 export type InterpreterItemState = Omit<Item, 'description' | 'uses'> & {
     quantity: number;
+    use_verbs: string[];
 };
 
 export type InterpreterNPCState = Omit<Npc, 'description' | 'inventoryId'> & {
@@ -15,6 +16,13 @@ export type InterpreterInventory = {
     items: InterpreterItemState[];
 };
 
+export type InterpreterExit = {
+    id: string;
+    type: string;
+    direction: Direction;
+    toRoomId: string;
+};
+
 export type InterpreterState = {
     room: {
         id: string;
@@ -23,7 +31,7 @@ export type InterpreterState = {
         inventory: InterpreterInventory;
     };
 
-    visibleExits: Partial<Record<Direction, string>>;
+    visibleExits: Partial<Record<Direction, InterpreterExit>>;
     visibleNPCs: InterpreterNPCState[];
 
     player: {

@@ -1,5 +1,5 @@
 import { GameState } from '../game.state';
-import { Effect, MovePlayerEffect, SetExitStateEffect, SetFlagEffect, SetItemQuantityEffect } from './effect';
+import { Effect, MovePlayerEffect, SetExitStateEffect, SetFlagEffect, AddItemEffect, RemoveItemEffect } from './effect';
 
 export const applyEffects = (state: GameState, effects: Effect[]): GameState => {
     try {
@@ -18,15 +18,17 @@ const applyEffect = (state: GameState, effect: Effect): GameState => {
     switch (effect.type) {
         case 'move_player':
             return applyMovePlayerEffect(state, effect);
-        case 'set_item_quantity':
-            return applySetItemQuantityEffect(state, effect);
+        case 'add_item':
+            return applyAddItemEffect(state, effect);
+        case 'remove_item':
+            return applyRemoveItemEffect(state, effect);
         case 'set_exit_state':
             return applySetExitStateEffect(state, effect);
         case 'set_flag':
             return applySetFlagEffect(state, effect);
         case 'add_npc_to_room':
         case 'remove_npc_from_room':
-            return state;
+            throw new Error(`unimplemented effect: ${effect.type}`);
     }
 };
 
@@ -51,16 +53,51 @@ const applyMovePlayerEffect = (state: GameState, effect: MovePlayerEffect): Game
     };
 };
 
-const applySetItemQuantityEffect = (state: GameState, effect: SetItemQuantityEffect): GameState => {
+const applyAddItemEffect = (state: GameState, effect: AddItemEffect): GameState => {
+    if (effect.quantity === 0) {
+        return state;
+    }
+
     const inventory = state.world.inventories[effect.inventoryId];
+    const currentQty = inventory.items[effect.itemId] ?? 0;
     const updatedInventory = {
         ...inventory,
         items: {
             ...inventory.items,
-            [effect.itemId]: effect.quantity,
+            [effect.itemId]: currentQty + effect.quantity,
         },
     };
+    return {
+        ...state,
+        world: {
+            ...state.world,
+            inventories: {
+                ...state.world.inventories,
+                [inventory.id]: updatedInventory,
+            },
+        },
+    };
+};
+
+const applyRemoveItemEffect = (state: GameState, effect: RemoveItemEffect): GameState => {
     if (effect.quantity === 0) {
+        return state;
+    }
+    const inventory = state.world.inventories[effect.inventoryId];
+    const currentQty = inventory.items[effect.itemId] ?? 0;
+    if (currentQty < effect.quantity) {
+        throw new Error(
+            `Cannot remove ${effect.quantity} items from inventory ${inventory.id} with only ${currentQty} items`,
+        );
+    }
+    const updatedInventory = {
+        ...inventory,
+        items: {
+            ...inventory.items,
+            [effect.itemId]: currentQty - effect.quantity,
+        },
+    };
+    if (updatedInventory.items[effect.itemId] === 0) {
         delete updatedInventory.items[effect.itemId];
     }
     return {

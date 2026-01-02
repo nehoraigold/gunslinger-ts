@@ -1,5 +1,11 @@
 import { GameState, evaluateCondition, Direction } from '../engine';
-import { InterpreterState, InterpreterItemState, InterpreterInventory, InterpreterNPCState } from './interpreter.state';
+import {
+    InterpreterState,
+    InterpreterItemState,
+    InterpreterInventory,
+    InterpreterNPCState,
+    InterpreterExit,
+} from './interpreter.state';
 import { Room } from '../domain/room';
 
 const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterInventory => {
@@ -22,6 +28,7 @@ const inventoryToVisibleItems = (inventoryId: string, state: GameState): Interpr
                 name: item.name,
                 aliases: item.aliases,
                 quantity: qty,
+                use_verbs: item.uses.flatMap((use) => [use.verb, ...use.aliases]),
             };
         })
         .filter((item) => !!item);
@@ -31,18 +38,26 @@ const inventoryToVisibleItems = (inventoryId: string, state: GameState): Interpr
     };
 };
 
-const getVisibleExits = (room: Room, gameState: GameState): Partial<Record<Direction, string>> => {
+const getVisibleExits = (room: Room, gameState: GameState): Partial<Record<Direction, InterpreterExit>> => {
     return Object.fromEntries(
         Object.entries(room.exits).map(([direction, exitId]) => {
-            const exitState = gameState.world.exits[exitId];
-            if (!exitState) {
+            const exit = gameState.world.exits[exitId];
+            if (!exit) {
                 return [direction, undefined];
             }
-            const isVisible = evaluateCondition(gameState, exitState.visibility);
+            const isVisible = evaluateCondition(gameState, exit.visibility);
             if (!isVisible.ok) {
                 return [direction, undefined];
             }
-            return [direction, gameState.world.rooms[exitState.toRoomId].name];
+            return [
+                direction,
+                {
+                    id: exit.id,
+                    type: exit.type,
+                    direction: exit.direction,
+                    toRoomId: exit.toRoomId,
+                },
+            ];
         }),
     );
 };

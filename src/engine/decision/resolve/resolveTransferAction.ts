@@ -1,33 +1,12 @@
 import { TransferAction } from '../../action';
 import { GameState } from '../../game.state';
 import { Decision } from '../decision';
-
-// const getInventoryId = (transferLocation: TransferLocation, { player, world }: GameState): string => {
-//     if (transferLocation === 'player') {
-//         return player.inventoryId;
-//     }
-//     if (transferLocation === 'room') {
-//         return world.rooms[player.currentRoomId]?.inventoryId ?? '';
-//     }
-//     if (!transferLocation.startsWith('npc:')) {
-//         // unknown!
-//         return '';
-//     }
-//     const npcName = transferLocation.replace(/^npc:/, '');
-//     const npc = Object.values(world.npcs).find((npc) => npc.name === npcName);
-//     if (!npc) {
-//         // npc not found
-//         return '';
-//     }
-//     if (!world.rooms[player.currentRoomId]?.npcIds.includes(npc.id)) {
-//         // npc not in current room
-//         return '';
-//     }
-//     return npc.inventoryId ?? '';
-// };
+import { Condition, evaluateCondition } from '../../condition';
 
 export const resolveTransferAction = (state: GameState, action: TransferAction): Decision => {
     const { itemId, fromInventoryId, toInventoryId, quantity } = action.data;
+    const expectedQuantity = quantity ?? 1;
+
     const inventories = state.world.inventories;
 
     const source = inventories[fromInventoryId];
@@ -49,11 +28,31 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
         };
     }
 
-    if (!itemId) {
+    const item = state.world.items[itemId];
+    if (!itemId || !item) {
         return {
             outcome: {
                 result: 'error',
-                reasons: [{ messageKey: 'item_does_not_exist', context: { itemId } }],
+                reasons: [{ messageKey: `${itemId}_does_not_exist` }],
+            },
+        };
+    }
+
+    const transferableCondition = finalizeTransferableCondition(
+        item.transferable,
+        state.player.inventoryId,
+        fromInventoryId,
+        toInventoryId,
+        itemId,
+        expectedQuantity,
+    );
+    const result = evaluateCondition(state, transferableCondition);
+
+    if (!result.ok) {
+        return {
+            outcome: {
+                result: 'failure',
+                reasons: result.reasons,
             },
         };
     }
@@ -63,41 +62,24 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
         return {
             outcome: {
                 result: 'failure',
-                reasons: [{ messageKey: 'item_not_found_in_inventory', context: { fromInventoryId, itemId } }],
+                reasons: [{ messageKey: `${itemId}_not_found_in_inventory`, context: { fromInventoryId } }],
             },
         };
     }
 
-    const expectedQuantity = quantity ?? 1;
     if (!expectedQuantity || actualQuantity < expectedQuantity) {
         return {
             outcome: {
                 result: 'failure',
                 reasons: [
                     {
-                        messageKey: 'item_quantity_insufficient',
-                        context: { fromInventoryId, itemId, expectedQuantity, actualQuantity },
+                        messageKey: `${itemId}_quantity_insufficient`,
+                        context: { fromInventoryId, expectedQuantity, actualQuantity },
                     },
                 ],
             },
         };
     }
-
-    const newSourceItemQty = actualQuantity - expectedQuantity;
-    const newTargetItemQty = (target.items[itemId] ?? 0) + expectedQuantity;
-
-    const sourceItems = {
-        ...source.items,
-        [itemId]: newSourceItemQty,
-    };
-    if (newSourceItemQty === 0) {
-        delete sourceItems[itemId];
-    }
-
-    const targetItems = {
-        ...target.items,
-        [itemId]: newTargetItemQty,
-    };
 
     return {
         outcome: {
@@ -105,17 +87,35 @@ export const resolveTransferAction = (state: GameState, action: TransferAction):
         },
         effects: [
             {
-                type: 'set_item_quantity',
+                type: 'remove_item',
                 inventoryId: fromInventoryId,
                 itemId,
-                quantity: newSourceItemQty,
+                quantity: expectedQuantity,
             },
             {
-                type: 'set_item_quantity',
+                type: 'add_item',
                 inventoryId: toInventoryId,
                 itemId,
-                quantity: newTargetItemQty,
+                quantity: expectedQuantity,
             },
         ],
     };
+};
+
+const finalizeTransferableCondition = (
+    condition: Condition,
+    playerInventoryId: string,
+    fromInventoryId: string,
+    toInventoryId: string,
+    itemId: string,
+    quantity: number,
+): Condition => {
+    return JSON.parse(
+        JSON.stringify(condition)
+            .replace(/\$fromInventoryId/g, fromInventoryId)
+            .replace(/\$toInventoryId/g, toInventoryId)
+            .replace(/\$playerInventoryId/g, playerInventoryId)
+            .replace(/\$itemId/g, itemId)
+            .replace(/\$quantity/g, quantity.toString()),
+    );
 };

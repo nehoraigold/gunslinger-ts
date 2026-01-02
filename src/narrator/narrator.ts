@@ -10,9 +10,11 @@ import { AvailableLLMs } from '../availableLLMs';
 const NARRATOR_MODEL: AvailableLLMs = 'gpt-oss:20b';
 
 export class Narrator {
+    protected readonly mode: 'on' | 'off';
     protected readonly agent: ToolLoopAgent;
 
-    constructor() {
+    constructor(config: any) {
+        this.mode = config.narration ?? 'on';
         this.agent = new ToolLoopAgent({
             model: ollama(NARRATOR_MODEL),
             instructions: INSTRUCTIONS,
@@ -21,6 +23,10 @@ export class Narrator {
     }
 
     public async narrate(beforeState: GameState, afterState: GameState, events: Event[]): Promise<string> {
+        if (this.mode === 'off') {
+            return JSON.stringify(events, null, 2);
+        }
+
         try {
             const input: NarratorInput = {
                 before_state: selectNarratorGameState(beforeState),

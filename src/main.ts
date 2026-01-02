@@ -1,4 +1,6 @@
+import * as fs from 'node:fs';
 import ora from 'ora';
+
 import { applyEffects, GameState, initGameState, decide, Event } from './engine';
 import { formatToHeader, getUserInput } from './utils';
 import { Interpreter } from './interpreter';
@@ -6,8 +8,9 @@ import { Narrator } from './narrator';
 import { Room } from './domain/room';
 
 async function main() {
+    const config = JSON.parse(fs.readFileSync('../config.local.json', 'utf-8'));
     const interpreter = new Interpreter();
-    const narrator = new Narrator();
+    const narrator = new Narrator(config);
     let spinner = ora({ spinner: 'simpleDots' });
     let state = initGameState();
 
@@ -48,8 +51,7 @@ async function main() {
             }
         }
 
-        console.log('events:', JSON.stringify(events, null, 2));
-
+        console.log('events', JSON.stringify(events, null, 2));
         spinner = spinner.start();
         text = await narrator.narrate(state, nextState, events);
         spinner.stop();
