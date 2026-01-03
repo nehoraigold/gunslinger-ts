@@ -132,6 +132,7 @@ Rules:
   "data": {
     "itemId": "<item id>",
     "verb": "<item use verb>",
+    "inventoryType": "player" | "room",
     "targetId": "<target id>"
   }
 }
@@ -139,6 +140,7 @@ Rules:
 Rules:
 * \`itemId\` is required and refers to the item being used
 * \`verb\` is required and refers to the item use to be performed (taken from the item's \`use_verbs\` property)
+* \`inventoryType\` is required and refers to the inventory containing the item being used (either the player's inventory or the current room's inventory)
 * \`targetId\` is optional and refers to the target of the item use (i.e., another entity)
 * Target may be implied by context
 

@@ -2,7 +2,7 @@ import { Item } from '../domain/item';
 import { Npc } from '../domain/npc';
 import { Direction } from '../engine';
 
-export type InterpreterItemState = Omit<Item, 'description' | 'uses'> & {
+export type InterpreterItemState = Omit<Item, 'description' | 'uses' | 'transferable'> & {
     quantity: number;
     use_verbs: string[];
 };

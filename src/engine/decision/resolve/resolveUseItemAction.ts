@@ -5,7 +5,7 @@ import { Effect } from '../../effect';
 import { Condition, evaluateCondition } from '../../condition';
 
 export const resolveUseItemAction = (state: GameState, action: UseItemAction): Decision => {
-    const { verb, itemId, targetId } = action.data;
+    const { verb, itemId, targetId, inventoryType } = action.data;
     const item = state.world.items[itemId];
     if (!item) {
         return {
@@ -16,21 +16,22 @@ export const resolveUseItemAction = (state: GameState, action: UseItemAction): D
         };
     }
 
-    const playerInventory = state.world.inventories[state.player.inventoryId];
-    if (!playerInventory) {
+    const inventory = getInventory(state, inventoryType);
+    if (!inventory) {
         return {
             outcome: {
                 result: 'error',
-                reasons: [{ messageKey: 'player_inventory_not_found' }],
+                reasons: [{ messageKey: `${inventoryType}_inventory_not_found` }],
             },
         };
     }
-    const quantity = playerInventory.items[itemId];
+
+    const quantity = inventory.items[itemId];
     if (!quantity || quantity <= 0) {
         return {
             outcome: {
-                result: 'failure',
-                reasons: [{ messageKey: `no_${itemId}_in_inventory` }],
+                result: 'error',
+                reasons: [{ messageKey: `${itemId}_not_in_${inventory.id}` }],
             },
         };
     }
@@ -45,34 +46,50 @@ export const resolveUseItemAction = (state: GameState, action: UseItemAction): D
         };
     }
 
-    const condition = finalizeUseItemCondition(itemUse.condition, itemId, state.player.inventoryId, targetId);
+    const condition = finalizeUseItemCondition(itemUse.condition, itemId, inventoryType, inventory.id, targetId);
     const result = evaluateCondition(state, condition);
     if (!result.ok) {
         return { outcome: { result: 'failure', reasons: result.reasons } };
     }
 
-    const effects = finalizeUseItemEffects(itemUse.effects, itemId, state.player.inventoryId, targetId);
+    const effects = finalizeUseItemEffects(itemUse.effects, itemId, inventoryType, inventory.id, targetId);
     return { outcome: { result: 'success' }, effects };
+};
+
+const getInventory = (state: GameState, inventoryType: 'player' | 'room') => {
+    switch (inventoryType) {
+        case 'player':
+            return state.world.inventories[state.player.inventoryId];
+        case 'room':
+            return state.world.rooms[state.player.currentRoomId]?.inventoryId
+                ? state.world.inventories[state.world.rooms[state.player.currentRoomId]?.inventoryId]
+                : undefined;
+        default:
+            return undefined;
+    }
 };
 
 const finalizeUseItemCondition = (
     condition: Condition,
     itemId: string,
-    playerInventoryId: string,
+    inventoryType: 'player' | 'room',
+    inventoryId: string,
     targetId: string | undefined,
 ): Condition => {
     return JSON.parse(
         JSON.stringify(condition)
             .replace(/\$targetId/g, targetId ?? 'undefined')
             .replace(/\$itemId/g, itemId)
-            .replace(/\$playerInventoryId/g, playerInventoryId),
+            .replace(/\$inventoryId/g, inventoryId)
+            .replace(/\$inventoryType/g, inventoryType),
     );
 };
 
 const finalizeUseItemEffects = (
     effects: Effect[],
     itemId: string,
-    playerInventoryId: string,
+    inventoryType: 'player' | 'room',
+    inventoryId: string,
     targetId: string | undefined,
 ): Effect[] => {
     return effects.map((effect) => {
@@ -80,7 +97,8 @@ const finalizeUseItemEffects = (
             JSON.stringify(effect)
                 .replace(/\$targetId/g, targetId ?? 'undefined')
                 .replace(/\$itemId/g, itemId)
-                .replace(/\$playerInventoryId/g, playerInventoryId),
+                .replace(/\$inventoryId/g, inventoryId)
+                .replace(/\$inventoryType/g, inventoryType),
         );
     });
 };

@@ -42,6 +42,7 @@ export type UseItemAction = {
     type: 'use_item';
     data: {
         itemId: string;
+        inventoryType: 'player' | 'room';
         verb: string;
         targetId?: string;
     };
