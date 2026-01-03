@@ -6,8 +6,8 @@ export type ExitTableEntry = {
     from_room_id: string;
     direction: string;
     to_room_id: string;
-    visibility_condition: string;
-    eligibility_condition: string;
+    visibility_condition: string | null;
+    eligibility_condition: string | null;
     state: string | null;
 };
 
@@ -32,8 +32,12 @@ export const exitTableEntryToState = (entry: ExitTableEntry): Exit => {
         fromRoomId: entry.from_room_id,
         direction: entry.direction as Direction,
         toRoomId: entry.to_room_id,
-        visibility: visibilityStringToCondition(entry.visibility_condition),
-        eligibility: eligibilityStringToCondition(entry.eligibility_condition),
+        visibility: entry.visibility_condition
+            ? visibilityStringToCondition(entry.visibility_condition)
+            : { type: 'true' },
+        eligibility: entry.eligibility_condition
+            ? eligibilityStringToCondition(entry.eligibility_condition)
+            : { type: 'true' },
         state: entry.state ? stateStringToObject(entry.state) : {},
     };
 };
