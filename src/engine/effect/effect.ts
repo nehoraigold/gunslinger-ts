@@ -44,11 +44,18 @@ export type SetFlagEffect = {
     value: boolean;
 };
 
+export type InvokeTopicEffect = {
+    type: 'invoke_topic';
+    npcId: string;
+    topicId: string;
+};
+
 export type Effect =
     | MovePlayerEffect
     | AddItemEffect
     | RemoveItemEffect
     | SetFlagEffect
     | SetExitStateEffect
+    | InvokeTopicEffect
     | AddNpcToRoomEffect
     | RemoveNpcFromRoomEffect;

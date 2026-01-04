@@ -8,7 +8,7 @@ import {
 } from './interpreter.state';
 import { Room } from '../domain/room';
 
-const inventoryToVisibleItems = (inventoryId: string, state: GameState): InterpreterInventory => {
+const inventoryToVisibleItems = (inventoryId: string, state: GameState) => {
     const { inventories, items } = state.world;
     const inventory = inventories[inventoryId];
     if (!inventory) {
@@ -35,7 +35,7 @@ const inventoryToVisibleItems = (inventoryId: string, state: GameState): Interpr
     return {
         id: inventoryId,
         items: visibleItems,
-    };
+    } satisfies InterpreterInventory;
 };
 
 const getVisibleExits = (room: Room, gameState: GameState): Partial<Record<Direction, InterpreterExit>> => {
@@ -80,6 +80,7 @@ export const selectInterpreterGameState = (gameState: GameState): InterpreterSta
             name: npc.name,
             aliases: npc.aliases,
             inventory: inventoryToVisibleItems(npc.inventoryId, gameState),
+            visibleTopics: Array.from(npc.topics.visibleTopics),
         }));
     const visibleExits = getVisibleExits(room, gameState);
 

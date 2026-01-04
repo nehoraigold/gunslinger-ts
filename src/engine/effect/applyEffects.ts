@@ -1,5 +1,14 @@
 import { GameState } from '../game.state';
-import { Effect, MovePlayerEffect, SetExitStateEffect, SetFlagEffect, AddItemEffect, RemoveItemEffect } from './effect';
+import {
+    AddItemEffect,
+    Effect,
+    InvokeTopicEffect,
+    MovePlayerEffect,
+    RemoveItemEffect,
+    SetExitStateEffect,
+    SetFlagEffect,
+} from './effect';
+import { TopicState } from '../../domain/npc';
 
 export const applyEffects = (state: GameState, effects: Effect[]): GameState => {
     try {
@@ -26,6 +35,8 @@ const applyEffect = (state: GameState, effect: Effect): GameState => {
             return applySetExitStateEffect(state, effect);
         case 'set_flag':
             return applySetFlagEffect(state, effect);
+        case 'invoke_topic':
+            return applyInvokeTopicEffect(state, effect);
         case 'add_npc_to_room':
         case 'remove_npc_from_room':
             throw new Error(`unimplemented effect: ${effect.type}`);
@@ -140,6 +151,45 @@ const applySetFlagEffect = (state: GameState, effect: SetFlagEffect): GameState 
             flags: {
                 ...state.world.flags,
                 [effect.flag]: effect.value,
+            },
+        },
+    };
+};
+
+const applyInvokeTopicEffect = (state: GameState, effect: InvokeTopicEffect): GameState => {
+    const npc = state.world.npcs[effect.npcId];
+    if (!npc) {
+        throw new Error(`Cannot invoke topic for unknown npc ${effect.npcId}`);
+    }
+
+    const topicDefinition = npc.topics.definitions[effect.topicId];
+    if (!topicDefinition) {
+        throw new Error(`Cannot invoke unknown topic ${effect.topicId} for npc ${effect.npcId}`);
+    }
+
+    const topicState: TopicState = Object.assign({ invokedCount: 0 }, npc.topics.state[effect.topicId]);
+    topicState.invokedCount++;
+
+    const visibleTopicIds = new Set(npc.topics.visibleTopics);
+    topicDefinition.unlocks.forEach((unlock) => visibleTopicIds.add(unlock));
+
+    return {
+        ...state,
+        world: {
+            ...state.world,
+            npcs: {
+                ...state.world.npcs,
+                [npc.id]: {
+                    ...npc,
+                    topics: {
+                        ...npc.topics,
+                        state: {
+                            ...npc.topics.state,
+                            [effect.topicId]: topicState,
+                        },
+                        visibleTopics: visibleTopicIds,
+                    },
+                },
             },
         },
     };

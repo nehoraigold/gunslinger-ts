@@ -1,4 +1,3 @@
-import { Inventory } from '../inventory';
 import { Npc } from './npc';
 
 export type NPCTableEntry = {
@@ -7,6 +6,8 @@ export type NPCTableEntry = {
     description: string;
     aliases: string;
     inventory_id: string;
+    topic_definitions: string | null;
+    visible_topics: string | null;
 };
 
 export const npcTableEntryToState = (entry: NPCTableEntry): Npc => {
@@ -16,5 +17,10 @@ export const npcTableEntryToState = (entry: NPCTableEntry): Npc => {
         aliases: entry.aliases?.split(';'),
         description: entry.description,
         inventoryId: entry.inventory_id,
+        topics: {
+            definitions: entry.topic_definitions ? JSON.parse(entry.topic_definitions) : {},
+            state: {},
+            visibleTopics: new Set(entry.visible_topics ? entry.visible_topics.split(';') : []),
+        },
     };
 };

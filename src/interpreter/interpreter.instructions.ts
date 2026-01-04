@@ -160,6 +160,22 @@ Rules:
 * IDs must exist in game_state
 * Do NOT validate quantity or legality
 
+### DIALOGUE
+
+{
+  "type": "dialogue",
+  "data": {
+    "npcId": "<npc id>",
+    "rawText": "<raw text>",
+    "topicId": "<topic id>"
+  }
+}
+
+Rules:
+* \`npcId\` is required and refers to the NPC with whom the dialogue should occur
+* \`rawText\` is required and should contain the \`action_text\` exactly as typed by the player
+* \`topicId\` is optional. It should ONLY be added if the \`action_text\` corresponds directly to a known visible topic. If the \`action_text\` does not correspond to a visible topic, DO NOT INCLUDE A TOPIC ID.
+
 ### INVENTORY
 
 {

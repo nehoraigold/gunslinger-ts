@@ -1,5 +1,6 @@
 import { Direction } from '../engine/action';
 import { Item } from '../domain/item';
+import { TopicId } from '../domain/npc';
 
 export type NarratorGameState = {
     player: NarratorPlayerState;
@@ -11,6 +12,12 @@ export type NarratorPlayerState = {
 };
 
 export type NarratorItemState = Omit<Item, 'id'> & { quantity: number };
+
+export type NarratorTopicState = {
+    id: TopicId;
+    purpose: string;
+    invokedCount: number;
+};
 
 export type NarratorLocationState = {
     name: string;
@@ -25,4 +32,5 @@ export type NarratorNPCState = {
     description: string;
     aliases: string[];
     inventory: NarratorItemState[];
+    visibleTopics: NarratorTopicState[];
 };

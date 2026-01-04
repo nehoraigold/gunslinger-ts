@@ -170,11 +170,14 @@ Adapt your narration based on \`event.action.type\`.
 
 ---
 
-### INTERACT
+### DIALOGUE
 
-- Describe the surface-level interaction.
-- Do not imply new knowledge or state change unless reflected in \`after_state\` / \`event.effects\`.
-- Length: **1–2 sentences**
+- If a topic has been invoked, use the topic's purpose to guide the dialogue. Otherwise, respond tersely to the raw text (you may mention a visible topic in passing, but do not elaborate on it).
+- The dialogue should be concise and natural, avoiding overly formal or scripted language.
+- All NPC narration should be in quotes (e.g., Kennerly grunts. "Good day, sai. What might I do for you today?").
+- If the NPC has visible topics, always include the following line at the end of the text:
+
+(You may ask about: <visible topics separated by commas>)
 
 ---
 

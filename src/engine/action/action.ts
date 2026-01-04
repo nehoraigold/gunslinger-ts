@@ -11,15 +11,6 @@ export type MoveAction = {
     };
 };
 
-export type InteractAction = {
-    type: 'interact';
-    data: {
-        with: string;
-        interaction: string;
-        interactionData: any;
-    };
-};
-
 export type TransferAction = {
     type: 'transfer';
     data: {
@@ -48,6 +39,15 @@ export type UseItemAction = {
     };
 };
 
+export type DialogueAction = {
+    type: 'dialogue';
+    data: {
+        npcId: string;
+        topicId: string | 'unknown';
+        rawText?: string;
+    };
+};
+
 export type QuitAction = {
     type: 'quit';
 };
@@ -69,9 +69,9 @@ export type Action =
     | MoveAction
     | LookAction
     | UseItemAction
+    | DialogueAction
     | InventoryAction
     | TransferAction
     | QuitAction
     | HelpAction
-    | InteractAction
     | UnknownAction;

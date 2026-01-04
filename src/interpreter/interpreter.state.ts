@@ -7,8 +7,9 @@ export type InterpreterItemState = Omit<Item, 'description' | 'uses' | 'transfer
     use_verbs: string[];
 };
 
-export type InterpreterNPCState = Omit<Npc, 'description' | 'inventoryId'> & {
+export type InterpreterNPCState = Omit<Npc, 'description' | 'inventoryId' | 'topics'> & {
     inventory: InterpreterInventory;
+    visibleTopics: string[];
 };
 
 export type InterpreterInventory = {

@@ -38,6 +38,15 @@ export const selectNarratorGameState = (state: GameState): NarratorGameState => 
                 aliases: npc.aliases,
                 description: npc.description,
                 inventory: npc.inventoryId ? inventoryToVisibleItems(npc.inventoryId, state) : [],
+                visibleTopics: Array.from(npc.topics.visibleTopics).map((topicId) => {
+                    const { purpose } = npc.topics.definitions[topicId];
+                    const { invokedCount } = npc.topics.state[topicId] ?? { invokedCount: 0 };
+                    return {
+                        id: topicId,
+                        purpose,
+                        invokedCount,
+                    };
+                }),
             };
         });
     const exits = Object.fromEntries(
