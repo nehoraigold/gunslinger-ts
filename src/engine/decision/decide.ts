@@ -1,7 +1,13 @@
 import { GameState } from '../game.state';
 import { Action } from '../action';
 import { Decision } from './decision';
-import { resolveMoveAction, resolveTransferAction, resolveUnknownAction, resolveUseItemAction } from './resolve';
+import {
+    resolveLookAction,
+    resolveMoveAction,
+    resolveTransferAction,
+    resolveUnknownAction,
+    resolveUseItemAction,
+} from './resolve';
 import { resolveDialogueAction } from './resolve/resolveDialogueAction';
 
 export const decide = (state: GameState, action: Action): Decision => {
@@ -17,6 +23,7 @@ export const decide = (state: GameState, action: Action): Decision => {
         case 'dialogue':
             return resolveDialogueAction(state, action);
         case 'look':
+            return resolveLookAction(state, action);
         case 'inventory':
         case 'start':
         case 'help':

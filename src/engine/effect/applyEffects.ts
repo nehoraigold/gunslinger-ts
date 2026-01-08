@@ -3,6 +3,7 @@ import {
     AddItemEffect,
     Effect,
     InvokeTopicEffect,
+    LookEffect,
     MovePlayerEffect,
     RemoveItemEffect,
     SetExitStateEffect,
@@ -37,6 +38,8 @@ const applyEffect = (state: GameState, effect: Effect): GameState => {
             return applySetFlagEffect(state, effect);
         case 'invoke_topic':
             return applyInvokeTopicEffect(state, effect);
+        case 'look':
+            return applyLookEffect(state, effect);
         case 'add_npc_to_room':
         case 'remove_npc_from_room':
             throw new Error(`unimplemented effect: ${effect.type}`);
@@ -57,7 +60,7 @@ const applyMovePlayerEffect = (state: GameState, effect: MovePlayerEffect): Game
                 ...state.world.rooms,
                 [nextRoom.id]: {
                     ...nextRoom,
-                    visited: true,
+                    visitedCount: nextRoom.visitedCount + 1,
                 },
             },
         },
@@ -189,6 +192,23 @@ const applyInvokeTopicEffect = (state: GameState, effect: InvokeTopicEffect): Ga
                         },
                         visibleTopics: visibleTopicIds,
                     },
+                },
+            },
+        },
+    };
+};
+
+const applyLookEffect = (state: GameState, effect: LookEffect): GameState => {
+    const room = state.world.rooms[effect.roomId];
+    return {
+        ...state,
+        world: {
+            ...state.world,
+            rooms: {
+                ...state.world.rooms,
+                [room.id]: {
+                    ...room,
+                    lookCount: room.lookCount + 1,
                 },
             },
         },

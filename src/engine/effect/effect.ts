@@ -50,6 +50,11 @@ export type InvokeTopicEffect = {
     topicId: string;
 };
 
+export type LookEffect = {
+    type: 'look';
+    roomId: string;
+};
+
 export type Effect =
     | MovePlayerEffect
     | AddItemEffect
@@ -57,5 +62,6 @@ export type Effect =
     | SetFlagEffect
     | SetExitStateEffect
     | InvokeTopicEffect
+    | LookEffect
     | AddNpcToRoomEffect
     | RemoveNpcFromRoomEffect;

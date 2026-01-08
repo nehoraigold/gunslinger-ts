@@ -15,13 +15,17 @@ async function main() {
     let state = initGameState();
 
     spinner = spinner.start();
-    let text = await narrator.narrate(state, state, [
-        {
-            action: { type: 'start' },
-            outcome: { result: 'success' },
-            effects: [],
-        },
-    ]);
+    let text = await narrator.narrate(
+        state,
+        [
+            {
+                action: { type: 'start' },
+                outcome: { result: 'success' },
+                effects: [],
+            },
+        ],
+        '',
+    );
     spinner.stop();
 
     console.log(formatToHeader(getCurrentRoom(state).name));
@@ -29,9 +33,9 @@ async function main() {
 
     while (true) {
         console.log('');
-        const input = await getUserInput('');
+        const playerText = await getUserInput('');
         spinner = spinner.start();
-        const actions = [await interpreter.parse(input, state)].flat();
+        const actions = [await interpreter.parse(playerText, state)].flat();
         spinner.stop();
 
         if (actions.some((action) => action.type === 'quit')) {
@@ -53,7 +57,7 @@ async function main() {
 
         console.log('events', JSON.stringify(events, null, 2));
         spinner = spinner.start();
-        text = await narrator.narrate(state, nextState, events);
+        text = await narrator.narrate(nextState, events, playerText);
         spinner.stop();
 
         if (events.some(({ action, outcome }) => action.type === 'move' && outcome.result === 'success')) {

@@ -1,4 +1,3 @@
-import { Direction } from '../../engine/action';
 import { Room } from './room';
 import { Exit } from '../exit';
 
@@ -22,7 +21,8 @@ export const roomTableEntryToState = (entry: RoomTableEntry, exits: Exit[]): Roo
         description: entry.description,
         npcIds: entry.npc_ids?.split(';') ?? [],
         inventoryId,
-        visited: false,
+        visitedCount: 0,
+        lookCount: 0,
         exits: Object.fromEntries(roomExits.map((exit) => [exit.direction, exit.id])),
     };
 };

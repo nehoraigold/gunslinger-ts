@@ -1,7 +1,7 @@
 export type TopicId = string;
 
 export type TopicDefinition = {
-    purpose: string;
+    summary: string;
     unlocks: TopicId[];
 };
 

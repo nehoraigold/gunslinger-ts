@@ -4,7 +4,7 @@ import { ToolLoopAgent } from 'ai';
 import { GameState, Event } from '../engine';
 import INSTRUCTIONS from './narrator.instructions';
 import { NarratorInput } from './narrator.input';
-import { selectNarratorGameState } from './narrator.selector';
+import { generateNarratorInput } from './generateNarratorInput';
 import { AvailableLLMs } from '../availableLLMs';
 
 const NARRATOR_MODEL: AvailableLLMs = 'gpt-oss:20b';
@@ -22,17 +22,14 @@ export class Narrator {
         });
     }
 
-    public async narrate(beforeState: GameState, afterState: GameState, events: Event[]): Promise<string> {
+    public async narrate(state: GameState, events: Event[], playerText: string): Promise<string> {
         if (this.mode === 'off') {
             return JSON.stringify(events, null, 2);
         }
 
         try {
-            const input: NarratorInput = {
-                before_state: selectNarratorGameState(beforeState),
-                after_state: selectNarratorGameState(afterState),
-                events: events,
-            };
+            const input = generateNarratorInput(state, events, playerText);
+            console.log(`Narrating: ${JSON.stringify(input)}`);
             return this.sendToAgent(JSON.stringify(input));
         } catch (e: any) {
             console.error(`${e}`);
