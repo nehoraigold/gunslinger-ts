@@ -14,22 +14,18 @@ async function main() {
     let spinner = ora({ spinner: 'simpleDots' });
     let state = initGameState();
 
+    const startEvents: Event[] = [
+        {
+            action: { type: 'start' },
+            outcome: { result: 'success' },
+            effects: [],
+        },
+    ];
     spinner = spinner.start();
-    let text = await narrator.narrate(
-        state,
-        [
-            {
-                action: { type: 'start' },
-                outcome: { result: 'success' },
-                effects: [],
-            },
-        ],
-        '',
-    );
+    let text = await narrator.narrate(state, startEvents, '');
     spinner.stop();
 
-    console.log(formatToHeader(getCurrentRoom(state).name));
-    console.log(text);
+    printTurn(text, startEvents, state);
 
     while (true) {
         console.log('');
@@ -37,10 +33,9 @@ async function main() {
         spinner = spinner.start();
         const actions = [await interpreter.parse(playerText, state)].flat();
         spinner.stop();
-
         if (actions.some((action) => action.type === 'quit')) {
             console.log('Goodbye!');
-            break;
+            return;
         }
 
         const events: Event[] = [];
@@ -60,14 +55,23 @@ async function main() {
         text = await narrator.narrate(nextState, events, playerText);
         spinner.stop();
 
-        if (events.some(({ action, outcome }) => action.type === 'move' && outcome.result === 'success')) {
-            console.log(formatToHeader(getCurrentRoom(nextState).name));
-        }
-        console.log(text);
+        printTurn(text, events, nextState);
         state = nextState;
     }
 }
 
 const getCurrentRoom = ({ world, player }: GameState): Room => world.rooms[player.currentRoomId];
+
+const printTurn = (narration: string, events: Event[], state: GameState) => {
+    if (
+        events.some(
+            ({ action, outcome }) =>
+                action.type === 'start' || (action.type === 'move' && outcome.result === 'success'),
+        )
+    ) {
+        console.log(formatToHeader(getCurrentRoom(state).name));
+    }
+    console.log(narration);
+};
 
 main();

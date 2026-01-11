@@ -1,11 +1,12 @@
-import { GameState, Event, DialogueAction, TransferAction, applyEffects } from '../engine';
+import { GameState, Event, DialogueAction, TransferAction } from '../engine';
 import {
     NarratorInput,
     NarrationUnit,
-    DialogueNarrationUnit,
-    MoveNarrationUnit,
-    LookNarrationUnit,
-    TransferNarrationUnit,
+    DialogueNarrationContext,
+    NarrationContext,
+    MoveNarrationContext,
+    TransferNarrationContext,
+    LookNarrationContext,
 } from './narrator.input';
 
 export const generateNarratorInput = (state: GameState, events: Event[], playerText: string): NarratorInput => {
@@ -17,28 +18,33 @@ export const generateNarratorInput = (state: GameState, events: Event[], playerT
 
 const generateNarrationUnits = (state: GameState, events: Event[]): NarrationUnit[] => {
     return events.map((event) => {
-        switch (event.action.type) {
-            case 'move':
-                return generateMoveNarrationUnit(state, event);
-            case 'dialogue':
-                return generateDialogueNarrationUnit(state, event);
-            case 'start':
-                return generateMoveNarrationUnit(state, event);
-            case 'transfer':
-                return generateTransferNarrationUnit(state, event);
-            case 'look':
-                return generateLookNarrationUnit(state, event);
-            case 'unknown':
-            case 'use_item':
-            case 'inventory':
-            case 'help':
-            case 'quit':
-                throw new Error(`Narration unit generation not implemented for action type ${event.action.type}`);
-        }
+        const context = generateNarrationContext(state, event);
+        const effectsApplied = event.effects?.map(({ type }) => type) ?? [];
+        return { context, effectsApplied };
     });
 };
 
-const generateDialogueNarrationUnit = (state: GameState, event: Event): DialogueNarrationUnit => {
+const generateNarrationContext = (state: GameState, event: Event): NarrationContext => {
+    switch (event.action.type) {
+        case 'move':
+            return generateMoveNarrationContext(state, event);
+        case 'dialogue':
+            return generateDialogueNarrationContext(state, event);
+        case 'transfer':
+            return generateTransferNarrationContext(state, event);
+        case 'start':
+        case 'look':
+            return generateLookNarrationContext(state, event);
+        case 'use_item':
+        case 'unknown':
+        case 'inventory':
+        case 'help':
+        case 'quit':
+            throw new Error(`Narration unit generation not implemented for action type ${event.action.type}`);
+    }
+};
+
+const generateDialogueNarrationContext = (state: GameState, event: Event): DialogueNarrationContext => {
     const action = event.action as DialogueAction;
     const npc = state.world.npcs[action.data.npcId];
     const isTopicInvocation = action.data.topicId in npc.topics.definitions;
@@ -54,10 +60,8 @@ const generateDialogueNarrationUnit = (state: GameState, event: Event): Dialogue
     });
 
     return {
-        narrationContext: {
-            actionType: 'dialogue',
-            mode: isRepeatedTopicInvocation ? 'topic_repeat' : isTopicInvocation ? 'topic_invocation' : 'freeform',
-        },
+        actionType: 'dialogue',
+        mode: isRepeatedTopicInvocation ? 'topic_repeat' : isTopicInvocation ? 'topic_invocation' : 'freeform',
         data: {
             npc: {
                 id: npc.id,
@@ -70,18 +74,15 @@ const generateDialogueNarrationUnit = (state: GameState, event: Event): Dialogue
                 unlockedThisTurn: [],
             },
         },
-        effectsApplied: event.effects?.map(({ type }) => type) ?? [],
     };
 };
 
-const generateMoveNarrationUnit = (state: GameState, event: Event): MoveNarrationUnit => {
+const generateMoveNarrationContext = (state: GameState, event: Event): MoveNarrationContext => {
     const room = state.world.rooms[state.player.currentRoomId];
     const roomInventory = state.world.inventories[room.inventoryId];
     return {
-        narrationContext: {
-            actionType: 'move',
-            mode: 'walk',
-        },
+        actionType: 'move',
+        mode: 'walk',
         data: {
             result: event.outcome.result === 'success' ? 'success' : 'failure',
             reason: event.outcome.reasons?.[0]?.messageKey,
@@ -104,18 +105,15 @@ const generateMoveNarrationUnit = (state: GameState, event: Event): MoveNarratio
                 };
             }),
         },
-        effectsApplied: event.effects?.map(({ type }) => type) ?? [],
     };
 };
 
-const generateLookNarrationUnit = (state: GameState, event: Event): LookNarrationUnit => {
+const generateLookNarrationContext = (state: GameState, event: Event): LookNarrationContext => {
     const room = state.world.rooms[state.player.currentRoomId];
     const roomInventory = state.world.inventories[room.inventoryId];
     return {
-        narrationContext: {
-            actionType: 'look',
-            mode: room.lookCount === 1 ? 'initial' : 'repeat',
-        },
+        actionType: 'look',
+        mode: room.lookCount <= 1 ? 'initial' : 'repeat',
         data: {
             locationName: room.name,
             locationDescription: room.description,
@@ -136,19 +134,16 @@ const generateLookNarrationUnit = (state: GameState, event: Event): LookNarratio
                 };
             }),
         },
-        effectsApplied: event.effects?.map(({ type }) => type) ?? [],
     };
 };
 
-const generateTransferNarrationUnit = (state: GameState, event: Event): TransferNarrationUnit => {
+const generateTransferNarrationContext = (state: GameState, event: Event): TransferNarrationContext => {
     const action = event.action as TransferAction;
     const isSuccessful = event.outcome.result === 'success';
     const item = state.world.items[action.data.itemId];
     return {
-        narrationContext: {
-            actionType: 'transfer',
-            mode: 'normal',
-        },
+        actionType: 'transfer',
+        mode: 'normal',
         data: {
             result: isSuccessful ? 'success' : 'failure',
             reasons: !isSuccessful ? event.outcome.reasons?.map(({ messageKey }) => messageKey) : undefined,
@@ -160,6 +155,5 @@ const generateTransferNarrationUnit = (state: GameState, event: Event): Transfer
             from: action.data.fromInventoryId,
             to: action.data.toInventoryId,
         },
-        effectsApplied: event.effects?.map((effect) => effect.type) ?? [],
     };
 };

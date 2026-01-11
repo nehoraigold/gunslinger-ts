@@ -3,11 +3,14 @@ export type NarratorInput = {
     narrationPlan: NarrationUnit[];
 };
 
-export type DialogueNarrationUnit = {
-    narrationContext: {
-        actionType: 'dialogue';
-        mode: 'greeting' | 'topic_invocation' | 'topic_repeat' | 'freeform';
-    };
+export type NarrationUnit = {
+    context: NarrationContext;
+    effectsApplied: string[];
+};
+
+export type DialogueNarrationContext = {
+    actionType: 'dialogue';
+    mode: 'greeting' | 'topic_invocation' | 'topic_repeat' | 'freeform';
     data: {
         npc: {
             id: string;
@@ -25,14 +28,11 @@ export type DialogueNarrationUnit = {
             unlockedThisTurn: string[];
         };
     };
-    effectsApplied: string[];
 };
 
-export type MoveNarrationUnit = {
-    narrationContext: {
-        actionType: 'move';
-        mode: 'walk';
-    };
+export type MoveNarrationContext = {
+    actionType: 'move';
+    mode: 'walk';
     data: {
         result: 'success' | 'failure';
         reason?: string;
@@ -49,14 +49,11 @@ export type MoveNarrationUnit = {
             description: string;
         }>;
     };
-    effectsApplied: string[];
 };
 
-export type LookNarrationUnit = {
-    narrationContext: {
-        actionType: 'look';
-        mode: 'initial' | 'repeat';
-    };
+export type LookNarrationContext = {
+    actionType: 'look';
+    mode: 'initial' | 'repeat';
     data: {
         locationName?: string;
         locationDescription?: string;
@@ -71,14 +68,11 @@ export type LookNarrationUnit = {
             description: string;
         }>;
     };
-    effectsApplied: string[];
 };
 
-export type InventoryNarrationUnit = {
-    narrationContext: {
-        actionType: 'inventory';
-        mode: 'normal';
-    };
+export type InventoryNarrationContext = {
+    actionType: 'inventory';
+    mode: 'normal';
     data: {
         items: Array<{
             name: string;
@@ -86,14 +80,11 @@ export type InventoryNarrationUnit = {
             quantity: number;
         }>;
     };
-    effectsApplied: string[];
 };
 
-export type TransferNarrationUnit = {
-    narrationContext: {
-        actionType: 'transfer';
-        mode: 'normal';
-    };
+export type TransferNarrationContext = {
+    actionType: 'transfer';
+    mode: 'normal';
     data: {
         result: 'success' | 'failure';
         reasons?: string[];
@@ -105,12 +96,11 @@ export type TransferNarrationUnit = {
         from?: string;
         to?: string;
     };
-    effectsApplied: string[];
 };
 
-export type NarrationUnit =
-    | DialogueNarrationUnit
-    | MoveNarrationUnit
-    | LookNarrationUnit
-    | InventoryNarrationUnit
-    | TransferNarrationUnit;
+export type NarrationContext =
+    | DialogueNarrationContext
+    | MoveNarrationContext
+    | LookNarrationContext
+    | InventoryNarrationContext
+    | TransferNarrationContext;
