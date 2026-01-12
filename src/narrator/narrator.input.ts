@@ -19,7 +19,7 @@ export type DialogueNarrationContext = {
             description?: string;
         };
         topics: {
-            resolution: { type: 'matched'; topicId: string } | { type: 'none' };
+            resolution: { type: 'matched'; topicId: string; topicSummary: string } | { type: 'none' };
             visible: Array<{
                 id: string;
                 summary: string;
@@ -66,6 +66,7 @@ export type LookNarrationContext = {
         visibleNpcs?: Array<{
             name: string;
             description: string;
+            topics: { topicId: string; summary: string }[];
         }>;
     };
 };

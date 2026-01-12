@@ -2,7 +2,7 @@ import { ollama } from 'ai-sdk-ollama';
 import { ToolLoopAgent } from 'ai';
 import { Action } from '../engine';
 import { GameState } from '../engine';
-import { selectInterpreterGameState } from './selectInterpreterGameState';
+import { generateInterpreterInput } from './generateInterpreterInput';
 import INSTRUCTIONS from './interpreter.instructions';
 import { AvailableLLMs } from '../availableLLMs';
 
@@ -21,13 +21,10 @@ export class Interpreter {
 
     public async parse(prompt: string, state: GameState): Promise<Action | Action[]> {
         try {
-            const interpreterState = selectInterpreterGameState(state);
-            const input = JSON.stringify({
-                game_state: interpreterState,
-                action_text: prompt,
-            });
+            const input = generateInterpreterInput(prompt, state);
+            console.log(`Interpreting: ${JSON.stringify(input)}`);
             const response = await this.agent.generate({
-                prompt: input,
+                prompt: JSON.stringify(input),
             });
 
             const content = response.steps[0].content;

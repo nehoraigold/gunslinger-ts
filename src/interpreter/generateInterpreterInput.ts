@@ -1,12 +1,55 @@
 import { GameState, evaluateCondition, Direction } from '../engine';
 import {
-    InterpreterState,
+    InterpreterInput,
     InterpreterItemState,
     InterpreterInventory,
     InterpreterNPCState,
     InterpreterExit,
-} from './interpreter.state';
+} from './interpreter.input';
 import { Room } from '../domain/room';
+
+export const generateInterpreterInput = (playerText: string, gameState: GameState): InterpreterInput => {
+    const { player, world } = gameState;
+    const room = world.rooms[player.currentRoomId];
+
+    if (!room) {
+        throw new Error(`Invalid game state: room ${player.currentRoomId} not found`);
+    }
+
+    const inventory = inventoryToVisibleItems(player.inventoryId, gameState);
+    const visibleItems = inventoryToVisibleItems(room.inventoryId, gameState);
+
+    const visibleNPCs: InterpreterNPCState[] = room.npcIds
+        .map((npcId) => world.npcs[npcId])
+        .map((npc) => ({
+            id: npc.id,
+            name: npc.name,
+            aliases: npc.aliases,
+            inventory: inventoryToVisibleItems(npc.inventoryId, gameState),
+            visibleTopics: Array.from(npc.topics.visibleTopics),
+        }));
+    const visibleExits = getVisibleExits(room, gameState);
+
+    const state = {
+        room: {
+            id: room.id,
+            name: room.name,
+            description: room.description,
+            inventory: visibleItems,
+        },
+        visibleNPCs,
+        visibleExits,
+        player: {
+            name: player.name,
+            description: player.description,
+            inventory: inventory,
+        },
+    };
+    return {
+        action_text: playerText,
+        game_state: state,
+    };
+};
 
 const inventoryToVisibleItems = (inventoryId: string, state: GameState) => {
     const { inventories, items } = state.world;
@@ -60,43 +103,4 @@ const getVisibleExits = (room: Room, gameState: GameState): Partial<Record<Direc
             ];
         }),
     );
-};
-
-export const selectInterpreterGameState = (gameState: GameState): InterpreterState => {
-    const { player, world } = gameState;
-    const room = world.rooms[player.currentRoomId];
-
-    if (!room) {
-        throw new Error(`Invalid game state: room ${player.currentRoomId} not found`);
-    }
-
-    const inventory = inventoryToVisibleItems(player.inventoryId, gameState);
-    const visibleItems = inventoryToVisibleItems(room.inventoryId, gameState);
-
-    const visibleNPCs: InterpreterNPCState[] = room.npcIds
-        .map((npcId) => world.npcs[npcId])
-        .map((npc) => ({
-            id: npc.id,
-            name: npc.name,
-            aliases: npc.aliases,
-            inventory: inventoryToVisibleItems(npc.inventoryId, gameState),
-            visibleTopics: Array.from(npc.topics.visibleTopics),
-        }));
-    const visibleExits = getVisibleExits(room, gameState);
-
-    return {
-        room: {
-            id: room.id,
-            name: room.name,
-            description: room.description,
-            inventory: visibleItems,
-        },
-        visibleNPCs,
-        visibleExits,
-        player: {
-            name: player.name,
-            description: player.description,
-            inventory: inventory,
-        },
-    };
 };

@@ -12,8 +12,8 @@ export default `
   - Comments
   - Explanations
   - Leading or trailing text
-- If anything other than raw JSON is produced, the output is **invalid**.
 
+If anything other than raw JSON is produced, the output is **invalid**.
 If you are uncertain or about to violate any rule, output a valid **UNKNOWN** action as raw JSON.
 
 ---
@@ -174,7 +174,12 @@ Rules:
 Rules:
 * \`npcId\` is required and refers to the NPC with whom the dialogue should occur
 * \`rawText\` is required and should contain the \`action_text\` exactly as typed by the player
-* \`topicId\` is optional. It MUST be added ONLY if the \`action_text\` corresponds directly to a known visible topic. If the \`action_text\` does not correspond to a visible topic, DO NOT INCLUDE A TOPIC ID.
+* If the player’s \`action_text\` contains the name or alias of a visible topic verbatim or near-verbatim, you MUST include \`topicId\`. This includes phrases such as:
+    * “ask about X”
+    * “tell me about X”
+    * “what about X”
+    * “X?”
+* If a visible topic appears in the player’s text, it takes precedence over generic dialogue interpretation. If a visible topic appears explicitly in the text, omission of \`topicId\` is an error.
 
 ### INVENTORY
 

@@ -1,3 +1,3 @@
-export * from './interpreter.state';
-export * from './selectInterpreterGameState';
+export * from './interpreter.input';
+export * from './generateInterpreterInput';
 export * from './interpreter';

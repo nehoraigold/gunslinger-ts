@@ -26,13 +26,14 @@ const generateNarrationUnits = (state: GameState, events: Event[]): NarrationUni
 
 const generateNarrationContext = (state: GameState, event: Event): NarrationContext => {
     switch (event.action.type) {
+        case 'start':
+            return generateLookNarrationContext(state, event);
         case 'move':
             return generateMoveNarrationContext(state, event);
         case 'dialogue':
             return generateDialogueNarrationContext(state, event);
         case 'transfer':
             return generateTransferNarrationContext(state, event);
-        case 'start':
         case 'look':
             return generateLookNarrationContext(state, event);
         case 'use_item':
@@ -69,7 +70,13 @@ const generateDialogueNarrationContext = (state: GameState, event: Event): Dialo
                 description: npc.description,
             },
             topics: {
-                resolution: isTopicInvocation ? { type: 'matched', topicId: action.data.topicId } : { type: 'none' },
+                resolution: isTopicInvocation
+                    ? {
+                          type: 'matched',
+                          topicId: action.data.topicId,
+                          topicSummary: npc.topics.definitions[action.data.topicId].summary,
+                      }
+                    : { type: 'none' },
                 visible: visibleTopics,
                 unlockedThisTurn: [],
             },
@@ -128,9 +135,15 @@ const generateLookNarrationContext = (state: GameState, event: Event): LookNarra
             }),
             visibleNpcs: room.npcIds.map((npcId) => {
                 const npc = state.world.npcs[npcId];
+                const topics = npc.topics.definitions;
+                const visibleTopics = Array.from(npc.topics.visibleTopics);
                 return {
                     name: npc.name,
                     description: npc.description,
+                    topics: visibleTopics.map((topicId) => ({
+                        topicId,
+                        summary: topics[topicId].summary,
+                    })),
                 };
             }),
         },

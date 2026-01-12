@@ -2,6 +2,11 @@ import { Item } from '../domain/item';
 import { Npc } from '../domain/npc';
 import { Direction } from '../engine';
 
+export type InterpreterInput = {
+    game_state: InterpreterGameState;
+    action_text: string;
+};
+
 export type InterpreterItemState = Omit<Item, 'description' | 'uses' | 'transferable'> & {
     quantity: number;
     use_verbs: string[];
@@ -24,7 +29,7 @@ export type InterpreterExit = {
     toRoomId: string;
 };
 
-export type InterpreterState = {
+export type InterpreterGameState = {
     room: {
         id: string;
         name: string;
