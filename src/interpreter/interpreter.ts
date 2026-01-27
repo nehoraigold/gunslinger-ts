@@ -1,5 +1,7 @@
 import { ollama } from 'ai-sdk-ollama';
 import { ToolLoopAgent } from 'ai';
+
+import { Logger } from '../utils';
 import { Action } from '../engine';
 import { GameState } from '../engine';
 import { generateInterpreterInput } from './generateInterpreterInput';
@@ -22,7 +24,7 @@ export class Interpreter {
     public async parse(prompt: string, state: GameState): Promise<Action | Action[]> {
         try {
             const input = generateInterpreterInput(prompt, state);
-            console.log(`Interpreting: ${JSON.stringify(input)}`);
+            Logger.debug(`Interpreting: ${JSON.stringify(input, null, 2)}`);
             const response = await this.agent.generate({
                 prompt: JSON.stringify(input),
             });
@@ -36,7 +38,7 @@ export class Interpreter {
                 data: { reason: 'unparsable', message: `Unexpected response type ${content[0]?.type} from LLM` },
             };
         } catch (error: any) {
-            console.error(error);
+            Logger.error(error);
             return { type: 'unknown', data: { reason: 'unparsable', message: error.message } };
         }
     }

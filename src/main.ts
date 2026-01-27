@@ -2,13 +2,14 @@ import * as fs from 'node:fs';
 import ora from 'ora';
 
 import { applyEffects, GameState, initGameState, decide, Event } from './engine';
-import { formatToHeader, getUserInput } from './utils';
+import { formatToHeader, getUserInput, Logger } from './utils';
 import { Interpreter } from './interpreter';
 import { Narrator } from './narrator';
 import { Room } from './domain/room';
 
 async function main() {
     const config = JSON.parse(fs.readFileSync('../config.local.json', 'utf-8'));
+    Logger.initialize(config);
     const interpreter = new Interpreter();
     const narrator = new Narrator(config);
     let spinner = ora({ spinner: 'simpleDots' });
@@ -28,13 +29,12 @@ async function main() {
     printTurn(text, startEvents, state);
 
     while (true) {
-        console.log('');
         const playerText = await getUserInput('');
         spinner = spinner.start();
         const actions = [await interpreter.parse(playerText, state)].flat();
         spinner.stop();
         if (actions.some((action) => action.type === 'quit')) {
-            console.log('Goodbye!');
+            Logger.info('Goodbye!');
             return;
         }
 
@@ -50,7 +50,7 @@ async function main() {
             }
         }
 
-        console.log('events', JSON.stringify(events, null, 2));
+        Logger.debug('events', JSON.stringify(events, null, 2));
         spinner = spinner.start();
         text = await narrator.narrate(nextState, events, playerText);
         spinner.stop();

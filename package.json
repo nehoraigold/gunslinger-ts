@@ -41,7 +41,7 @@
         "googleapis": "^169.0.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.0.0",
-        "mocha": "^11.4.0",
+        "mocha": "^11.3.0",
         "prettier": "^3.5.3",
         "sinon": "^21.0.0",
         "ts-loader": "^9.4.1",
@@ -50,8 +50,10 @@
         "typescript": "^5.1.6"
     },
     "dependencies": {
+        "@types/chalk": "^0.4.31",
         "ai": "^6.0.3",
         "ai-sdk-ollama": "^3.0.0",
+        "chalk": "^5.6.2",
         "ora": "^9.0.0",
         "papaparse": "^5.5.3"
     },

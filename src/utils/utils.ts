@@ -1,7 +1,10 @@
 import * as readline from 'readline';
+import chalk from 'chalk';
+
 import { Print } from './print';
 
 export const getUserInput = (query?: string): Promise<string> => {
+    console.log('');
     const rl = readline.createInterface({
         input: process.stdin,
     });
@@ -10,6 +13,16 @@ export const getUserInput = (query?: string): Promise<string> => {
             Print.Message(query);
         }
         rl.question('', (answer) => {
+            if (process.stdout.isTTY) {
+                readline.moveCursor(process.stdout, 0, -1);
+
+                // Clear that line
+                readline.clearLine(process.stdout, 0);
+
+                // Re-print the input in green
+                console.log(chalk.cyan(answer));
+            }
+
             rl.close();
             resolve(answer);
         });

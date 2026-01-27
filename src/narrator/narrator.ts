@@ -1,9 +1,9 @@
 import { ollama } from 'ai-sdk-ollama';
 import { ToolLoopAgent } from 'ai';
 
+import { Logger } from '../utils';
 import { GameState, Event } from '../engine';
 import INSTRUCTIONS from './narrator.instructions';
-import { NarratorInput } from './narrator.input';
 import { generateNarratorInput } from './generateNarratorInput';
 import { AvailableLLMs } from '../availableLLMs';
 
@@ -29,10 +29,10 @@ export class Narrator {
 
         try {
             const input = generateNarratorInput(state, events, playerText);
-            console.log(`Narrating: ${JSON.stringify(input)}`);
+            Logger.debug(`Narrating: ${JSON.stringify(input, null, 2)}`);
             return this.sendToAgent(JSON.stringify(input));
         } catch (e: any) {
-            console.error(`${e}`);
+            Logger.error(`${e}`);
             return e.message;
         }
     }
