@@ -1,35 +1,37 @@
-import chalk from 'chalk';
+// @ts-ignore
+import chalk, { ChalkChain } from 'chalk';
 
-export type LogLevel = 'debug' | 'error' | 'off';
+class ConsoleLogger {
+    constructor(private id: string) {}
 
-let logLevel: LogLevel = 'off';
+    debug(...message: any[]) {
+        this.print('debug', chalk.dim, ...message);
+    }
 
-export namespace Logger {
-    export const initialize = (config: any): void => {
-        logLevel = config?.logLevel ?? 'off';
-    };
+    info(...message: any[]) {
+        this.print('info', chalk.cyan, ...message);
+    }
 
-    export const debug = (...message: string[]): void => {
-        if (logLevel !== 'debug') {
+    warn(...message: any[]) {
+        this.print('warn', chalk.yellow, ...message);
+    }
+
+    error(...message: any[]) {
+        this.print('error', chalk.red, ...message);
+    }
+
+    private print(func: 'debug' | 'info' | 'warn' | 'error', color: ChalkChain, ...message: any[]) {
+        const logFunc = console[func];
+        if (!logFunc || typeof logFunc !== 'function') {
             return;
         }
-        // eslint-disable-next-line no-console
-        console.debug(chalk.dim(...message));
-    };
+        const log = this.prep(func, color, ...message);
+        logFunc(log);
+    }
 
-    export const error = (...message: string[]): void => {
-        if (logLevel === 'off') {
-            return;
-        }
-        // eslint-disable-next-line no-console
-        console.error(chalk.red(...message));
-    };
-
-    export const info = (...message: string[]): void => {
-        if (logLevel === 'off') {
-            return;
-        }
-        // eslint-disable-next-line no-console
-        console.log(chalk.white(...message));
-    };
+    private prep(func: string, color: ChalkChain, ...message: any[]): string {
+        return color(`${new Date().toISOString()} [${func.toUpperCase()}] ${this.id} | ${message.join(' ')}`);
+    }
 }
+
+export const getLogger = (id: string) => new ConsoleLogger(id);

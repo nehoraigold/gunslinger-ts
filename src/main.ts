@@ -1,77 +1,53 @@
-import * as fs from 'node:fs';
-import ora from 'ora';
+import { formatToHeader, getLogger, getUserInput, Print } from './utils';
+import { GameStorage } from './engine/meta/GameStorage';
+import { initGameState } from './initGameState';
+import { move } from './tools/actions/move';
+import { Direction } from './engine/room';
+import { StateManager } from './engine/state/StateManager';
 
-import { applyEffects, GameState, initGameState, decide, Event } from './engine';
-import { formatToHeader, getUserInput, Logger } from './utils';
-import { Interpreter } from './interpreter';
-import { Narrator } from './narrator';
-import { Room } from './domain/room';
+const log = getLogger('main');
 
 async function main() {
-    const config = JSON.parse(fs.readFileSync('../config.local.json', 'utf-8'));
-    Logger.initialize(config);
-    const interpreter = new Interpreter();
-    const narrator = new Narrator(config);
-    let spinner = ora({ spinner: 'simpleDots' });
-    let state = initGameState();
-
-    const startEvents: Event[] = [
-        {
-            action: { type: 'start' },
-            outcome: { result: 'success' },
-            effects: [],
-        },
-    ];
-    spinner = spinner.start();
-    let text = await narrator.narrate(state, startEvents, '');
-    spinner.stop();
-
-    printTurn(text, startEvents, state);
-
-    while (true) {
-        const playerText = await getUserInput('');
-        spinner = spinner.start();
-        const actions = [await interpreter.parse(playerText, state)].flat();
-        spinner.stop();
-        if (actions.some((action) => action.type === 'quit')) {
-            Logger.info('Goodbye!');
-            return;
+    const storage = new GameStorage('./saves');
+    const stateManager = new StateManager((await storage.load('1')) ?? initGameState());
+    let input = '';
+    while (input !== 'q') {
+        const state = stateManager.beginTransaction();
+        const room = state.world.rooms[state.player.currentRoomId];
+        Print.Message(formatToHeader(`${room.name} (${room.id})`));
+        input = await getUserInput();
+        if (input === 'q' || input === 'quit') {
+            break;
         }
-
-        const events: Event[] = [];
-        let nextState = state;
-
-        for (const action of actions) {
-            const decision = decide(nextState, action);
-            nextState = applyEffects(nextState, decision.effects ?? []);
-            events.push({ action, ...decision });
-            if (decision.outcome.result !== 'success') {
-                break;
-            }
+        let { state: nextState, outcome } = move(state, { direction: inputToDirection(input) });
+        Print.Message(`Outcome: ${JSON.stringify(outcome, null, 2)}`);
+        if (nextState) {
+            stateManager.commit(nextState);
+        } else {
+            stateManager.rollback();
         }
-
-        Logger.debug('events', JSON.stringify(events, null, 2));
-        spinner = spinner.start();
-        text = await narrator.narrate(nextState, events, playerText);
-        spinner.stop();
-
-        printTurn(text, events, nextState);
-        state = nextState;
     }
+    await storage.save('1', stateManager.getState());
+    Print.Message('Goodbye!');
 }
 
-const getCurrentRoom = ({ world, player }: GameState): Room => world.rooms[player.currentRoomId];
-
-const printTurn = (narration: string, events: Event[], state: GameState) => {
-    if (
-        events.some(
-            ({ action, outcome }) =>
-                action.type === 'start' || (action.type === 'move' && outcome.result === 'success'),
-        )
-    ) {
-        console.log(formatToHeader(getCurrentRoom(state).name));
+function inputToDirection(input: string): Direction {
+    switch (input) {
+        case 'n':
+            return 'north';
+        case 'e':
+            return 'east';
+        case 'w':
+            return 'west';
+        case 's':
+            return 'south';
+        case 'u':
+            return 'up';
+        case 'd':
+            return 'down';
+        default:
+            return '' as Direction;
     }
-    console.log(narration);
-};
+}
 
 main();
