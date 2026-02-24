@@ -1,9 +1,11 @@
 import { formatToHeader, getLogger, getUserInput, Print } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
 import { initGameState } from './initGameState';
-import { move } from './tools/actions/move';
+import { MoveAction } from './tools/actions/move';
+import { LookRoomAction } from './tools/actions/lookRoom';
 import { Direction } from './engine/room';
 import { StateManager } from './engine/state/StateManager';
+import { GameState } from './engine/state/GameState';
 
 const log = getLogger('main');
 
@@ -15,11 +17,13 @@ async function main() {
         const state = stateManager.beginTransaction();
         const room = state.world.rooms[state.player.currentRoomId];
         Print.Message(formatToHeader(`${room.name} (${room.id})`));
+
         input = await getUserInput();
         if (input === 'q' || input === 'quit') {
             break;
         }
-        let { state: nextState, outcome } = move(state, { direction: inputToDirection(input) });
+
+        let { state: nextState, outcome } = takeAction(state, input);
         Print.Message(`Outcome: ${JSON.stringify(outcome, null, 2)}`);
         if (nextState) {
             stateManager.commit(nextState);
@@ -29,6 +33,15 @@ async function main() {
     }
     await storage.save('1', stateManager.getState());
     Print.Message('Goodbye!');
+}
+
+function takeAction(state: GameState, input: string): { state?: GameState; outcome: any } {
+    switch (input) {
+        case 'look':
+            return LookRoomAction.execute(state);
+        default:
+            return MoveAction.execute(state, { direction: inputToDirection(input) });
+    }
 }
 
 function inputToDirection(input: string): Direction {

@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-export const defineActionOutcome = <SuccessT, FailureReasonT>(
-    successSchema: SuccessT,
+export const defineActionOutcome = <SuccessDataT, FailureReasonT>(
+    successDataSchema: SuccessDataT,
     failureReasonSchema: FailureReasonT,
 ) => {
     return z.discriminatedUnion('result', [
         z.object({
             result: z.literal('success'),
-            data: successSchema,
+            data: successDataSchema,
         }),
         z.object({
             result: z.literal('failure'),
@@ -16,3 +16,7 @@ export const defineActionOutcome = <SuccessT, FailureReasonT>(
         }),
     ]);
 };
+
+export type ActionOutcome<SuccessDataT, FailureReasonT> = ReturnType<
+    typeof defineActionOutcome<SuccessDataT, FailureReasonT>
+>;

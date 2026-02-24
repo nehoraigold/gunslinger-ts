@@ -1,20 +1,60 @@
 import { z } from 'zod';
+
+import { healthValueToProse } from '../../engine/state/utils';
 import { NpcSummarySchema } from './common/schema';
-import { defineActionOutcome } from './ActionOutcome';
+import { defineAction } from './Action';
 
-export const LookNpcFailReasonSchema = z.enum(['npc_not_found']);
-
-export const LookNpcInputSchema = z.object({
-    npcId: z.string().describe('The ID of the NPC'),
-});
-
-export const LookNpcOutputSchema = defineActionOutcome(
-    NpcSummarySchema.extend(
+export const LookNpcAction = defineAction({
+    name: 'lookNpc',
+    inputSchema: z.object({
+        npcId: z.string().describe('The ID of the NPC'),
+    }),
+    successDataSchema: NpcSummarySchema.extend(
         z.object({
-            description: z.string(),
+            appearance: z.string(),
+            personality: z.string(),
             notableFeatures: z.array(z.string()).optional(),
             visibleEquipment: z.array(z.string()).optional(),
         }),
-    ),
-    LookNpcFailReasonSchema,
-);
+    ).shape,
+    failReasonSchema: z.enum(['npc_not_found', 'npc_not_in_room']),
+    execute: (state, { npcId }) => {
+        const npc = state.world.npcs[npcId];
+        if (!npc) {
+            return {
+                outcome: {
+                    result: 'failure',
+                    reason: 'npc_not_found',
+                    message: `Unable to find npc with ID ${npcId}`,
+                } as const,
+            };
+        }
+        const npcInRoom = state.world.rooms[state.player.currentRoomId].npcIds.includes(npcId);
+        if (!npcInRoom) {
+            return {
+                outcome: {
+                    result: 'failure',
+                    reason: 'npc_not_in_room',
+                    message: `${npc.name} is not present`,
+                } as const,
+            };
+        }
+        return {
+            state,
+            outcome: {
+                result: 'success',
+                data: {
+                    id: npcId,
+                    name: npc.name,
+                    description: npc.appearance,
+                    mood: npc.mood,
+                    health: healthValueToProse(npc),
+                    appearance: npc.appearance,
+                    personality: npc.personality,
+                    notableFeatures: npc.notableFeatures.map(({ feature }) => feature),
+                    visibleEquipment: npc.visibleEquipment,
+                },
+            },
+        };
+    },
+});
