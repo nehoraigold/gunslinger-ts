@@ -13,6 +13,7 @@ import { CheckInventoryAction } from './engine/actions/checkInventory';
 import { PickUpAction } from './engine/actions/pickUp';
 import { DropAction } from './engine/actions/drop';
 import { EquipAction } from './engine/actions/equip';
+import { UnequipAction } from './engine/actions/unequip';
 
 const log = getLogger('main');
 
@@ -68,6 +69,8 @@ function takeAction(state: GameState, input: string): { state?: GameState; outco
             return DropAction.execute(state, { itemId: inputs[0], quantity: parseInt(inputs[1] ?? '1') });
         case 'equip':
             return EquipAction.execute(state, { itemId: inputs[0] });
+        case 'unequip':
+            return UnequipAction.execute(state, { slot: inputs[0] as 'weapon' | 'armor' });
         default:
             throw new Error(`Unknown action: ${action}`);
     }
