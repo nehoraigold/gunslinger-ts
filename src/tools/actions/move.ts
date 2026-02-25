@@ -58,6 +58,7 @@ export const MoveAction = defineAction({
         const nextState = produce(state, (draft) => {
             draft.world.rooms[player.currentRoomId].visited = true;
             draft.player.currentRoomId = nextRoom.id;
+            return draft;
         });
 
         return {

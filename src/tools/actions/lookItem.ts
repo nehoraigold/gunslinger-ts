@@ -14,7 +14,7 @@ export const LookItemAction = defineAction({
         location: ItemLocationSchema,
         quantity: z.number(),
     }),
-    failReasonSchema: z.enum(['item_not_found', 'item_not_in_room']),
+    failReasonSchema: z.enum(['no_such_item', 'item_not_found']),
     execute: (state, { itemId }) => {
         const { world, player } = state;
         const item = world.items[itemId];
@@ -22,7 +22,7 @@ export const LookItemAction = defineAction({
             return {
                 outcome: {
                     result: 'failure',
-                    reason: 'item_not_found',
+                    reason: 'no_such_item',
                     message: `No item with ID ${itemId}`,
                 } as const,
             };
@@ -33,7 +33,7 @@ export const LookItemAction = defineAction({
             return {
                 outcome: {
                     result: 'failure',
-                    reason: 'item_not_in_room',
+                    reason: 'item_not_found',
                     message: `${item.name} is not in the player's vicinity`,
                 } as const,
             };

@@ -1,16 +1,16 @@
 import { formatToHeader, getLogger, getUserInput, Print } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
 import { initGameState } from './initGameState';
-import { MoveAction } from './tools/actions/move';
-import { LookRoomAction } from './tools/actions/lookRoom';
 import { Direction } from './engine/room';
 import { StateManager } from './engine/state/StateManager';
 import { GameState } from './engine/state/GameState';
+import { MoveAction } from './tools/actions/move';
+import { LookRoomAction } from './tools/actions/lookRoom';
 import { LookNpcAction } from './tools/actions/lookNpc';
-import { Action } from './tools/actions/Action';
 import { LookItemAction } from './tools/actions/lookItem';
 import { LookExitAction } from './tools/actions/lookExit';
 import { CheckInventoryAction } from './tools/actions/checkInventory';
+import { PickUpAction } from './tools/actions/pickUp';
 
 const log = getLogger('main');
 
@@ -58,6 +58,8 @@ function takeAction(state: GameState, input: string): { state?: GameState; outco
         case 'inventory':
         case 'i':
             return CheckInventoryAction.execute(state);
+        case 'pickUp':
+            return PickUpAction.execute(state, { itemId: inputs[0], quantity: parseInt(inputs[1] ?? '1') });
         default:
             throw new Error(`Unknown action: ${action}`);
     }

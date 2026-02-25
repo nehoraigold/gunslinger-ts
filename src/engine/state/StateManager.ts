@@ -26,6 +26,7 @@ export class StateManager {
 
         this.state = produce(state, (draft) => {
             draft.turnCount++;
+            return draft;
         });
         this.inTransaction = false;
     }

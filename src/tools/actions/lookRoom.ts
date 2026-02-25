@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 
-import { healthValueToProse } from '../../engine/state/utils';
 import { ExitSummarySchema, ItemSummarySchema, NpcSummarySchema, LightLevelSchema } from './common/schema';
 import { defineAction } from './Action';
 import { toItemSummary, toNpcSummary } from './common/utils';
@@ -28,6 +27,7 @@ export const LookRoomAction = defineAction({
 
         const nextState = produce(state, (draft) => {
             draft.world.rooms[draft.player.currentRoomId].lastLookedAtTurn = draft.turnCount;
+            return draft;
         });
 
         return {

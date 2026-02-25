@@ -15,14 +15,14 @@ export const LookNpcAction = defineAction({
         notableFeatures: z.array(z.string()).optional(),
         visibleEquipment: z.array(z.string()).optional(),
     }),
-    failReasonSchema: z.enum(['npc_not_found', 'npc_not_in_room']),
+    failReasonSchema: z.enum(['no_such_npc', 'npc_not_found']),
     execute: (state, { npcId }) => {
         const npc = state.world.npcs[npcId];
         if (!npc) {
             return {
                 outcome: {
                     result: 'failure',
-                    reason: 'npc_not_found',
+                    reason: 'no_such_npc',
                     message: `Unable to find npc with ID ${npcId}`,
                 } as const,
             };
@@ -32,7 +32,7 @@ export const LookNpcAction = defineAction({
             return {
                 outcome: {
                     result: 'failure',
-                    reason: 'npc_not_in_room',
+                    reason: 'npc_not_found',
                     message: `${npc.name} is not present`,
                 } as const,
             };
