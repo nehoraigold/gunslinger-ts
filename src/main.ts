@@ -9,6 +9,7 @@ import { GameState } from './engine/state/GameState';
 import { LookNpcAction } from './tools/actions/lookNpc';
 import { Action } from './tools/actions/Action';
 import { LookItemAction } from './tools/actions/lookItem';
+import { LookExitAction } from './tools/actions/lookExit';
 
 const log = getLogger('main');
 
@@ -50,6 +51,8 @@ function takeAction(state: GameState, input: string): { state?: GameState; outco
             return LookNpcAction.execute(state, { npcId: inputs.join(' ') });
         case 'lookItem':
             return LookItemAction.execute(state, { itemId: inputs.join(' ') });
+        case 'lookExit':
+            return LookExitAction.execute(state, { direction: inputToDirection(inputs.join(' ')) });
         default:
             throw new Error(`Unknown action: ${action}`);
     }
