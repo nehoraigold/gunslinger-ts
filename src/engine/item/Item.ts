@@ -28,6 +28,9 @@ export interface Item {
     // Gold value for trading
     value: number;
 
+    // Whether this item can be taken
+    takeable: boolean;
+
     // Whether this item can be dropped
     droppable: boolean;
 

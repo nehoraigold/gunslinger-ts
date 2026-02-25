@@ -44,7 +44,7 @@ export const PickUpAction = defineAction({
             };
         }
 
-        if (!item.interactable) {
+        if (!item.takeable) {
             return {
                 outcome: {
                     result: 'failure',

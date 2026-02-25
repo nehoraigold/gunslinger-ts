@@ -11,6 +11,8 @@ import { LookItemAction } from './engine/actions/lookItem';
 import { LookExitAction } from './engine/actions/lookExit';
 import { CheckInventoryAction } from './engine/actions/checkInventory';
 import { PickUpAction } from './engine/actions/pickUp';
+import { DropAction } from './engine/actions/drop';
+import { EquipAction } from './engine/actions/equip';
 
 const log = getLogger('main');
 
@@ -59,7 +61,13 @@ function takeAction(state: GameState, input: string): { state?: GameState; outco
         case 'i':
             return CheckInventoryAction.execute(state);
         case 'pickUp':
+        case 'take':
             return PickUpAction.execute(state, { itemId: inputs[0], quantity: parseInt(inputs[1] ?? '1') });
+        case 'drop':
+        case 'leave':
+            return DropAction.execute(state, { itemId: inputs[0], quantity: parseInt(inputs[1] ?? '1') });
+        case 'equip':
+            return EquipAction.execute(state, { itemId: inputs[0] });
         default:
             throw new Error(`Unknown action: ${action}`);
     }
