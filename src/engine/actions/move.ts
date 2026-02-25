@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 
-import { healthValueToProse } from '../../engine/state/utils';
+import { healthValueToProse } from '../state/utils';
 import { DirectionSchema, ExitSummarySchema, ItemSummarySchema, NpcSummarySchema } from './common/schema';
 import { defineAction } from './Action';
 import { toItemSummary } from './common/utils';

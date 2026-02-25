@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UseEffect } from '../../engine/item';
+import { UseEffect } from '../item';
 import { defineActionOutcome } from './ActionOutcome';
 
 const ItemEffectSchema: z.ZodType<UseEffect> = z.enum([

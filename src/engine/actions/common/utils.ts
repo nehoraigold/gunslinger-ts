@@ -1,7 +1,7 @@
-import { ItemSummary } from '../../../engine/item';
-import { GameState } from '../../../engine/state/GameState';
-import { NpcSummary } from '../../../engine/npc';
-import { healthValueToProse } from '../../../engine/state/utils';
+import { ItemSummary } from '../../item';
+import { GameState } from '../../state/GameState';
+import { NpcSummary } from '../../npc';
+import { healthValueToProse } from '../../state/utils';
 
 export const toItemSummary = ({ world }: GameState, id: string): ItemSummary | null => {
     const item = world.items[id];

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { GameState } from '../../engine/state/GameState';
+import { GameState } from '../state/GameState';
 import { ActionOutcome, defineActionOutcome } from './ActionOutcome';
 
 export type ExecuteResult<OutcomeT> = { state?: GameState; outcome: OutcomeT };

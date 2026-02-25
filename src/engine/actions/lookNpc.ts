@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { healthValueToProse } from '../../engine/state/utils';
+import { healthValueToProse } from '../state/utils';
 import { NpcSummarySchema } from './common/schema';
 import { defineAction } from './Action';
 

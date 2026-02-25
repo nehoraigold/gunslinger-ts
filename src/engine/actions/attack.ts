@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AttackType } from '../../engine/combat';
+import { AttackType } from '../combat';
 import { ItemSchema } from './common/schema';
 import { defineActionOutcome } from './ActionOutcome';
 

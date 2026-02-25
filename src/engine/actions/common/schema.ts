@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { Direction, LightLevel } from '../../../engine/room';
-import { ItemType } from '../../../engine/item';
-import { NpcMood } from '../../../engine/npc';
-import { HealthProse } from '../../../engine/combat';
+import { Direction, LightLevel } from '../../room';
+import { ItemType } from '../../item';
+import { NpcMood } from '../../npc';
+import { HealthProse } from '../../combat';
 
 export const DirectionSchema: z.ZodType<Direction> = z.enum(['north', 'south', 'west', 'east', 'up', 'down']);
 export const ItemTypeSchema: z.ZodType<ItemType> = z.enum(['weapon', 'armor', 'consumable', 'key', 'lore', 'misc']);

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ItemSchema, PlayerStatsSchema } from './common/schema';
-import { EquipSlot } from '../../engine/player';
+import { EquipSlot } from '../player';
 import { defineActionOutcome } from './ActionOutcome';
 
 const EquipSlotSchema: z.ZodType<EquipSlot> = z.enum(['weapon', 'armor']);

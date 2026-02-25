@@ -4,13 +4,13 @@ import { initGameState } from './initGameState';
 import { Direction } from './engine/room';
 import { StateManager } from './engine/state/StateManager';
 import { GameState } from './engine/state/GameState';
-import { MoveAction } from './tools/actions/move';
-import { LookRoomAction } from './tools/actions/lookRoom';
-import { LookNpcAction } from './tools/actions/lookNpc';
-import { LookItemAction } from './tools/actions/lookItem';
-import { LookExitAction } from './tools/actions/lookExit';
-import { CheckInventoryAction } from './tools/actions/checkInventory';
-import { PickUpAction } from './tools/actions/pickUp';
+import { MoveAction } from './engine/actions/move';
+import { LookRoomAction } from './engine/actions/lookRoom';
+import { LookNpcAction } from './engine/actions/lookNpc';
+import { LookItemAction } from './engine/actions/lookItem';
+import { LookExitAction } from './engine/actions/lookExit';
+import { CheckInventoryAction } from './engine/actions/checkInventory';
+import { PickUpAction } from './engine/actions/pickUp';
 
 const log = getLogger('main');
 
