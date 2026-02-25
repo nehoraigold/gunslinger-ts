@@ -4,6 +4,7 @@ import { produce } from 'immer';
 import { healthValueToProse } from '../../engine/state/utils';
 import { ExitSummarySchema, ItemSummarySchema, NpcSummarySchema, LightLevelSchema } from './common/schema';
 import { defineAction } from './Action';
+import { toItemSummary, toNpcSummary } from './common/utils';
 
 export const LookRoomAction = defineAction({
     name: 'lookRoom',
@@ -44,17 +45,14 @@ export const LookRoomAction = defineAction({
                     })),
                     items: Object.entries(room.items)
                         .map(([id, quantity]) => {
-                            const item = state.world.items[id];
-                            if (!item) {
+                            const item = toItemSummary(nextState, id);
+                            if (!item || item.isHidden) {
                                 return null;
                             }
-                            const { name, shortDesc, type, interactable } = item;
-                            return { id, name, shortDesc, type, interactable, quantity };
+                            return { ...item, quantity };
                         })
                         .filter((i) => !!i),
-                    npcs: room.npcIds
-                        .map((id) => state.world.npcs[id])
-                        .map((npc) => ({ ...npc, health: healthValueToProse(npc) })),
+                    npcs: room.npcIds.map((id) => toNpcSummary(nextState, id)).filter((npc) => !!npc),
                     lightLevel: room.lightLevel,
                 },
             },

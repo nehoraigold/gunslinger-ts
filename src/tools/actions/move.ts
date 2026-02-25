@@ -4,6 +4,7 @@ import { produce } from 'immer';
 import { healthValueToProse } from '../../engine/state/utils';
 import { DirectionSchema, ExitSummarySchema, ItemSummarySchema, NpcSummarySchema } from './common/schema';
 import { defineAction } from './Action';
+import { toItemSummary } from './common/utils';
 
 export const MoveAction = defineAction({
     name: 'move',
@@ -75,12 +76,11 @@ export const MoveAction = defineAction({
                     })),
                     items: Object.entries(nextRoom.items)
                         .map(([id, quantity]) => {
-                            const item = state.world.items[id];
-                            if (!item) {
+                            const item = toItemSummary(nextState, id);
+                            if (!item || item.isHidden) {
                                 return null;
                             }
-                            const { name, shortDesc, type, interactable } = item;
-                            return { id, name, shortDesc, type, interactable, quantity };
+                            return { ...item, quantity };
                         })
                         .filter((i) => !!i),
                     npcs: nextRoom.npcIds

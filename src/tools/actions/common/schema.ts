@@ -10,6 +10,14 @@ export const NpcMoodSchema: z.ZodType<NpcMood> = z.enum(['friendly', 'neutral', 
 export const HealthProseSchema: z.ZodType<HealthProse> = z.enum(['healthy', 'bruised', 'wounded', 'battered', 'fatal']);
 export const LightLevelSchema: z.ZodType<LightLevel> = z.enum(['bright', 'dim', 'dark']);
 
+export const ItemStatsSchema = z.object({
+    damage: z.number().optional().describe('Damage done to enemies if used or equipped'),
+    defense: z.number().optional().describe('Damage reduction provided if used or equipped'),
+    speedModifier: z.number().optional().describe('Agility multiplier if used or equipped'),
+    strengthRequirement: z.number().optional().describe('Minimum strength stat to equip'),
+    agilityRequirement: z.number().optional().describe('Minimum agility stat to equip'),
+});
+
 export const ExitSummarySchema = z.object({
     direction: DirectionSchema.describe('The direction of the exit'),
     destinationName: z.string().describe('Where the exit leads'),
@@ -28,6 +36,7 @@ export const ItemSummarySchema = z.object({
 export const NpcSummarySchema = z.object({
     id: z.string().describe('The NPC ID'),
     name: z.string().describe('The NPC name'),
+    appearance: z.string().describe("The NPC's physical appearance"),
     mood: NpcMoodSchema.describe('The mood of the NPC toward the player'),
     health: HealthProseSchema.describe("The state of the NPC's health"),
 });
@@ -37,7 +46,7 @@ export const ItemSchema = z.object({
     name: z.string().describe('The item name'),
     fullDescription: z.string().describe('The full item description'),
     type: ItemTypeSchema,
-    stats: z.object(),
+    stats: ItemStatsSchema.optional(),
     interactable: z.boolean(),
     usageHint: z.string().optional(),
     revealedSecrets: z.array(z.string()),

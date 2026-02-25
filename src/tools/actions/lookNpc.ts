@@ -9,14 +9,12 @@ export const LookNpcAction = defineAction({
     inputSchema: z.object({
         npcId: z.string().describe('The ID of the NPC'),
     }),
-    successDataSchema: NpcSummarySchema.extend(
-        z.object({
-            appearance: z.string(),
-            personality: z.string(),
-            notableFeatures: z.array(z.string()).optional(),
-            visibleEquipment: z.array(z.string()).optional(),
-        }),
-    ).shape,
+    successDataSchema: NpcSummarySchema.extend({
+        appearance: z.string(),
+        personality: z.string(),
+        notableFeatures: z.array(z.string()).optional(),
+        visibleEquipment: z.array(z.string()).optional(),
+    }),
     failReasonSchema: z.enum(['npc_not_found', 'npc_not_in_room']),
     execute: (state, { npcId }) => {
         const npc = state.world.npcs[npcId];

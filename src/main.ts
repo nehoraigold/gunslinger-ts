@@ -6,12 +6,15 @@ import { LookRoomAction } from './tools/actions/lookRoom';
 import { Direction } from './engine/room';
 import { StateManager } from './engine/state/StateManager';
 import { GameState } from './engine/state/GameState';
+import { LookNpcAction } from './tools/actions/lookNpc';
+import { Action } from './tools/actions/Action';
+import { LookItemAction } from './tools/actions/lookItem';
 
 const log = getLogger('main');
 
 async function main() {
     const storage = new GameStorage('./saves');
-    const stateManager = new StateManager((await storage.load('1')) ?? initGameState());
+    const stateManager = new StateManager(initGameState());
     let input = '';
     while (input !== 'q') {
         const state = stateManager.beginTransaction();
@@ -36,11 +39,19 @@ async function main() {
 }
 
 function takeAction(state: GameState, input: string): { state?: GameState; outcome: any } {
-    switch (input) {
+    const [action, ...inputs] = input.split(' ');
+    switch (action) {
+        case 'move':
+            return MoveAction.execute(state, { direction: inputToDirection(inputs.join(' ')) });
+        case 'lookRoom':
         case 'look':
             return LookRoomAction.execute(state);
+        case 'lookNpc':
+            return LookNpcAction.execute(state, { npcId: inputs.join(' ') });
+        case 'lookItem':
+            return LookItemAction.execute(state, { itemId: inputs.join(' ') });
         default:
-            return MoveAction.execute(state, { direction: inputToDirection(input) });
+            throw new Error(`Unknown action: ${action}`);
     }
 }
 
