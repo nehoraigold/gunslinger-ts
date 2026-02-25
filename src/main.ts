@@ -10,6 +10,7 @@ import { LookNpcAction } from './tools/actions/lookNpc';
 import { Action } from './tools/actions/Action';
 import { LookItemAction } from './tools/actions/lookItem';
 import { LookExitAction } from './tools/actions/lookExit';
+import { CheckInventoryAction } from './tools/actions/checkInventory';
 
 const log = getLogger('main');
 
@@ -53,6 +54,10 @@ function takeAction(state: GameState, input: string): { state?: GameState; outco
             return LookItemAction.execute(state, { itemId: inputs.join(' ') });
         case 'lookExit':
             return LookExitAction.execute(state, { direction: inputToDirection(inputs.join(' ')) });
+        case 'checkInventory':
+        case 'inventory':
+        case 'i':
+            return CheckInventoryAction.execute(state);
         default:
             throw new Error(`Unknown action: ${action}`);
     }
