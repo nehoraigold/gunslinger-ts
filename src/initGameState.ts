@@ -1,7 +1,7 @@
 import { Direction, Exit, LightLevel, Room } from './engine/room';
 import { World } from './engine/world';
 import { GameState } from './engine/state/GameState';
-import { Player, PlayerStats } from './engine/player';
+import { Player, PlayerAttributes } from './engine/player';
 import { Npc } from './engine/npc';
 import { Item } from './engine/item';
 
@@ -166,7 +166,7 @@ function buildItems(): Item[] {
             fullDescription:
                 'A short hunting knife with a bone handle, worn smooth by use. The blade holds an edge. Someone dropped it in a hurry.',
             type: 'weapon',
-            stats: { damage: 4, defense: 0, speedModifier: 1.1 },
+            stats: { attackPower: 4, defense: 0, speedModifier: 1.1 },
             consumedOnUse: false,
             usageHint: undefined,
             secrets: [],
@@ -491,6 +491,26 @@ export function initGameState(): GameState {
     }
 
     rooms[roomId(2, 2)].isSafeRoom = false;
+
+    // The mill has one entrance: the east-facing door, accessible from the graveyard.
+    // The north and west sides are solid walls — remove those exits entirely.
+    const removeExit = (roomCoord: Coord, direction: Direction) => {
+        const room = rooms[roomId(...roomCoord)];
+        room.exits = room.exits.filter((e) => e.direction !== direction);
+    };
+
+    removeExit([2, 1], 'north'); // Mill → Tavern
+    removeExit([2, 1], 'west'); // Mill → Southern Gate
+    removeExit([1, 1], 'south'); // Tavern → Mill
+    removeExit([2, 0], 'east'); // Southern Gate → Mill
+
+    // The mill door is locked — iron key (buried in graveyard) opens it from the graveyard side
+    const millExit = rooms[roomId(2, 2)].exits.find((e) => e.direction === 'west');
+    if (!millExit) throw new Error('Expected west exit from graveyard to mill');
+    millExit.isBlocked = true;
+    millExit.blockReason = 'A heavy iron lock secures the mill door.';
+    millExit.hint = 'The door is locked. The lock looks old but solid.';
+    millExit.unlockCondition = { flagKey: 'mill_door_unlocked', flagValue: true };
     const startingRoomId = roomId(1, 1); // The Guttered Candle
     rooms[startingRoomId].visited = true;
 
@@ -503,7 +523,7 @@ export function initGameState(): GameState {
         version: '1.0.0',
     };
 
-    const baseStats: PlayerStats = {
+    const baseStats: PlayerAttributes = {
         strength: 10,
         agility: 10,
         intelligence: 10,
@@ -515,8 +535,7 @@ export function initGameState(): GameState {
         currentRoomId: startingRoomId,
         health: 100,
         maxHealth: 100,
-        stats: { ...baseStats },
-        baseStats: { ...baseStats },
+        baseStats,
         inventory: {},
         equippedWeapon: null,
         equippedArmor: null,

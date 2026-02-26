@@ -1,5 +1,5 @@
 import { ActiveEffect } from './ActiveEffect';
-import { PlayerStats } from './PlayerStats';
+import { PlayerAttributes } from './PlayerAttributes';
 
 export interface Player {
     id: string; // Always "player" in single-player
@@ -11,9 +11,8 @@ export interface Player {
     health: number;
     maxHealth: number;
 
-    // Stats
-    stats: PlayerStats;
-    baseStats: PlayerStats; // Before equipment modifiers. StateManager derives stats from this.
+    // Attributes — use derivePlayerStats() to get combat stats including equipment bonuses
+    baseStats: PlayerAttributes;
 
     // Inventory
     inventory: Record<string, number>; // Item ID -> quantity

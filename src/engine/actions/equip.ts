@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 
-import { EquipSlot } from '../player';
-import { ItemSchema, PlayerStatsSchema } from './common/schema';
+import { EquipSlot, derivePlayerStats } from '../player';
+import { ItemSchema, CombatStatsSchema } from './common/schema';
 import { toItemSummary } from './common/utils';
 import { defineAction } from './Action';
 
@@ -15,7 +15,7 @@ export const EquipAction = defineAction({
         item: ItemSchema,
         slot: z.enum(['weapon', 'armor']) satisfies z.ZodType<EquipSlot>,
         previouslyEquipped: ItemSchema.nullable(),
-        newStats: PlayerStatsSchema,
+        combatStats: CombatStatsSchema,
     }),
     failReasonSchema: z.enum(['no_such_item', 'item_not_found', 'wrong_type', 'stat_requirement_not_met']),
     execute: (state, { itemId }) => {
@@ -81,7 +81,7 @@ export const EquipAction = defineAction({
                               consumedOnUse: previouslyEquippedItem.consumedOnUse,
                           }
                         : null,
-                    newStats: nextState.player.stats,
+                    combatStats: derivePlayerStats(nextState.player, nextState.world.items),
                 },
             },
         };

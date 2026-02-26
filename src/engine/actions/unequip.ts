@@ -1,9 +1,9 @@
 import { defineAction } from './Action';
 import { z } from 'zod';
-import { EquipSlot } from '../player';
+import { EquipSlot, derivePlayerStats } from '../player';
 import { produce } from 'immer';
 import { toItemSummary } from './common/utils';
-import { ItemSchema, PlayerStatsSchema } from './common/schema';
+import { ItemSchema, CombatStatsSchema } from './common/schema';
 
 export const UnequipAction = defineAction({
     name: 'unequip',
@@ -13,7 +13,7 @@ export const UnequipAction = defineAction({
     successDataSchema: z.object({
         slot: z.enum(['weapon', 'armor']),
         previouslyEquipped: ItemSchema,
-        newStats: PlayerStatsSchema,
+        combatStats: CombatStatsSchema,
     }),
     failReasonSchema: z.enum(['already_unequipped']),
     execute: (state, { slot }) => {
@@ -50,7 +50,7 @@ export const UnequipAction = defineAction({
                         stats: previouslyEquippedItem.stats,
                         consumedOnUse: previouslyEquippedItem.consumedOnUse,
                     },
-                    newStats: nextState.player.stats,
+                    combatStats: derivePlayerStats(nextState.player, nextState.world.items),
                 },
             },
         };

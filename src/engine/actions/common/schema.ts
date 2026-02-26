@@ -30,9 +30,9 @@ export const HealthProseSchema: z.ZodType<HealthProse> = z.enum(['healthy', 'bru
 export const LightLevelSchema: z.ZodType<LightLevel> = z.enum(['bright', 'dim', 'dark']);
 
 export const ItemStatsSchema = z.object({
-    damage: z.number().optional().describe('Damage done to enemies if used or equipped'),
-    defense: z.number().optional().describe('Damage reduction provided if used or equipped'),
-    speedModifier: z.number().optional().describe('Agility multiplier if used or equipped'),
+    attackPower: z.number().optional().describe('Attack power bonus added to player strength when equipped'),
+    defense: z.number().optional().describe('Defense bonus added to player endurance when equipped'),
+    speedModifier: z.number().optional().describe('Agility multiplier (1.0 = no change) when equipped'),
     strengthRequirement: z.number().optional().describe('Minimum strength stat to equip'),
     agilityRequirement: z.number().optional().describe('Minimum agility stat to equip'),
 });
@@ -72,9 +72,19 @@ export const ItemSchema = z.object({
     revealedSecrets: z.array(z.string()),
 });
 
-export const PlayerStatsSchema = z.object({
+export const PlayerAttributesSchema = z.object({
     strength: z.number().describe("The player's strength"),
     agility: z.number().describe("The player's agility"),
     intelligence: z.number().describe("The player's intelligence"),
     endurance: z.number().describe("The player's endurance"),
 });
+
+export const CombatStatsSchema = z.object({
+    attackPower: z.number().describe('Combined attack power: player strength + weapon bonus'),
+    defense: z.number().describe('Combined defense: player endurance + armor bonus'),
+    initiative: z.number().describe('Turn speed: player agility * weapon speed modifier'),
+});
+
+export const FlagValueSchema = z
+    .union([z.string(), z.number(), z.boolean()])
+    .describe('A flag value: string, number, or boolean');
