@@ -14,28 +14,17 @@ export const GetFlagAction = defineAction({
         previousValue: FlagValueSchema.nullable().describe('The value before the last set, or null'),
     }),
     failReasonSchema: z.enum(['flag_not_found']),
-    execute: (state, { key }) => {
+    execute: (state, { key }, { fail, succeed }) => {
         const entry = state.flags[key];
         if (!entry) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'flag_not_found',
-                    message: `No flag found with key "${key}"`,
-                } as const,
-            };
+            return fail('flag_not_found', `No flag found with key "${key}"`);
         }
 
-        return {
-            outcome: {
-                result: 'success',
-                data: {
-                    key: entry.key,
-                    value: entry.value,
-                    setAtTurn: entry.setAtTurn,
-                    previousValue: entry.previousValue ?? null,
-                },
-            },
-        };
+        return succeed({
+            key: entry.key,
+            value: entry.value,
+            setAtTurn: entry.setAtTurn,
+            previousValue: entry.previousValue ?? null,
+        });
     },
 });

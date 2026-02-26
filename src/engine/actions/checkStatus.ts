@@ -35,27 +35,22 @@ export const CheckStatusAction = defineAction({
         equippedArmor: ItemSchema.nullable().describe('Currently equipped armor, or null'),
     }),
     failReasonSchema: z.never(),
-    execute: (state) => {
+    execute: (state, _, { succeed }) => {
         const { player, world } = state;
         const equippedWeapon = player.equippedWeapon ? world.items[player.equippedWeapon] : null;
         const equippedArmor = player.equippedArmor ? world.items[player.equippedArmor] : null;
 
-        return {
-            outcome: {
-                result: 'success',
-                data: {
-                    health: player.health,
-                    maxHealth: player.maxHealth,
-                    healthProse: healthValueToProse({ health: player.health, maxHealth: player.maxHealth }),
-                    currentRoomId: player.currentRoomId,
-                    baseStats: player.baseStats,
-                    combatStats: derivePlayerStats(player, world.items),
-                    gold: player.gold,
-                    turnCount: state.turnCount,
-                    equippedWeapon: equippedWeapon ? toItemFull(equippedWeapon) : null,
-                    equippedArmor: equippedArmor ? toItemFull(equippedArmor) : null,
-                },
-            },
-        };
+        return succeed({
+            health: player.health,
+            maxHealth: player.maxHealth,
+            healthProse: healthValueToProse({ health: player.health, maxHealth: player.maxHealth }),
+            currentRoomId: player.currentRoomId,
+            baseStats: player.baseStats,
+            combatStats: derivePlayerStats(player, world.items),
+            gold: player.gold,
+            turnCount: state.turnCount,
+            equippedWeapon: equippedWeapon ? toItemFull(equippedWeapon) : null,
+            equippedArmor: equippedArmor ? toItemFull(equippedArmor) : null,
+        });
     },
 });

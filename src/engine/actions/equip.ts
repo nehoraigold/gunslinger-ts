@@ -18,37 +18,19 @@ export const EquipAction = defineAction({
         combatStats: CombatStatsSchema,
     }),
     failReasonSchema: z.enum(['no_such_item', 'item_not_found', 'wrong_type', 'stat_requirement_not_met']),
-    execute: (state, { itemId }) => {
+    execute: (state, { itemId }, { fail, succeed }) => {
         const { player, world } = state;
         const item = world.items[itemId];
         if (!item) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'no_such_item',
-                    message: `Item with ID ${itemId} does not exist`,
-                } as const,
-            };
+            return fail('no_such_item', `Item with ID ${itemId} does not exist`);
         }
 
         if (!player.inventory[itemId]) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'item_not_found',
-                    message: `Item ${item.name} not found in player inventory`,
-                } as const,
-            };
+            return fail('item_not_found', `Item ${item.name} not found in player inventory`);
         }
 
         if (item.type !== 'armor' && item.type !== 'weapon') {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'wrong_type',
-                    message: `Item ${item.name} has type ${item.type}, not weapon or armor`,
-                } as const,
-            };
+            return fail('wrong_type', `Item ${item.name} has type ${item.type}, not weapon or armor`);
         }
 
         // TODO: Check stats requirement
@@ -59,31 +41,28 @@ export const EquipAction = defineAction({
             draft.player[equippedField] = itemId;
             return draft;
         });
-        return {
-            state: nextState,
-            outcome: {
-                result: 'success',
-                data: {
-                    item: {
-                        ...toItemSummary(nextState, itemId)!,
-                        fullDescription: item.fullDescription,
-                        revealedSecrets: [],
-                        stats: item.stats,
-                        consumedOnUse: item.consumedOnUse,
-                    },
-                    slot: item.type,
-                    previouslyEquipped: previouslyEquippedItem
-                        ? {
-                              ...toItemSummary(nextState, previouslyEquippedItem.id)!,
-                              fullDescription: previouslyEquippedItem.fullDescription,
-                              revealedSecrets: [],
-                              stats: previouslyEquippedItem.stats,
-                              consumedOnUse: previouslyEquippedItem.consumedOnUse,
-                          }
-                        : null,
-                    combatStats: derivePlayerStats(nextState.player, nextState.world.items),
+        return succeed(
+            {
+                item: {
+                    ...toItemSummary(nextState, itemId)!,
+                    fullDescription: item.fullDescription,
+                    revealedSecrets: [],
+                    stats: item.stats,
+                    consumedOnUse: item.consumedOnUse,
                 },
+                slot: item.type,
+                previouslyEquipped: previouslyEquippedItem
+                    ? {
+                          ...toItemSummary(nextState, previouslyEquippedItem.id)!,
+                          fullDescription: previouslyEquippedItem.fullDescription,
+                          revealedSecrets: [],
+                          stats: previouslyEquippedItem.stats,
+                          consumedOnUse: previouslyEquippedItem.consumedOnUse,
+                      }
+                    : null,
+                combatStats: derivePlayerStats(nextState.player, nextState.world.items),
             },
-        };
+            nextState,
+        );
     },
 });

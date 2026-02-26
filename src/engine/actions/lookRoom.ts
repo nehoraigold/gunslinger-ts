@@ -19,7 +19,7 @@ export const LookRoomAction = defineAction({
         lightLevel: LightLevelSchema.describe('The light level of the room'),
     }),
     failReasonSchema: z.never(),
-    execute: (state, _input) => {
+    execute: (state, _input, { succeed }) => {
         const room = state.world.rooms[state.player.currentRoomId];
         if (!room) {
             throw new Error(`Unable to locate room ${state.player.currentRoomId}`);
@@ -30,32 +30,29 @@ export const LookRoomAction = defineAction({
             return draft;
         });
 
-        return {
-            state: nextState,
-            outcome: {
-                result: 'success',
-                data: {
-                    id: room.id,
-                    name: room.name,
-                    description: room.description,
-                    exits: room.exits.map((exit) => ({
-                        direction: exit.direction,
-                        destinationName: state.world.rooms[exit.destinationRoomId].name,
-                        hint: exit.hint,
-                    })),
-                    items: Object.entries(room.items)
-                        .map(([id, quantity]) => {
-                            const item = toItemSummary(nextState, id);
-                            if (!item || item.isHidden) {
-                                return null;
-                            }
-                            return { ...item, quantity };
-                        })
-                        .filter((i) => !!i),
-                    npcs: room.npcIds.map((id) => toNpcSummary(nextState, id)).filter((npc) => !!npc),
-                    lightLevel: room.lightLevel,
-                },
+        return succeed(
+            {
+                id: room.id,
+                name: room.name,
+                description: room.description,
+                exits: room.exits.map((exit) => ({
+                    direction: exit.direction,
+                    destinationName: state.world.rooms[exit.destinationRoomId].name,
+                    hint: exit.hint,
+                })),
+                items: Object.entries(room.items)
+                    .map(([id, quantity]) => {
+                        const item = toItemSummary(nextState, id);
+                        if (!item || item.isHidden) {
+                            return null;
+                        }
+                        return { ...item, quantity };
+                    })
+                    .filter((i) => !!i),
+                npcs: room.npcIds.map((id) => toNpcSummary(nextState, id)).filter((npc) => !!npc),
+                lightLevel: room.lightLevel,
             },
-        };
+            nextState,
+        );
     },
 });

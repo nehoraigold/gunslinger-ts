@@ -15,7 +15,7 @@ export const SetFlagAction = defineAction({
         previousValue: FlagValueSchema.nullable().describe('The value before this set, or null if new'),
     }),
     failReasonSchema: z.never(),
-    execute: (state, { key, value }) => {
+    execute: (state, { key, value }, { succeed }) => {
         const existing = state.flags[key];
         const previousValue = existing ? existing.value : null;
 
@@ -29,16 +29,6 @@ export const SetFlagAction = defineAction({
             return draft;
         });
 
-        return {
-            state: nextState,
-            outcome: {
-                result: 'success',
-                data: {
-                    key,
-                    value,
-                    previousValue,
-                },
-            },
-        };
+        return succeed({ key, value, previousValue }, nextState);
     },
 });

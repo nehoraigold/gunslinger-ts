@@ -15,28 +15,16 @@ export const LookItemAction = defineAction({
         quantity: z.number(),
     }),
     failReasonSchema: z.enum(['no_such_item', 'item_not_found']),
-    execute: (state, { itemId }) => {
+    execute: (state, { itemId }, { fail, succeed }) => {
         const { world, player } = state;
         const item = world.items[itemId];
         if (!item) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'no_such_item',
-                    message: `No item with ID ${itemId}`,
-                } as const,
-            };
+            return fail('no_such_item', `No item with ID ${itemId}`);
         }
 
         const room = world.rooms[player.currentRoomId];
         if (!(itemId in room.items) && !(itemId in player.inventory)) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'item_not_found',
-                    message: `${item.name} is not in the player's vicinity`,
-                } as const,
-            };
+            return fail('item_not_found', `${item.name} is not in the player's vicinity`);
         }
 
         const location: z.infer<typeof ItemLocationSchema> =
@@ -46,12 +34,6 @@ export const LookItemAction = defineAction({
                     : 'inventory'
                 : 'room';
         const quantity = itemId in player.inventory ? player.inventory[itemId] : room.items[itemId];
-        return {
-            state,
-            outcome: {
-                result: 'success',
-                data: { ...item, location, quantity, revealedSecrets: [] },
-            },
-        };
+        return succeed({ ...item, location, quantity, revealedSecrets: [] }, state);
     },
 });

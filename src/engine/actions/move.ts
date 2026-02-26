@@ -21,7 +21,7 @@ export const MoveAction = defineAction({
         npcs: z.array(NpcSummarySchema).describe('The NPCs present in this room'),
     }),
     failReasonSchema: z.enum(['no_exit', 'exit_is_blocked', 'in_combat']),
-    execute: (state, { direction }) => {
+    execute: (state, { direction }, { fail, succeed }) => {
         const { player, world } = state;
         const currentRoom = world.rooms[player.currentRoomId];
 
@@ -31,23 +31,11 @@ export const MoveAction = defineAction({
 
         const exit = currentRoom.exits.find((exit) => exit.direction === direction);
         if (!exit) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'no_exit',
-                    message: `There is no exit in direction ${direction}`,
-                } as const,
-            };
+            return fail('no_exit', `There is no exit in direction ${direction}`);
         }
 
         if (exit.isBlocked) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'exit_is_blocked',
-                    message: exit.blockReason ?? `The exit ${direction} is blocked`,
-                } as const,
-            };
+            return fail('exit_is_blocked', exit.blockReason ?? `The exit ${direction} is blocked`);
         }
 
         const nextRoom = world.rooms[exit.destinationRoomId];
@@ -61,34 +49,31 @@ export const MoveAction = defineAction({
             return draft;
         });
 
-        return {
-            state: nextState,
-            outcome: {
-                result: 'success',
-                data: {
-                    newRoomId: nextRoom.id,
-                    newRoomName: nextRoom.name,
-                    newRoomDescription: nextRoom.description,
-                    isFirstVisit: !nextRoom.visited,
-                    exits: nextRoom.exits.map((exit) => ({
-                        direction: exit.direction,
-                        destinationName: nextState.world.rooms[exit.destinationRoomId].name,
-                        hint: exit.hint,
-                    })),
-                    items: Object.entries(nextRoom.items)
-                        .map(([id, quantity]) => {
-                            const item = toItemSummary(nextState, id);
-                            if (!item || item.isHidden) {
-                                return null;
-                            }
-                            return { ...item, quantity };
-                        })
-                        .filter((i) => !!i),
-                    npcs: nextRoom.npcIds
-                        .map((id) => nextState.world.npcs[id])
-                        .map((npc) => ({ ...npc, health: healthValueToProse(npc) })),
-                },
+        return succeed(
+            {
+                newRoomId: nextRoom.id,
+                newRoomName: nextRoom.name,
+                newRoomDescription: nextRoom.description,
+                isFirstVisit: !nextRoom.visited,
+                exits: nextRoom.exits.map((exit) => ({
+                    direction: exit.direction,
+                    destinationName: nextState.world.rooms[exit.destinationRoomId].name,
+                    hint: exit.hint,
+                })),
+                items: Object.entries(nextRoom.items)
+                    .map(([id, quantity]) => {
+                        const item = toItemSummary(nextState, id);
+                        if (!item || item.isHidden) {
+                            return null;
+                        }
+                        return { ...item, quantity };
+                    })
+                    .filter((i) => !!i),
+                npcs: nextRoom.npcIds
+                    .map((id) => nextState.world.npcs[id])
+                    .map((npc) => ({ ...npc, health: healthValueToProse(npc) })),
             },
-        };
+            nextState,
+        );
     },
 });

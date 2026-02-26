@@ -20,49 +20,28 @@ export const PickUpAction = defineAction({
         'too_heavy',
         'unable_to_pick_up',
     ]),
-    execute: (state, { itemId, quantity }) => {
+    execute: (state, { itemId, quantity }, { fail, succeed }) => {
         const { world, player } = state;
         const item = world.items[itemId];
         if (!item) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'no_such_item',
-                    message: `No item with ID ${itemId}`,
-                } as const,
-            };
+            return fail('no_such_item', `No item with ID ${itemId}`);
         }
 
         const room = world.rooms[player.currentRoomId];
         if (!(itemId in room.items) || room.items[itemId] === 0) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'item_not_found',
-                    message: `No ${item.name} found`,
-                } as const,
-            };
+            return fail('item_not_found', `No ${item.name} found`);
         }
 
         if (!item.takeable) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'unable_to_pick_up',
-                    message: `You cannot pick up ${item.name}`,
-                } as const,
-            };
+            return fail('unable_to_pick_up', `You cannot pick up ${item.name}`);
         }
 
         quantity ??= 1;
         if (room.items[itemId] < quantity) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'insufficient_quantity',
-                    message: `You cannot pick up ${quantity} of ${item.name} when only ${room.items[itemId]} present`,
-                } as const,
-            };
+            return fail(
+                'insufficient_quantity',
+                `You cannot pick up ${quantity} of ${item.name} when only ${room.items[itemId]} present`,
+            );
         }
 
         const nextState = produce(state, (draft) => {
@@ -76,25 +55,22 @@ export const PickUpAction = defineAction({
             }
             return draft;
         });
-        return {
-            state: nextState,
-            outcome: {
-                result: 'success',
-                data: {
-                    item: {
-                        id: item.id,
-                        name: item.name,
-                        fullDescription: item.fullDescription,
-                        type: item.type,
-                        stats: item.stats,
-                        useEffect: item.useEffect,
-                        consumedOnUse: item.consumedOnUse,
-                        usageHint: item.usageHint,
-                        revealedSecrets: [],
-                    },
-                    inventoryCount: nextState.player.inventory[itemId],
+        return succeed(
+            {
+                item: {
+                    id: item.id,
+                    name: item.name,
+                    fullDescription: item.fullDescription,
+                    type: item.type,
+                    stats: item.stats,
+                    useEffect: item.useEffect,
+                    consumedOnUse: item.consumedOnUse,
+                    usageHint: item.usageHint,
+                    revealedSecrets: [],
                 },
+                inventoryCount: nextState.player.inventory[itemId],
             },
-        };
+            nextState,
+        );
     },
 });

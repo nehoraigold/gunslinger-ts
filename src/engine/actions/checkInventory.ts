@@ -12,7 +12,7 @@ export const CheckInventoryAction = defineAction({
         gold: z.number(),
     }),
     failReasonSchema: z.never(),
-    execute: (state) => {
+    execute: (state, _, { succeed }) => {
         const itemRegistry = state.world.items;
         const inventory = state.player.inventory;
         const equippedWeaponId = state.player.equippedWeapon;
@@ -38,17 +38,14 @@ export const CheckInventoryAction = defineAction({
             };
         };
 
-        return {
-            state,
-            outcome: {
-                result: 'success',
-                data: {
-                    items: Object.entries(inventory).map(([id, quantity]) => toItemSchema(id, quantity)),
-                    equippedWeapon: equippedWeaponId ? toItemSchema(equippedWeaponId, 1) : null,
-                    equippedArmor: equippedArmorId ? toItemSchema(equippedArmorId, 1) : null,
-                    gold: state.player.gold,
-                },
+        return succeed(
+            {
+                items: Object.entries(inventory).map(([id, quantity]) => toItemSchema(id, quantity)),
+                equippedWeapon: equippedWeaponId ? toItemSchema(equippedWeaponId, 1) : null,
+                equippedArmor: equippedArmorId ? toItemSchema(equippedArmorId, 1) : null,
+                gold: state.player.gold,
             },
-        };
+            state,
+        );
     },
 });

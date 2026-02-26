@@ -16,49 +16,28 @@ export const DropAction = defineAction({
         inventoryCount: z.number(),
     }),
     failReasonSchema: z.enum(['no_such_item', 'item_not_in_inventory', 'insufficient_quantity', 'unable_to_drop']),
-    execute: (state, { itemId, quantity }) => {
+    execute: (state, { itemId, quantity }, { fail, succeed }) => {
         const { world, player } = state;
         const item = world.items[itemId];
         if (!item) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'no_such_item',
-                    message: `No item with ID ${itemId}`,
-                } as const,
-            };
+            return fail('no_such_item', `No item with ID ${itemId}`);
         }
 
         const currentCount = player.inventory[itemId];
         if (!currentCount) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'item_not_in_inventory',
-                    message: `You have no ${item.name} in your inventory`,
-                } as const,
-            };
+            return fail('item_not_in_inventory', `You have no ${item.name} in your inventory`);
         }
 
         quantity ??= 1;
         if (quantity > currentCount) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'insufficient_quantity',
-                    message: `You cannot drop ${quantity} of ${item.name} when you only have ${currentCount}`,
-                } as const,
-            };
+            return fail(
+                'insufficient_quantity',
+                `You cannot drop ${quantity} of ${item.name} when you only have ${currentCount}`,
+            );
         }
 
         if (!item.droppable) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'unable_to_drop',
-                    message: `Item ${item.name} is not droppable`,
-                } as const,
-            };
+            return fail('unable_to_drop', `Item ${item.name} is not droppable`);
         }
 
         let wasEquipped = false;
@@ -85,27 +64,24 @@ export const DropAction = defineAction({
             return draft;
         });
 
-        return {
-            state: nextState,
-            outcome: {
-                result: 'success',
-                data: {
-                    item: {
-                        id: item.id,
-                        name: item.name,
-                        fullDescription: item.fullDescription,
-                        type: item.type,
-                        stats: item.stats,
-                        useEffect: item.useEffect,
-                        consumedOnUse: item.consumedOnUse,
-                        usageHint: item.usageHint,
-                        revealedSecrets: [],
-                    },
-                    droppedInRoomId: player.currentRoomId,
-                    wasEquipped,
-                    inventoryCount: nextState.player.inventory[itemId] ?? 0,
+        return succeed(
+            {
+                item: {
+                    id: item.id,
+                    name: item.name,
+                    fullDescription: item.fullDescription,
+                    type: item.type,
+                    stats: item.stats,
+                    useEffect: item.useEffect,
+                    consumedOnUse: item.consumedOnUse,
+                    usageHint: item.usageHint,
+                    revealedSecrets: [],
                 },
+                droppedInRoomId: player.currentRoomId,
+                wasEquipped,
+                inventoryCount: nextState.player.inventory[itemId] ?? 0,
             },
-        };
+            nextState,
+        );
     },
 });

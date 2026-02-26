@@ -11,39 +11,21 @@ export const UseItemAction = defineAction({
     }),
     successDataSchema,
     failReasonSchema,
-    execute: (state, { itemId, targetId }) => {
+    execute: (state, { itemId, targetId }, { fail }) => {
         const { player, world } = state;
 
         const item = world.items[itemId];
         if (!item) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'no_such_item',
-                    message: `Item with ID ${itemId} does not exist`,
-                },
-            };
+            return fail('no_such_item', `Item with ID ${itemId} does not exist`);
         }
 
         const quantity = player.inventory[itemId];
         if (!quantity) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'item_not_in_inventory',
-                    message: `${item.name} is not in your inventory`,
-                },
-            };
+            return fail('item_not_in_inventory', `${item.name} is not in your inventory`);
         }
 
         if (!item.useEffect) {
-            return {
-                outcome: {
-                    result: 'failure',
-                    reason: 'item_not_usable',
-                    message: `${item.name} cannot be used`,
-                },
-            };
+            return fail('item_not_usable', `${item.name} cannot be used`);
         }
 
         const ctx: EffectHandlerContext = { state, item, quantity, targetId };
