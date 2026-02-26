@@ -23,14 +23,15 @@ export const CheckInventoryAction = defineAction({
             if (!item) {
                 throw new Error(`Unable to find item with id ${id}`);
             }
-            const { name, type, interactable, fullDescription, stats, usageHint } = item;
+            const { name, type, useEffect, consumedOnUse, fullDescription, stats, usageHint } = item;
             return {
                 id,
                 name,
                 fullDescription,
                 type,
                 stats,
-                interactable,
+                useEffect,
+                consumedOnUse,
                 usageHint,
                 revealedSecrets: [],
                 quantity,

@@ -129,7 +129,8 @@ function buildItems(): Item[] {
             fullDescription:
                 "A brown bottle, unlabeled. Whatever is inside smells like it was made in someone's cellar and shouldn't have been. About half remains.",
             type: 'consumable',
-            interactable: true,
+            useEffect: { type: 'heal', value: 20 },
+            consumedOnUse: true,
             usageHint: undefined,
             secrets: [],
             weight: 1,
@@ -146,7 +147,7 @@ function buildItems(): Item[] {
             fullDescription:
                 "Scrawled in a hurried hand: 'Do not go to the mill after dark. I mean it this time. — H'. The paper is old. H, whoever they were, is probably past caring.",
             type: 'lore',
-            interactable: false,
+            consumedOnUse: false,
             usageHint: undefined,
             secrets: [],
             weight: 0,
@@ -166,7 +167,7 @@ function buildItems(): Item[] {
                 'A short hunting knife with a bone handle, worn smooth by use. The blade holds an edge. Someone dropped it in a hurry.',
             type: 'weapon',
             stats: { damage: 4, defense: 0, speedModifier: 1.1 },
-            interactable: false,
+            consumedOnUse: false,
             usageHint: undefined,
             secrets: [],
             weight: 1,
@@ -185,7 +186,7 @@ function buildItems(): Item[] {
             fullDescription:
                 'An old iron lantern, dented and rusted at the hinge. The glass is cracked but intact. It has no oil — useless as it is, but fixable.',
             type: 'misc',
-            interactable: false,
+            consumedOnUse: false,
             usageHint: 'It would need oil before it could be lit.',
             secrets: [],
             weight: 2,
@@ -202,7 +203,8 @@ function buildItems(): Item[] {
             fullDescription:
                 'A heavy iron key, blackened with age. It was buried just below the surface near the newest grave — deliberately, it seems. The head is stamped with a mill wheel.',
             type: 'key',
-            interactable: true,
+            useEffect: { type: 'unlock', flagKey: 'mill_door_unlocked' },
+            consumedOnUse: true,
             usageHint: 'The stamp on the head looks like a mill wheel.',
             secrets: [],
             weight: 1,

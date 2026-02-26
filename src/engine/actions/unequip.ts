@@ -48,6 +48,7 @@ export const UnequipAction = defineAction({
                         fullDescription: previouslyEquippedItem.fullDescription,
                         revealedSecrets: [],
                         stats: previouslyEquippedItem.stats,
+                        consumedOnUse: previouslyEquippedItem.consumedOnUse,
                     },
                     newStats: nextState.player.stats,
                 },

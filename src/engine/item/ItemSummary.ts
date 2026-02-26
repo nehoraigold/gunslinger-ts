@@ -1,4 +1,5 @@
 import { ItemType } from './ItemType';
+import { UseEffect } from './UseEffect';
 
 export interface ItemSummary {
     id: string;
@@ -6,5 +7,5 @@ export interface ItemSummary {
     shortDesc: string;
     isHidden: boolean;
     type: ItemType;
-    interactable: boolean;
+    useEffect?: UseEffect;
 }

@@ -9,8 +9,8 @@ export const toItemSummary = ({ world }: GameState, id: string): ItemSummary | n
         return null;
     }
 
-    const { name, shortDesc, type, interactable, isHidden } = item;
-    return { id, name, shortDesc, type, interactable, isHidden };
+    const { name, shortDesc, type, useEffect, isHidden } = item;
+    return { id, name, shortDesc, type, useEffect, isHidden };
 };
 
 export const toNpcSummary = ({ world }: GameState, id: string): NpcSummary | null => {

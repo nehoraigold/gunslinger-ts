@@ -69,6 +69,7 @@ export const EquipAction = defineAction({
                         fullDescription: item.fullDescription,
                         revealedSecrets: [],
                         stats: item.stats,
+                        consumedOnUse: item.consumedOnUse,
                     },
                     slot: item.type,
                     previouslyEquipped: previouslyEquippedItem
@@ -77,6 +78,7 @@ export const EquipAction = defineAction({
                               fullDescription: previouslyEquippedItem.fullDescription,
                               revealedSecrets: [],
                               stats: previouslyEquippedItem.stats,
+                              consumedOnUse: previouslyEquippedItem.consumedOnUse,
                           }
                         : null,
                     newStats: nextState.player.stats,

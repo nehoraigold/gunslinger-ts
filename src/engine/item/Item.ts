@@ -1,6 +1,7 @@
 import { ItemStats } from './ItemStats';
 import { ItemSecret } from './ItemSecret';
 import { ItemType } from './ItemType';
+import { UseEffect } from './UseEffect';
 
 export interface Item {
     id: string;
@@ -12,8 +13,11 @@ export interface Item {
     // Present for weapons and armor
     stats?: ItemStats;
 
-    // Whether useItem() will do something meaningful with this item
-    interactable: boolean;
+    // Effect applied when useItem() is called. Absence means the item is not usable.
+    useEffect?: UseEffect;
+
+    // Whether to remove one from inventory when used
+    consumedOnUse: boolean;
 
     // In-world hint about usage. Woven into lookItem() narration.
     // Never presented as a menu option. e.g. "The bow is stamped with a crown."

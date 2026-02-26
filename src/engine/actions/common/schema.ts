@@ -1,10 +1,29 @@
 import { z } from 'zod';
 import { Direction, LightLevel } from '../../room';
-import { ItemType } from '../../item';
+import { ItemType, UseEffect } from '../../item';
 import { NpcMood } from '../../npc';
 import { HealthProse } from '../../combat';
 
 export const DirectionSchema: z.ZodType<Direction> = z.enum(['north', 'south', 'west', 'east', 'up', 'down']);
+
+export const UseEffectSchema: z.ZodType<UseEffect> = z.discriminatedUnion('type', [
+    z.object({ type: z.literal('heal'), value: z.number().describe('HP restored') }),
+    z.object({ type: z.literal('damage'), value: z.number().describe('HP dealt to target') }),
+    z.object({
+        type: z.literal('poison'),
+        damage: z.number().describe('HP dealt per turn'),
+        duration: z.number().describe('Number of turns the effect lasts'),
+    }),
+    z.object({ type: z.literal('unlock'), flagKey: z.string().describe('Flag set to true in game state') }),
+    z.object({ type: z.literal('revealLore'), text: z.string().describe('The lore text revealed') }),
+    z.object({
+        type: z.literal('applyBuff'),
+        effectId: z.string(),
+        name: z.string(),
+        description: z.string(),
+        duration: z.number().describe('Number of turns the buff lasts'),
+    }),
+]);
 export const ItemTypeSchema: z.ZodType<ItemType> = z.enum(['weapon', 'armor', 'consumable', 'key', 'lore', 'misc']);
 export const NpcMoodSchema: z.ZodType<NpcMood> = z.enum(['friendly', 'neutral', 'guarded', 'suspicious', 'hostile']);
 export const HealthProseSchema: z.ZodType<HealthProse> = z.enum(['healthy', 'bruised', 'wounded', 'battered', 'fatal']);
@@ -29,7 +48,7 @@ export const ItemSummarySchema = z.object({
     name: z.string().describe('The item name'),
     shortDesc: z.string().describe('A short description of the item'),
     type: ItemTypeSchema.describe('The item type'),
-    interactable: z.boolean().describe('Whether the item is interactable'),
+    useEffect: UseEffectSchema.optional().describe('The effect when this item is used, if any'),
     quantity: z.number().describe('How many of this item are present'),
 });
 
@@ -47,7 +66,8 @@ export const ItemSchema = z.object({
     fullDescription: z.string().describe('The full item description'),
     type: ItemTypeSchema,
     stats: ItemStatsSchema.optional(),
-    interactable: z.boolean(),
+    useEffect: UseEffectSchema.optional(),
+    consumedOnUse: z.boolean(),
     usageHint: z.string().optional(),
     revealedSecrets: z.array(z.string()),
 });
