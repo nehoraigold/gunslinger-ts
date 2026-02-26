@@ -1,10 +1,15 @@
 import { DialogueHint } from './DialogueHint';
 
-// Named position in an NPC's story arc.
-// StateManager advances dialogueNode based on game events.
 export interface DialogueNode {
-    id: string; // e.g. "initial", "post_quest_offered", "post_betrayal"
+    id: string;
     description: string; // What's changed about the NPC's disposition at this node
-    unlocksTopics?: string[]; // Additional knowledgeTopics available at this node
+    unlocksTopics?: string[]; // knowledgeTopics available once this node is active
     hintsOverride?: DialogueHint[]; // Replace default hints at this node
+    activationCondition?: {
+        type: 'flag' | 'npc_trust' | 'room_visited';
+        key?: string;
+        value?: string | boolean | number;
+        npcId?: string;
+        minScore?: number;
+    };
 }

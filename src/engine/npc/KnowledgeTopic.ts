@@ -5,7 +5,7 @@ export interface KnowledgeTopic {
     content: string; // What the NPC actually knows. Used to inform LLM generation.
     revealCondition?: {
         // Optional: topic only available if condition is met
-        type: 'flag' | 'npc_trust';
+        type: 'flag' | 'npc_trust' | 'room_visited';
         key?: string;
         value?: string | boolean | number;
         npcId?: string;

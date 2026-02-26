@@ -42,6 +42,8 @@ export const MoveAction = defineAction({
             throw new Error(`Invalid destination room id ${exit.destinationRoomId}`);
         }
 
+        const isFirstVisit = !nextRoom.visited;
+
         const nextState = produce(state, (draft) => {
             draft.world.rooms[player.currentRoomId].visited = true;
             draft.player.currentRoomId = nextRoom.id;
@@ -55,7 +57,7 @@ export const MoveAction = defineAction({
                 newRoomId: destRoom.id,
                 newRoomName: destRoom.name,
                 newRoomDescription: destRoom.description,
-                isFirstVisit: !nextRoom.visited,
+                isFirstVisit,
                 exits: destRoom.exits.map((exit) => ({
                     direction: exit.direction,
                     destinationName: nextState.world.rooms[exit.destinationRoomId].name,

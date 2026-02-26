@@ -341,6 +341,7 @@ function buildNpcs(): Npc[] {
                     id: 'post_graveyard',
                     description: 'Player has visited the graveyard. Edwyn is relieved someone is looking into it.',
                     unlocksTopics: ['restless_dead'],
+                    activationCondition: { type: 'room_visited', key: 'room_2_2' },
                 },
             },
             currentDialogueNode: 'initial',

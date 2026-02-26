@@ -5,7 +5,7 @@ export interface DialogueHint {
     hint: string; // Natural language constraint for the LLM
     condition?: {
         // Optional: hint only applies if condition is met
-        type: 'flag' | 'npc_trust' | 'always';
+        type: 'flag' | 'npc_trust' | 'room_visited' | 'always';
         key?: string;
         value?: string | number | boolean;
         npcId?: string;

@@ -65,6 +65,38 @@ export const createFlagEntry = (
     previousValue: FlagValue | null = null,
 ): FlagEntry => ({ key, value, setAtTurn: turnCount, previousValue });
 
+type AnyCondition = {
+    type: 'flag' | 'npc_trust' | 'room_visited' | 'always';
+    key?: string;
+    value?: string | boolean | number;
+    npcId?: string;
+    minScore?: number;
+    threshold?: number;
+};
+
+export function checkCondition(state: GameState, condition: AnyCondition | undefined): boolean {
+    if (!condition) return true;
+    if (condition.type === 'always') return true;
+    if (condition.type === 'flag') {
+        const entry = condition.key ? state.flags[condition.key] : undefined;
+        if (!entry) return condition.value === false || condition.value === undefined;
+        return entry.value === condition.value;
+    }
+    if (condition.type === 'room_visited') {
+        if (!condition.key) return false;
+        return state.world.rooms[condition.key]?.visited ?? false;
+    }
+    if (condition.type === 'npc_trust') {
+        const npcId = condition.npcId;
+        if (!npcId) return false;
+        const entry = state.flags[`${npcId}_trust`];
+        const score = entry ? (entry.value as number) : 0;
+        const required = condition.minScore ?? condition.threshold ?? 0;
+        return score >= required;
+    }
+    return false;
+}
+
 export function rollAttack(attackPower: number, defense: number): { attackType: AttackType; damage: number } {
     const roll = Math.random();
     const baseDamage = Math.max(1, attackPower - defense);
