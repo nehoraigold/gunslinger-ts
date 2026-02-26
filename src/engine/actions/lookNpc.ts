@@ -37,7 +37,7 @@ export const LookNpcAction = defineAction({
                 isAlive: true,
                 appearance: npc.appearance,
                 mood: npc.mood,
-                health: healthValueToProse({ health: npc.health, maxHealth: npc.maxHealth }),
+                health: healthValueToProse(npc),
                 personality: npc.personality,
                 notableFeatures: npc.notableFeatures.map(({ feature }) => feature),
                 visibleEquipment: npc.visibleEquipment,

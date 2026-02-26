@@ -39,7 +39,7 @@ export const toNpcSummary = ({ world }: GameState, id: string): NpcSummary | nul
         isAlive: true,
         appearance: npc.appearance,
         mood: npc.mood,
-        health: healthValueToProse({ health: npc.health, maxHealth: npc.maxHealth }),
+        health: healthValueToProse(npc),
     };
 };
 

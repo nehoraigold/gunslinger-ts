@@ -31,7 +31,7 @@ export const CheckStatusAction = defineAction({
         return succeed({
             health: player.health,
             maxHealth: player.maxHealth,
-            healthProse: healthValueToProse({ health: player.health, maxHealth: player.maxHealth }),
+            healthProse: healthValueToProse(player),
             currentRoomId: player.currentRoomId,
             baseStats: player.baseStats,
             combatStats: derivePlayerStats(player, world.items),
