@@ -1,6 +1,7 @@
 import { produce } from 'immer';
 import { defineEffectHandler } from '../defineEffectHandler';
 import { consumeItem } from '../types';
+import { createFlagEntry } from '../../common/utils';
 
 export const handleUnlock = defineEffectHandler('unlock', ({ state, item, quantity }, effect) => {
     const { player, world } = state;
@@ -21,13 +22,12 @@ export const handleUnlock = defineEffectHandler('unlock', ({ state, item, quanti
     }
 
     const nextState = produce(state, (draft) => {
-        const existingFlag = state.flags[effect.flagKey];
-        draft.flags[effect.flagKey] = {
-            key: effect.flagKey,
-            value: true,
-            setAtTurn: state.turnCount,
-            previousValue: existingFlag?.value ?? null,
-        };
+        draft.flags[effect.flagKey] = createFlagEntry(
+            effect.flagKey,
+            true,
+            state.turnCount,
+            state.flags[effect.flagKey]?.value ?? null,
+        );
 
         for (const exit of draft.world.rooms[player.currentRoomId].exits) {
             if (

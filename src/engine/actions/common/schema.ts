@@ -55,9 +55,10 @@ export const ItemSummarySchema = z.object({
 export const NpcSummarySchema = z.object({
     id: z.string().describe('The NPC ID'),
     name: z.string().describe('The NPC name'),
-    appearance: z.string().describe("The NPC's physical appearance"),
-    mood: NpcMoodSchema.describe('The mood of the NPC toward the player'),
-    health: HealthProseSchema.describe("The state of the NPC's health"),
+    isAlive: z.boolean().describe('Whether this NPC is alive'),
+    appearance: z.string().optional().describe("The NPC's physical appearance"),
+    mood: NpcMoodSchema.optional().describe('The mood of the NPC toward the player'),
+    health: HealthProseSchema.optional().describe("The state of the NPC's health"),
 });
 
 export const ItemSchema = z.object({

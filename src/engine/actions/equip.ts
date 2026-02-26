@@ -3,7 +3,7 @@ import { produce } from 'immer';
 
 import { EquipSlot, derivePlayerStats } from '../player';
 import { ItemSchema, CombatStatsSchema } from './common/schema';
-import { toItemSummary } from './common/utils';
+import { toItemSchema, equipFieldForType } from './common/utils';
 import { defineAction } from './Action';
 
 export const EquipAction = defineAction({
@@ -35,31 +35,18 @@ export const EquipAction = defineAction({
 
         // TODO: Check stats requirement
 
-        const equippedField = item.type === 'armor' ? 'equippedArmor' : 'equippedWeapon';
-        const previouslyEquippedItem = player[equippedField] ? world.items[player[equippedField]] : null;
+        const equippedField = equipFieldForType(item.type);
+        const previouslyEquippedItem = player[equippedField] ? world.items[player[equippedField]!] : null;
         const nextState = produce(state, (draft) => {
             draft.player[equippedField] = itemId;
             return draft;
         });
+
         return succeed(
             {
-                item: {
-                    ...toItemSummary(nextState, itemId)!,
-                    fullDescription: item.fullDescription,
-                    revealedSecrets: [],
-                    stats: item.stats,
-                    consumedOnUse: item.consumedOnUse,
-                },
+                item: toItemSchema(item),
                 slot: item.type,
-                previouslyEquipped: previouslyEquippedItem
-                    ? {
-                          ...toItemSummary(nextState, previouslyEquippedItem.id)!,
-                          fullDescription: previouslyEquippedItem.fullDescription,
-                          revealedSecrets: [],
-                          stats: previouslyEquippedItem.stats,
-                          consumedOnUse: previouslyEquippedItem.consumedOnUse,
-                      }
-                    : null,
+                previouslyEquipped: previouslyEquippedItem ? toItemSchema(previouslyEquippedItem) : null,
                 combatStats: derivePlayerStats(nextState.player, nextState.world.items),
             },
             nextState,

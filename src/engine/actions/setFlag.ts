@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { produce } from 'immer';
 import { defineAction } from './Action';
 import { FlagValueSchema } from './common/schema';
+import { createFlagEntry } from './common/utils';
 
 export const SetFlagAction = defineAction({
     name: 'setFlag',
@@ -16,16 +17,10 @@ export const SetFlagAction = defineAction({
     }),
     failReasonSchema: z.never(),
     execute: (state, { key, value }, { succeed }) => {
-        const existing = state.flags[key];
-        const previousValue = existing ? existing.value : null;
+        const previousValue = state.flags[key]?.value ?? null;
 
         const nextState = produce(state, (draft) => {
-            draft.flags[key] = {
-                key,
-                value,
-                setAtTurn: state.turnCount,
-                previousValue: previousValue ?? null,
-            };
+            draft.flags[key] = createFlagEntry(key, value, state.turnCount, previousValue);
             return draft;
         });
 

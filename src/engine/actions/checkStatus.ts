@@ -1,21 +1,9 @@
 import { z } from 'zod';
 import { defineAction } from './Action';
 import { ItemSchema, PlayerAttributesSchema, CombatStatsSchema, HealthProseSchema } from './common/schema';
+import { toItemSchema } from './common/utils';
 import { derivePlayerStats } from '../player';
 import { healthValueToProse } from '../state/utils';
-import { Item } from '../item';
-
-const toItemFull = (item: Item) => ({
-    id: item.id,
-    name: item.name,
-    fullDescription: item.fullDescription,
-    type: item.type,
-    stats: item.stats,
-    useEffect: item.useEffect,
-    consumedOnUse: item.consumedOnUse,
-    usageHint: item.usageHint,
-    revealedSecrets: [],
-});
 
 export const CheckStatusAction = defineAction({
     name: 'checkStatus',
@@ -49,8 +37,8 @@ export const CheckStatusAction = defineAction({
             combatStats: derivePlayerStats(player, world.items),
             gold: player.gold,
             turnCount: state.turnCount,
-            equippedWeapon: equippedWeapon ? toItemFull(equippedWeapon) : null,
-            equippedArmor: equippedArmor ? toItemFull(equippedArmor) : null,
+            equippedWeapon: equippedWeapon ? toItemSchema(equippedWeapon) : null,
+            equippedArmor: equippedArmor ? toItemSchema(equippedArmor) : null,
         });
     },
 });

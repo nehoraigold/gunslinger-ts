@@ -13,9 +13,9 @@ export interface WorldSnapshot {
     npcsPresent: Array<{
         id: string;
         name: string;
-        isHostile: boolean;
+        isAlive: boolean;
+        mood: string;
         healthProse: HealthProse;
-        isEngaged: boolean;
     }>;
 
     itemsPresent: Array<{

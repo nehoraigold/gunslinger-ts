@@ -7,3 +7,4 @@ export * from './DialogueNode';
 export * from './KnowledgeTopic';
 export * from './NpcSummary';
 export * from './NpcInventoryItem';
+export * from './npcUtils';

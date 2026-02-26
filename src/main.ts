@@ -15,6 +15,9 @@ import { DropAction } from './engine/actions/drop';
 import { EquipAction } from './engine/actions/equip';
 import { UnequipAction } from './engine/actions/unequip';
 import { UseItemAction } from './engine/actions/useItem';
+import { AttackAction } from './engine/actions/attack';
+import { FleeAction } from './engine/actions/flee';
+import { StartCombatAction } from './engine/actions/startCombat';
 
 const log = getLogger('main');
 
@@ -47,6 +50,12 @@ async function main() {
 function takeAction(state: GameState, input: string): { state?: GameState; outcome: any } {
     const [action, ...inputs] = input.split(' ');
     switch (action) {
+        case 'attack':
+            return AttackAction.execute(state, { targetId: inputs.join(' ') });
+        case 'flee':
+            return FleeAction.execute(state);
+        case 'startCombat':
+            return StartCombatAction.execute(state, { targetId: inputs.join(' ') });
         case 'move':
             return MoveAction.execute(state, { direction: inputToDirection(inputs.join(' ')) });
         case 'lookRoom':

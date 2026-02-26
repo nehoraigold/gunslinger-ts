@@ -1,11 +1,6 @@
 import { HealthProse } from '../combat';
 import { NpcMood } from './NpcMood';
 
-// Lightweight NPC summary returned in room listings
-export interface NpcSummary {
-    id: string;
-    name: string;
-    appearance: string;
-    mood: NpcMood;
-    health: HealthProse; // Pre-computed by StateManager
-}
+export type NpcSummary =
+    | { id: string; name: string; isAlive: true; appearance: string; mood: NpcMood; health: HealthProse }
+    | { id: string; name: string; isAlive: false };

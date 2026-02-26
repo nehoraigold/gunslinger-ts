@@ -13,7 +13,6 @@ export interface Npc {
     personality: string; // LLM voice anchor. e.g. "gruff ex-soldier, distrustful of outsiders"
 
     // Combat properties
-    isHostile: boolean;
     health: number;
     maxHealth: number;
     attackPower: number;
@@ -41,7 +40,6 @@ export interface Npc {
     notableFeatures: NotableFeature[];
 
     // Whether this NPC can be interacted with
-    isAlive: boolean;
     isEngaged: boolean; // Currently in dialogue with player
 
     // Whether looking at this NPC sets npc_{id}_observed flag

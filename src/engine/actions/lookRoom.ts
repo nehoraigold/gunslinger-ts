@@ -3,7 +3,7 @@ import { produce } from 'immer';
 
 import { ExitSummarySchema, ItemSummarySchema, NpcSummarySchema, LightLevelSchema } from './common/schema';
 import { defineAction } from './Action';
-import { toItemSummary, toNpcSummary } from './common/utils';
+import { getVisibleRoomItems, getRoomNpcs } from './common/utils';
 
 export const LookRoomAction = defineAction({
     name: 'lookRoom',
@@ -30,27 +30,21 @@ export const LookRoomAction = defineAction({
             return draft;
         });
 
+        const nextRoom = nextState.world.rooms[room.id];
+
         return succeed(
             {
-                id: room.id,
-                name: room.name,
-                description: room.description,
-                exits: room.exits.map((exit) => ({
+                id: nextRoom.id,
+                name: nextRoom.name,
+                description: nextRoom.description,
+                exits: nextRoom.exits.map((exit) => ({
                     direction: exit.direction,
-                    destinationName: state.world.rooms[exit.destinationRoomId].name,
+                    destinationName: nextState.world.rooms[exit.destinationRoomId].name,
                     hint: exit.hint,
                 })),
-                items: Object.entries(room.items)
-                    .map(([id, quantity]) => {
-                        const item = toItemSummary(nextState, id);
-                        if (!item || item.isHidden) {
-                            return null;
-                        }
-                        return { ...item, quantity };
-                    })
-                    .filter((i) => !!i),
-                npcs: room.npcIds.map((id) => toNpcSummary(nextState, id)).filter((npc) => !!npc),
-                lightLevel: room.lightLevel,
+                items: getVisibleRoomItems(nextState, nextRoom),
+                npcs: getRoomNpcs(nextState, nextRoom),
+                lightLevel: nextRoom.lightLevel,
             },
             nextState,
         );

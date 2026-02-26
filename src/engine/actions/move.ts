@@ -1,10 +1,9 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 
-import { healthValueToProse } from '../state/utils';
 import { DirectionSchema, ExitSummarySchema, ItemSummarySchema, NpcSummarySchema } from './common/schema';
 import { defineAction } from './Action';
-import { toItemSummary } from './common/utils';
+import { getVisibleRoomItems, getRoomNpcs } from './common/utils';
 
 export const MoveAction = defineAction({
     name: 'move',
@@ -49,29 +48,21 @@ export const MoveAction = defineAction({
             return draft;
         });
 
+        const destRoom = nextState.world.rooms[nextRoom.id];
+
         return succeed(
             {
-                newRoomId: nextRoom.id,
-                newRoomName: nextRoom.name,
-                newRoomDescription: nextRoom.description,
+                newRoomId: destRoom.id,
+                newRoomName: destRoom.name,
+                newRoomDescription: destRoom.description,
                 isFirstVisit: !nextRoom.visited,
-                exits: nextRoom.exits.map((exit) => ({
+                exits: destRoom.exits.map((exit) => ({
                     direction: exit.direction,
                     destinationName: nextState.world.rooms[exit.destinationRoomId].name,
                     hint: exit.hint,
                 })),
-                items: Object.entries(nextRoom.items)
-                    .map(([id, quantity]) => {
-                        const item = toItemSummary(nextState, id);
-                        if (!item || item.isHidden) {
-                            return null;
-                        }
-                        return { ...item, quantity };
-                    })
-                    .filter((i) => !!i),
-                npcs: nextRoom.npcIds
-                    .map((id) => nextState.world.npcs[id])
-                    .map((npc) => ({ ...npc, health: healthValueToProse(npc) })),
+                items: getVisibleRoomItems(nextState, destRoom),
+                npcs: getRoomNpcs(nextState, destRoom),
             },
             nextState,
         );

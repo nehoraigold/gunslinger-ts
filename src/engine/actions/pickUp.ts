@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { ItemSchema } from './common/schema';
 import { defineAction } from './Action';
 import { produce } from 'immer';
+import { toItemSchema } from './common/utils';
+import { ItemSchema } from './common/schema';
 
 export const PickUpAction = defineAction({
     name: 'pickUp',
@@ -45,10 +46,7 @@ export const PickUpAction = defineAction({
         }
 
         const nextState = produce(state, (draft) => {
-            // add to player inventory
             draft.player.inventory[itemId] = (draft.player.inventory[itemId] ?? 0) + quantity;
-
-            // remove from room items
             draft.world.rooms[room.id].items[itemId] = draft.world.rooms[room.id].items[itemId] - quantity;
             if (draft.world.rooms[room.id].items[itemId] === 0) {
                 delete draft.world.rooms[room.id].items[itemId];
@@ -57,17 +55,7 @@ export const PickUpAction = defineAction({
         });
         return succeed(
             {
-                item: {
-                    id: item.id,
-                    name: item.name,
-                    fullDescription: item.fullDescription,
-                    type: item.type,
-                    stats: item.stats,
-                    useEffect: item.useEffect,
-                    consumedOnUse: item.consumedOnUse,
-                    usageHint: item.usageHint,
-                    revealedSecrets: [],
-                },
+                item: toItemSchema(item),
                 inventoryCount: nextState.player.inventory[itemId],
             },
             nextState,

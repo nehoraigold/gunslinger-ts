@@ -1,8 +1,9 @@
 import { z } from 'zod';
 
-import { healthValueToProse } from '../state/utils';
 import { NpcSummarySchema } from './common/schema';
 import { defineAction } from './Action';
+import { healthValueToProse } from '../state/utils';
+import { isAlive } from '../npc';
 
 export const LookNpcAction = defineAction({
     name: 'lookNpc',
@@ -10,8 +11,7 @@ export const LookNpcAction = defineAction({
         npcId: z.string().describe('The ID of the NPC'),
     }),
     successDataSchema: NpcSummarySchema.extend({
-        appearance: z.string(),
-        personality: z.string(),
+        personality: z.string().optional(),
         notableFeatures: z.array(z.string()).optional(),
         visibleEquipment: z.array(z.string()).optional(),
     }),
@@ -25,13 +25,19 @@ export const LookNpcAction = defineAction({
         if (!npcInRoom) {
             return fail('npc_not_found', `${npc.name} is not present`);
         }
+
+        if (!isAlive(npc)) {
+            return succeed({ id: npcId, name: npc.name, isAlive: false }, state);
+        }
+
         return succeed(
             {
                 id: npcId,
                 name: npc.name,
-                mood: npc.mood,
-                health: healthValueToProse(npc),
+                isAlive: true,
                 appearance: npc.appearance,
+                mood: npc.mood,
+                health: healthValueToProse({ health: npc.health, maxHealth: npc.maxHealth }),
                 personality: npc.personality,
                 notableFeatures: npc.notableFeatures.map(({ feature }) => feature),
                 visibleEquipment: npc.visibleEquipment,

@@ -235,7 +235,6 @@ function buildNpcs(): Npc[] {
             personality:
                 'Tired innkeeper who has seen too much. Helpful because it is easier than arguing. Dry humour. Protective of her regulars.',
 
-            isHostile: false,
             health: 40,
             maxHealth: 40,
             attackPower: 3,
@@ -282,7 +281,6 @@ function buildNpcs(): Npc[] {
                 { feature: 'A faded bruise along her jaw — a few days old.' },
                 { feature: 'She glances at the door whenever it opens.' },
             ],
-            isAlive: true,
             isEngaged: false,
             reactsToObservation: false,
             xpValue: 0,
@@ -297,7 +295,6 @@ function buildNpcs(): Npc[] {
             personality:
                 'Village elder. Remembers everything. Speaks in considered sentences. Genuinely wants to help but is afraid of something he will not name.',
 
-            isHostile: false,
             health: 20,
             maxHealth: 20,
             attackPower: 1,
@@ -356,7 +353,6 @@ function buildNpcs(): Npc[] {
                 { feature: 'His hands have a faint tremor when he speaks about the mill.' },
                 { feature: 'He keeps glancing south, toward the graveyard.' },
             ],
-            isAlive: true,
             isEngaged: false,
             reactsToObservation: false,
             xpValue: 0,
@@ -370,7 +366,6 @@ function buildNpcs(): Npc[] {
                 'A figure that should not be standing. Burial clothes, grave soil still clinging to it, moving with the lurching certainty of something that has forgotten how bodies work.',
             personality: 'No personality. No speech. It moves toward the living with a single, dull intent.',
 
-            isHostile: true,
             health: 25,
             maxHealth: 25,
             attackPower: 7,
@@ -397,7 +392,6 @@ function buildNpcs(): Npc[] {
                 { feature: 'The grave it crawled from is in the south corner — the soil is freshly turned.' },
                 { feature: 'It does not breathe.' },
             ],
-            isAlive: true,
             isEngaged: false,
             reactsToObservation: true,
             xpValue: 30,

@@ -5,7 +5,7 @@ import { defineAction, ActionContext } from './Action';
 import { ItemTypeSchema } from './common/schema';
 import { toItemSummary } from './common/utils';
 import { GameState } from '../state/GameState';
-import { Npc } from '../npc';
+import { Npc, isAlive, isHostile } from '../npc';
 import { Item } from '../item';
 
 const TradeItemSchema = z.object({
@@ -185,7 +185,7 @@ export const TradeAction = defineAction({
             return fail('npc_not_in_room', `${npc.name} is not here`);
         }
 
-        if (!npc.isAlive || npc.isHostile) {
+        if (!isAlive(npc) || isHostile(npc)) {
             return fail('npc_unavailable', `${npc.name} is not available for trade`);
         }
 

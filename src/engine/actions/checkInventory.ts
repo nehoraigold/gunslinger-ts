@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ItemSchema } from './common/schema';
 import { defineAction } from './Action';
+import { toItemSchema } from './common/utils';
 
 export const CheckInventoryAction = defineAction({
     name: 'checkInventory',
@@ -13,37 +14,18 @@ export const CheckInventoryAction = defineAction({
     }),
     failReasonSchema: z.never(),
     execute: (state, _, { succeed }) => {
-        const itemRegistry = state.world.items;
-        const inventory = state.player.inventory;
-        const equippedWeaponId = state.player.equippedWeapon;
-        const equippedArmorId = state.player.equippedArmor;
-
-        const toItemSchema = (id: string, quantity: number) => {
-            const item = itemRegistry[id];
-            if (!item) {
-                throw new Error(`Unable to find item with id ${id}`);
-            }
-            const { name, type, useEffect, consumedOnUse, fullDescription, stats, usageHint } = item;
-            return {
-                id,
-                name,
-                fullDescription,
-                type,
-                stats,
-                useEffect,
-                consumedOnUse,
-                usageHint,
-                revealedSecrets: [],
-                quantity,
-            };
-        };
+        const { world, player } = state;
 
         return succeed(
             {
-                items: Object.entries(inventory).map(([id, quantity]) => toItemSchema(id, quantity)),
-                equippedWeapon: equippedWeaponId ? toItemSchema(equippedWeaponId, 1) : null,
-                equippedArmor: equippedArmorId ? toItemSchema(equippedArmorId, 1) : null,
-                gold: state.player.gold,
+                items: Object.entries(player.inventory).map(([id, quantity]) => {
+                    const item = world.items[id];
+                    if (!item) throw new Error(`Unable to find item with id ${id}`);
+                    return { ...toItemSchema(item), quantity };
+                }),
+                equippedWeapon: player.equippedWeapon ? toItemSchema(world.items[player.equippedWeapon]!) : null,
+                equippedArmor: player.equippedArmor ? toItemSchema(world.items[player.equippedArmor]!) : null,
+                gold: player.gold,
             },
             state,
         );

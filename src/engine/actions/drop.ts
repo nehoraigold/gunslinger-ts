@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { ItemSchema } from './common/schema';
 import { defineAction } from './Action';
 import { produce } from 'immer';
+import { toItemSchema } from './common/utils';
+import { ItemSchema } from './common/schema';
 
 export const DropAction = defineAction({
     name: 'drop',
@@ -42,11 +43,9 @@ export const DropAction = defineAction({
 
         let wasEquipped = false;
         const nextState = produce(state, (draft) => {
-            // add item count to current room
             draft.world.rooms[draft.player.currentRoomId].items[itemId] =
                 (draft.world.rooms[draft.player.currentRoomId].items[itemId] ?? 0) + quantity;
 
-            // remove item count from player inventory
             const oldCount = player.inventory[itemId];
             const newCount = oldCount - quantity;
             draft.player.inventory[itemId] = newCount;
@@ -66,17 +65,7 @@ export const DropAction = defineAction({
 
         return succeed(
             {
-                item: {
-                    id: item.id,
-                    name: item.name,
-                    fullDescription: item.fullDescription,
-                    type: item.type,
-                    stats: item.stats,
-                    useEffect: item.useEffect,
-                    consumedOnUse: item.consumedOnUse,
-                    usageHint: item.usageHint,
-                    revealedSecrets: [],
-                },
+                item: toItemSchema(item),
                 droppedInRoomId: player.currentRoomId,
                 wasEquipped,
                 inventoryCount: nextState.player.inventory[itemId] ?? 0,

@@ -2,8 +2,8 @@ import { defineAction } from './Action';
 import { z } from 'zod';
 import { EquipSlot, derivePlayerStats } from '../player';
 import { produce } from 'immer';
-import { toItemSummary } from './common/utils';
 import { ItemSchema, CombatStatsSchema } from './common/schema';
+import { toItemSchema, equipFieldForType } from './common/utils';
 
 export const UnequipAction = defineAction({
     name: 'unequip',
@@ -21,7 +21,7 @@ export const UnequipAction = defineAction({
             throw new Error(`Cannot unequip unknown slot '${slot}'`);
         }
 
-        const equippedField = slot === 'weapon' ? 'equippedWeapon' : 'equippedArmor';
+        const equippedField = equipFieldForType(slot);
         const previouslyEquippedItemId = state.player[equippedField];
         if (!previouslyEquippedItemId) {
             return fail('already_unequipped', `Player already has no ${slot} equipped`);
@@ -31,16 +31,11 @@ export const UnequipAction = defineAction({
         const nextState = produce(state, (draft) => {
             draft.player[equippedField] = null;
         });
+
         return succeed(
             {
                 slot,
-                previouslyEquipped: {
-                    ...toItemSummary(nextState, previouslyEquippedItemId)!,
-                    fullDescription: previouslyEquippedItem.fullDescription,
-                    revealedSecrets: [],
-                    stats: previouslyEquippedItem.stats,
-                    consumedOnUse: previouslyEquippedItem.consumedOnUse,
-                },
+                previouslyEquipped: toItemSchema(previouslyEquippedItem),
                 combatStats: derivePlayerStats(nextState.player, nextState.world.items),
             },
             nextState,
