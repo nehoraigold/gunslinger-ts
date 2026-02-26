@@ -18,6 +18,7 @@ import { UseItemAction } from './engine/actions/useItem';
 import { AttackAction } from './engine/actions/attack';
 import { FleeAction } from './engine/actions/flee';
 import { StartCombatAction } from './engine/actions/startCombat';
+import { TalkToAction } from './engine/actions/talkTo';
 
 const log = getLogger('main');
 
@@ -84,6 +85,9 @@ function takeAction(state: GameState, input: string): { state?: GameState; outco
         case 'useItem':
         case 'use':
             return UseItemAction.execute(state, { itemId: inputs[0], targetId: inputs[1] || undefined });
+        case 'talkTo':
+        case 'talk':
+            return TalkToAction.execute(state, { npcId: inputs[0], topic: inputs[1] });
         default:
             throw new Error(`Unknown action: ${action}`);
     }
