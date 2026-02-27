@@ -6,6 +6,7 @@ import { FlagEntry, FlagValue } from '../../flag';
 import { Room } from '../../room';
 import { AttackType } from '../../combat';
 import { healthValueToProse } from '../../state/utils';
+import { evaluateCondition } from '../../condition';
 import { ItemSchema } from './schema';
 
 export const toItemSummary = ({ world }: GameState, id: string): ItemSummary | null => {
@@ -13,8 +14,8 @@ export const toItemSummary = ({ world }: GameState, id: string): ItemSummary | n
     if (!item) {
         return null;
     }
-    const { name, shortDesc, type, useEffect, isHidden } = item;
-    return { id, name, shortDesc, type, useEffect, isHidden };
+    const { name, shortDesc, type, useEffect } = item;
+    return { id, name, shortDesc, type, useEffect };
 };
 
 export const toItemSchema = (item: Item): z.infer<typeof ItemSchema> => ({
@@ -46,9 +47,9 @@ export const toNpcSummary = ({ world }: GameState, id: string): NpcSummary | nul
 export const getVisibleRoomItems = (state: GameState, room: Room): Array<ItemSummary & { quantity: number }> =>
     Object.entries(room.items)
         .map(([id, quantity]) => {
-            const item = toItemSummary(state, id);
-            if (!item || item.isHidden) return null;
-            return { ...item, quantity };
+            const item = state.world.items[id];
+            if (!item || !evaluateCondition(state, item.revealCondition)) return null;
+            return { ...toItemSummary(state, id)!, quantity };
         })
         .filter((i): i is ItemSummary & { quantity: number } => i !== null);
 
@@ -64,38 +65,6 @@ export const createFlagEntry = (
     turnCount: number,
     previousValue: FlagValue | null = null,
 ): FlagEntry => ({ key, value, setAtTurn: turnCount, previousValue });
-
-type AnyCondition = {
-    type: 'flag' | 'npc_trust' | 'room_visited' | 'always';
-    key?: string;
-    value?: string | boolean | number;
-    npcId?: string;
-    minScore?: number;
-    threshold?: number;
-};
-
-export function checkCondition(state: GameState, condition: AnyCondition | undefined): boolean {
-    if (!condition) return true;
-    if (condition.type === 'always') return true;
-    if (condition.type === 'flag') {
-        const entry = condition.key ? state.flags[condition.key] : undefined;
-        if (!entry) return condition.value === false || condition.value === undefined;
-        return entry.value === condition.value;
-    }
-    if (condition.type === 'room_visited') {
-        if (!condition.key) return false;
-        return state.world.rooms[condition.key]?.visited ?? false;
-    }
-    if (condition.type === 'npc_trust') {
-        const npcId = condition.npcId;
-        if (!npcId) return false;
-        const entry = state.flags[`${npcId}_trust`];
-        const score = entry ? (entry.value as number) : 0;
-        const required = condition.minScore ?? condition.threshold ?? 0;
-        return score >= required;
-    }
-    return false;
-}
 
 export function rollAttack(attackPower: number, defense: number): { attackType: AttackType; damage: number } {
     const roll = Math.random();

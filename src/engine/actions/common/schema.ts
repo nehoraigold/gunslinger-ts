@@ -68,6 +68,7 @@ export const ItemSchema = z.object({
     type: ItemTypeSchema,
     stats: ItemStatsSchema.optional(),
     useEffect: UseEffectSchema.optional(),
+    onInspectEffect: UseEffectSchema.optional().describe('Effect triggered when this item is examined via lookItem'),
     consumedOnUse: z.boolean(),
     usageHint: z.string().optional(),
     revealedSecrets: z.array(z.string()),

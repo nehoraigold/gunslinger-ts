@@ -4,7 +4,7 @@ import { produce } from 'immer';
 import { NpcMoodSchema } from './common/schema';
 import { defineAction } from './Action';
 import { isAlive } from '../npc';
-import { checkCondition } from './common/utils';
+import { evaluateCondition, evalConditionOpt } from '../condition';
 
 export const TalkToAction = defineAction({
     name: 'talkTo',
@@ -48,7 +48,7 @@ export const TalkToAction = defineAction({
         if (topic !== undefined) {
             const kt = npc.knowledgeTopics.find((t) => t.topic === topic);
             if (!kt) return fail('no_such_topic', `${npc.name} has no knowledge about "${topic}"`);
-            if (kt.revealCondition && !checkCondition(state, kt.revealCondition)) {
+            if (kt.revealCondition && !evaluateCondition(state, kt.revealCondition)) {
                 return fail('topic_not_available', `That topic is not available yet`);
             }
             topicContent = kt.content;
@@ -58,7 +58,7 @@ export const TalkToAction = defineAction({
 
         // Advance to the first node (other than current) whose activationCondition is now met
         const nextNode = Object.values(npc.dialogueNodes).find(
-            (node) => node.id !== npc.currentDialogueNode && checkCondition(state, node.activationCondition),
+            (node) => node.id !== npc.currentDialogueNode && evalConditionOpt(state, node.activationCondition),
         );
         const nodeAdvanced = nextNode !== undefined;
 
@@ -75,11 +75,11 @@ export const TalkToAction = defineAction({
         const availableTopics = (currentNode.unlocksTopics ?? []).filter((topicId) => {
             const kt = npc.knowledgeTopics.find((t) => t.topic === topicId);
             if (!kt) return false;
-            return checkCondition(state, kt.revealCondition);
+            return evalConditionOpt(state, kt.revealCondition);
         });
 
         const hintSource = currentNode.hintsOverride ?? npc.dialogueHints;
-        const activeHints = hintSource.filter((h) => checkCondition(state, h.condition)).map((h) => h.hint);
+        const activeHints = hintSource.filter((h) => evalConditionOpt(state, h.condition)).map((h) => h.hint);
 
         return succeed(
             {

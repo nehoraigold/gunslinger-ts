@@ -1,7 +1,8 @@
 import { z } from 'zod';
-import { ItemSchema } from './common/schema';
-import { defineActionOutcome } from './ActionOutcome';
+import { produce } from 'immer';
+import { ItemSchema, ItemSummarySchema } from './common/schema';
 import { defineAction } from './Action';
+import { toItemSummary } from './common/utils';
 
 const ItemLocationSchema = z.enum(['inventory', 'room', 'equipped']);
 
@@ -13,6 +14,10 @@ export const LookItemAction = defineAction({
     successDataSchema: ItemSchema.extend({
         location: ItemLocationSchema,
         quantity: z.number(),
+        itemsRevealed: z
+            .array(ItemSummarySchema)
+            .optional()
+            .describe('Items newly made visible by inspecting this item'),
     }),
     failReasonSchema: z.enum(['no_such_item', 'item_not_found']),
     execute: (state, { itemId }, { fail, succeed }) => {
@@ -34,6 +39,24 @@ export const LookItemAction = defineAction({
                     : 'inventory'
                 : 'room';
         const quantity = itemId in player.inventory ? player.inventory[itemId] : room.items[itemId];
-        return succeed({ ...item, location, quantity, revealedSecrets: [] }, state);
+
+        // Process onInspectEffect — currently only 'revealItem' is handled
+        let nextState = state;
+        let itemsRevealed: z.infer<typeof ItemSummarySchema>[] | undefined;
+
+        if (item.onInspectEffect?.type === 'revealItem') {
+            const revealId = item.onInspectEffect.itemId;
+            const target = world.items[revealId];
+            if (target) {
+                nextState = produce(state, (draft) => {
+                    draft.world.items[revealId].revealCondition = { type: 'true' };
+                    return draft;
+                });
+                const summary = toItemSummary(nextState, revealId);
+                if (summary) itemsRevealed = [{ ...summary, quantity: 1 }];
+            }
+        }
+
+        return succeed({ ...item, location, quantity, revealedSecrets: [], itemsRevealed }, nextState);
     },
 });

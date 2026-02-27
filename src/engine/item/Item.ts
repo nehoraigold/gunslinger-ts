@@ -2,6 +2,7 @@ import { ItemStats } from './ItemStats';
 import { ItemSecret } from './ItemSecret';
 import { ItemType } from './ItemType';
 import { UseEffect } from './UseEffect';
+import { Condition } from '../condition/Condition';
 
 export interface Item {
     id: string;
@@ -15,6 +16,10 @@ export interface Item {
 
     // Effect applied when useItem() is called. Absence means the item is not usable.
     useEffect?: UseEffect;
+
+    // Effect triggered when lookItem() is called (passive inspection).
+    // Only 'revealItem' is currently handled; others are reserved for future use.
+    onInspectEffect?: UseEffect;
 
     // Whether to remove one from inventory when used
     consumedOnUse: boolean;
@@ -38,9 +43,11 @@ export interface Item {
     // Whether this item can be dropped
     droppable: boolean;
 
-    // Whether this item is currently visible in the room.
-    // Hidden items do not appear in lookRoom() output.
-    isHidden: boolean;
+    // Controls item visibility in the room. Evaluated at lookup time.
+    // Use { type: 'true' } for always-visible items.
+    // Use { type: 'false' } for permanently hidden items.
+    // To permanently reveal a conditionally-hidden item, replace with { type: 'true' }.
+    revealCondition: Condition;
 
     // Metadata for StateManager
     createdAtTurn: number;

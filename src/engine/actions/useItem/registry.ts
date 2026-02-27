@@ -7,6 +7,7 @@ import { handleDamage } from './effects/damage';
 import { handlePoison } from './effects/poison';
 import { handleRevealLore } from './effects/revealLore';
 import { handleApplyBuff } from './effects/applyBuff';
+import { handleRevealItem } from './effects/revealItem';
 
 const registry: EffectHandlerRegistry = {
     heal: handleHeal,
@@ -15,6 +16,7 @@ const registry: EffectHandlerRegistry = {
     poison: handlePoison,
     revealLore: handleRevealLore,
     applyBuff: handleApplyBuff,
+    revealItem: handleRevealItem,
 };
 
 export function resolveEffect(ctx: EffectHandlerContext, effect: UseEffect): UseItemResult {

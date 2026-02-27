@@ -1,4 +1,4 @@
-import { FlagValue } from '../flag';
+import { Condition } from '../condition/Condition';
 import { Direction } from './Direction';
 
 export interface Exit {
@@ -23,10 +23,7 @@ export interface Exit {
     // e.g. "the door stands open", "cool air flows from beyond"
     hint?: string;
 
-    // Flag-based unlock condition
-    // If set, the exit is blocked until this flag matches
-    unlockCondition?: {
-        flagKey: string;
-        flagValue: FlagValue;
-    };
+    // Condition that, when true, means the exit can be unblocked.
+    // Evaluated by the unlock effect handler to find matching exits.
+    unlockCondition?: Condition;
 }

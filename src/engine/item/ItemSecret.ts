@@ -1,11 +1,6 @@
-import { FlagValue } from '../flag';
+import { Condition } from '../condition/Condition';
 
 export interface ItemSecret {
     content: string;
-    condition: ItemSecretCondition;
+    condition: Condition;
 }
-
-export type ItemSecretCondition =
-    | { type: 'flag'; key: string; value: FlagValue }
-    | { type: 'item_examined'; itemId: string }
-    | { type: 'npc_trust'; npcId: string; minScore: number };

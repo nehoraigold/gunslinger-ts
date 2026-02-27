@@ -2,13 +2,24 @@ import { produce } from 'immer';
 import { defineEffectHandler } from '../defineEffectHandler';
 import { consumeItem } from '../types';
 import { createFlagEntry } from '../../common/utils';
+import { evaluateCondition } from '../../../condition';
 
 export const handleUnlock = defineEffectHandler('unlock', ({ state, item, quantity }, effect) => {
     const { player, world } = state;
     const room = world.rooms[player.currentRoomId];
 
+    // Simulate setting the flag to find which exits would be unblocked
+    const stateWithFlag = produce(state, (draft) => {
+        draft.flags[effect.flagKey] = createFlagEntry(
+            effect.flagKey,
+            true,
+            state.turnCount,
+            state.flags[effect.flagKey]?.value ?? null,
+        );
+    });
+
     const matchingExits = room.exits.filter(
-        (e) => e.isBlocked && e.unlockCondition?.flagKey === effect.flagKey && e.unlockCondition.flagValue === true,
+        (e) => e.isBlocked && e.unlockCondition && evaluateCondition(stateWithFlag, e.unlockCondition),
     );
 
     if (matchingExits.length === 0) {
@@ -21,24 +32,12 @@ export const handleUnlock = defineEffectHandler('unlock', ({ state, item, quanti
         };
     }
 
-    const nextState = produce(state, (draft) => {
-        draft.flags[effect.flagKey] = createFlagEntry(
-            effect.flagKey,
-            true,
-            state.turnCount,
-            state.flags[effect.flagKey]?.value ?? null,
-        );
-
+    const nextState = produce(stateWithFlag, (draft) => {
         for (const exit of draft.world.rooms[player.currentRoomId].exits) {
-            if (
-                exit.isBlocked &&
-                exit.unlockCondition?.flagKey === effect.flagKey &&
-                exit.unlockCondition.flagValue === true
-            ) {
+            if (exit.isBlocked && exit.unlockCondition && evaluateCondition(stateWithFlag, exit.unlockCondition)) {
                 exit.isBlocked = false;
             }
         }
-
         consumeItem(draft, item.id, quantity, item.consumedOnUse, state.turnCount);
         return draft;
     });

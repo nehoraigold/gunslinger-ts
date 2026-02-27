@@ -4,6 +4,7 @@ import { GameState } from './engine/state/GameState';
 import { Player, PlayerAttributes } from './engine/player';
 import { Npc } from './engine/npc';
 import { Item } from './engine/item';
+import { Condition } from './engine/condition/Condition';
 
 // =============================================================================
 // 3x3 WORLD LAYOUT
@@ -18,6 +19,8 @@ import { Item } from './engine/item';
 // =============================================================================
 
 type Coord = [row: number, col: number];
+
+const ALWAYS_VISIBLE: Condition = { type: 'true' };
 
 interface RoomDef {
     name: string;
@@ -85,7 +88,7 @@ const ROOM_DEFS: RoomDef[][] = [
         {
             name: 'Graveyard',
             description:
-                'Crooked headstones on a low hill. The newest grave has no name. The soil around it looks recently disturbed.',
+                'Crooked headstones on a low hill. A rusty old fence lines the perimeter. A crow occasionally caws in the branches of the dead trees.',
             lightLevel: 'bright',
         },
     ],
@@ -137,7 +140,7 @@ function buildItems(): Item[] {
             value: 1,
             takeable: true,
             droppable: true,
-            isHidden: false,
+            revealCondition: ALWAYS_VISIBLE,
             createdAtTurn: 0,
         },
         {
@@ -154,7 +157,7 @@ function buildItems(): Item[] {
             value: 0,
             takeable: true,
             droppable: true,
-            isHidden: false,
+            revealCondition: ALWAYS_VISIBLE,
             createdAtTurn: 0,
         },
 
@@ -174,7 +177,7 @@ function buildItems(): Item[] {
             value: 8,
             takeable: true,
             droppable: true,
-            isHidden: false,
+            revealCondition: ALWAYS_VISIBLE,
             createdAtTurn: 0,
         },
 
@@ -193,7 +196,7 @@ function buildItems(): Item[] {
             value: 3,
             takeable: true,
             droppable: true,
-            isHidden: false,
+            revealCondition: ALWAYS_VISIBLE,
             createdAtTurn: 0,
         },
         {
@@ -211,7 +214,25 @@ function buildItems(): Item[] {
             value: 0,
             takeable: true,
             droppable: true,
-            isHidden: true,
+            revealCondition: { type: 'false' },
+            createdAtTurn: 0,
+        },
+        {
+            id: 'item_unmarked_grave_01',
+            name: 'Unmarked Grave',
+            shortDesc: 'a grave with no name',
+            fullDescription:
+                'A grave with no name. The soil around it looks freshly disturbed — as though something clawed its way up, or someone buried something in a hurry.',
+            type: 'lore',
+            onInspectEffect: { type: 'revealItem', itemId: 'item_iron_key_01' },
+            consumedOnUse: false,
+            usageHint: undefined,
+            secrets: [],
+            weight: 50,
+            value: 1,
+            takeable: false,
+            droppable: false,
+            revealCondition: { type: 'true' },
             createdAtTurn: 0,
         },
     ];
@@ -328,7 +349,7 @@ function buildNpcs(): Npc[] {
                 },
                 {
                     hint: 'Will only hint at the restless dead if the player has already visited the graveyard.',
-                    condition: { type: 'flag', key: 'room_2_2_visited', value: true },
+                    condition: { type: 'flag_eq', key: 'room_2_2_visited', value: true },
                 },
             ],
             dialogueNodes: {
@@ -341,7 +362,7 @@ function buildNpcs(): Npc[] {
                     id: 'post_graveyard',
                     description: 'Player has visited the graveyard. Edwyn is relieved someone is looking into it.',
                     unlocksTopics: ['restless_dead'],
-                    activationCondition: { type: 'room_visited', key: 'room_2_2' },
+                    activationCondition: { type: 'room_visited', roomId: 'room_2_2' },
                 },
             },
             currentDialogueNode: 'initial',
@@ -410,6 +431,7 @@ const ITEM_PLACEMENTS: Record<string, Coord> = {
     item_knife_01: [0, 0],
     item_lantern_01: [2, 2],
     item_iron_key_01: [2, 2],
+    item_unmarked_grave_01: [2, 2],
 };
 
 const NPC_PLACEMENTS: Record<string, Coord> = {
@@ -505,7 +527,7 @@ export function initGameState(): GameState {
     millExit.isBlocked = true;
     millExit.blockReason = 'A heavy iron lock secures the mill door.';
     millExit.hint = 'The door is locked. The lock looks old but solid.';
-    millExit.unlockCondition = { flagKey: 'mill_door_unlocked', flagValue: true };
+    millExit.unlockCondition = { type: 'flag_eq', key: 'mill_door_unlocked', value: true };
     const startingRoomId = roomId(1, 1); // The Guttered Candle
     rooms[startingRoomId].visited = true;
 
