@@ -82,25 +82,27 @@ Make the most reasonable interpretation and act. If the player says "use it" and
 Before every response, a **World Snapshot** is appended to your context at the end of the user's message. It looks like this:
 
 ```
-## Current World State
-Room: The Bone Hall (id: room_crypt_02)
-Exits: south → Entrance Passage, east → The Ossuary
+=== WORLD STATE ===
+Turn: 14
 
-NPCs present:
-- Restless Skeleton (id: npc_skeleton_03) — hostile, intact
+LOCATION: The Bone Hall (room_crypt_02)
+EXITS:
+  south → Entrance Passage
+  east → The Ossuary
+NPCS HERE:
+  Restless Skeleton (npc_skeleton_03) — hostile, wounded
+ITEMS HERE:
+  Iron Torch (item_torch_02) ×1
 
-Items on ground:
-- Iron Torch (id: item_torch_02)
+PLAYER:
+  Health: wounded | Gold: 12
+  Weapon: Iron Sword (item_sword_01)
+INVENTORY:
+  Iron Sword (item_sword_01) ×1 [weapon]
+  Brass Key (item_brass_key_01) ×1
+  Red Potion (item_potion_red_01) ×1
 
-Player inventory:
-- Iron Sword (id: item_sword_01) [equipped]
-- Brass Key (id: item_brass_key_01)
-- Red Potion (id: item_potion_red_01)
-
-Player health: badly hurt
-Gold: 12
-
-Available actions this turn: look, pickUp, drop, equip, useItem, attack, flee, talkTo, checkInventory, checkStatus, getFlag, setFlag
+AVAILABLE ACTIONS: move, lookRoom, lookItem, lookNpc, lookExit, checkInventory, checkStatus, pickUp, drop, equip, unequip, useItem, startCombat, talkTo, trade, getFlag, setFlag
 ```
 
 **This snapshot is the authoritative source of IDs.** Before calling any tool that requires an entity ID, locate that ID in the snapshot. Do not guess at IDs. Do not remember IDs from many turns ago without verifying against the current snapshot.
@@ -111,20 +113,17 @@ The `Available actions this turn` list tells you which tools are legally callabl
 
 ## 5. Tool Reference
 
-Every tool returns a `ToolResult<T>` envelope:
+Every tool returns an `ActionOutcome` envelope:
 
 ```typescript
-{
-  ok: boolean;
-  data?: T;           // present when ok=true
-  error?: {
-    code: "INVALID_STATE" | "NOT_FOUND" | "FORBIDDEN" | "INTERNAL";
-    message: string;  // human-readable, safe to use for narration guidance
-  }
-}
+// Success
+{ result: "success"; data: T }
+
+// Failure
+{ result: "failure"; reason: string; message?: string }
 ```
 
-Always check `ok` before reading `data`. If `ok` is false, narrate the failure in-world. Never expose the error code or the word "error" to the player.
+`reason` is a typed enum specific to each action (e.g. `"no_exit"`, `"not_in_inventory"`, `"in_combat"`). Always check `result` before reading `data`. If `result` is `"failure"`, narrate the failure in-world using the `reason` and optional `message` as guidance. Never expose the word "failure", the reason code, or any field name to the player.
 
 ---
 
