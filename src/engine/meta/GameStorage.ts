@@ -1,8 +1,14 @@
-import { writeFile, readFile, mkdir, access, readdir } from 'fs/promises';
+import { writeFile, readFile, mkdir, access, readdir, stat } from 'fs/promises';
 import { join } from 'path';
 
 import { GameState } from '../state/GameState';
 import { getLogger } from '../../utils';
+
+export interface SlotInfo {
+    slotId: string;
+    turnCount: number;
+    savedAt: Date;
+}
 
 const log = getLogger('GameStorage');
 
@@ -43,6 +49,22 @@ export class GameStorage {
         }
         const files = await readdir(this.saveDir);
         return files.filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
+    }
+
+    public async listSavesWithMeta(): Promise<SlotInfo[]> {
+        const slotIds = await this.listSaves();
+        const results: SlotInfo[] = [];
+        for (const slotId of slotIds) {
+            try {
+                const filePath = join(this.saveDir, `${slotId}.json`);
+                const [fileStat, raw] = await Promise.all([stat(filePath), readFile(filePath, 'utf8')]);
+                const state: GameState = JSON.parse(raw);
+                results.push({ slotId, turnCount: state.turnCount, savedAt: fileStat.mtime });
+            } catch {
+                // Skip corrupted or unreadable saves.
+            }
+        }
+        return results.sort((a, b) => b.savedAt.getTime() - a.savedAt.getTime());
     }
 
     private async makeSaveDir(): Promise<void> {

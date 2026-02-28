@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Ollama } from 'ollama';
 import { config } from './config';
-import { getLogger, setLogLevel, getUserInput, Print } from './utils';
+import { getLogger, initLogger, getUserInput, Print, startSpinner } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
 import { initGameState } from './initGameState';
 import { StateManager } from './engine/state/StateManager';
@@ -13,11 +13,12 @@ import { buildSystemPrompt } from './agent/systemPrompt';
 import { runTurn } from './agent/adventureAgent';
 import { CommandRegistry } from './commands/CommandRegistry';
 import { registerBuiltins } from './commands/builtins';
+import { CommandContext } from './commands/CommandRegistry';
 
 const log = getLogger('main');
 
 async function main() {
-    setLogLevel(config.logLevel);
+    initLogger(config.logPath, config.logLevel);
 
     const storage = new GameStorage(config.savePath);
 
@@ -38,36 +39,63 @@ async function main() {
 
     // ── Command registry ──────────────────────────────────────────────────────
     const registry = new CommandRegistry();
-    registerBuiltins(registry);
 
-    // ── Mutable game context (commands may replace stateManager or clear history)
-    const ctx = {
+    // ── Room-change tracking ──────────────────────────────────────────────────
+    let previousRoomId: string | null = null;
+
+    // ── Game context ──────────────────────────────────────────────────────────
+    const ctx: CommandContext = {
         stateManager: new StateManager(initGameState()),
         history: [] as AgentMessage[],
         storage,
         providerLabel,
+        narrate: async (prompt: string): Promise<void> => {
+            const spinner = startSpinner();
+            try {
+                const { narration, updatedHistory } = await runTurn(
+                    prompt,
+                    ctx.stateManager,
+                    llmClient,
+                    systemPrompt,
+                    tools,
+                    ctx.history,
+                );
+                spinner.stop();
+                ctx.history = updatedHistory;
+
+                const currentRoomId = ctx.stateManager.getState().player.currentRoomId;
+                if (currentRoomId !== previousRoomId) {
+                    const room = ctx.stateManager.getState().world.rooms[currentRoomId];
+                    if (room) Print.RoomHeader(room.name);
+                    previousRoomId = currentRoomId;
+                }
+
+                Print.Message(narration);
+            } catch (err) {
+                spinner.stop();
+                Print.Message(`[Error] ${err instanceof Error ? err.message : String(err)}`);
+            }
+        },
     };
+
+    registerBuiltins(registry);
+
+    // ── Print starting room header and narrate opening scene ─────────────────
+    const initialState = ctx.stateManager.getState();
+    const initialRoomId = initialState.player.currentRoomId;
+    const initialRoom = initialState.world.rooms[initialRoomId];
+    if (initialRoom) Print.RoomHeader(initialRoom.name);
+    previousRoomId = initialRoomId;
+
+    await ctx.narrate(
+        'Narrate the opening scene. Describe the setting, atmosphere, and immediate surroundings to draw the player in.',
+    );
 
     // ── Game loop ─────────────────────────────────────────────────────────────
     while (true) {
         const input = await getUserInput();
-
         if (await registry.dispatch(input, ctx)) continue;
-
-        try {
-            const { narration, updatedHistory } = await runTurn(
-                input,
-                ctx.stateManager,
-                llmClient,
-                systemPrompt,
-                tools,
-                ctx.history,
-            );
-            ctx.history = updatedHistory;
-            Print.Message(narration);
-        } catch (err) {
-            Print.Message(`[Error] ${err instanceof Error ? err.message : String(err)}`);
-        }
+        await ctx.narrate(input);
     }
 }
 

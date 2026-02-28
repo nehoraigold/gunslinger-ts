@@ -15,6 +15,8 @@ const ConfigSchema = z.object({
     logLevel: z.enum(['debug', 'info', 'warn', 'error']).default('error'),
     /** Directory for save files. */
     savePath: z.string().default('./saves'),
+    /** Path for the debug log file (overwritten each session). */
+    logPath: z.string().default('./debug.log'),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -38,6 +40,7 @@ function loadConfig(): Config {
         ...(process.env.MAX_TOKENS ? { maxTokens: parseInt(process.env.MAX_TOKENS, 10) } : {}),
         ...(process.env.LOG_LEVEL ? { logLevel: process.env.LOG_LEVEL } : {}),
         ...(process.env.SAVE_PATH ? { savePath: process.env.SAVE_PATH } : {}),
+        ...(process.env.LOG_PATH ? { logPath: process.env.LOG_PATH } : {}),
     };
 
     return ConfigSchema.parse(merged);

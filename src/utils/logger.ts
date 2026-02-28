@@ -1,5 +1,6 @@
 // @ts-ignore
 import chalk, { ChalkChain } from 'chalk';
+import { createWriteStream, WriteStream } from 'fs';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -15,6 +16,12 @@ function parseLevel(raw: string | undefined): LogLevel {
 }
 
 let currentLevel: LogLevel = parseLevel(process.env.LOG_LEVEL);
+let fileStream: WriteStream | null = null;
+
+export function initLogger(logPath: string, level: LogLevel): void {
+    currentLevel = level;
+    fileStream = createWriteStream(logPath, { flags: 'w' });
+}
 
 export function setLogLevel(level: LogLevel): void {
     currentLevel = level;
@@ -52,16 +59,21 @@ class ConsoleLogger {
     }
 
     private print(func: 'debug' | 'info' | 'warn' | 'error', color: ChalkChain, ...message: any[]) {
-        const logFunc = console[func];
-        if (!logFunc || typeof logFunc !== 'function') {
-            return;
+        const plain = this.prepPlain(func, ...message);
+        if (fileStream) {
+            fileStream.write(plain + '\n');
         }
-        const log = this.prep(func, color, ...message);
-        logFunc(log);
+        if (currentLevel === 'debug') {
+            process.stderr.write(this.prep(func, color, ...message) + '\n');
+        }
     }
 
     private prep(func: string, color: ChalkChain, ...message: any[]): string {
         return color(`${new Date().toISOString()} [${func.toUpperCase()}] ${this.id} | ${message.join(' ')}`);
+    }
+
+    private prepPlain(func: string, ...message: any[]): string {
+        return `${new Date().toISOString()} [${func.toUpperCase()}] ${this.id} | ${message.join(' ')}`;
     }
 }
 

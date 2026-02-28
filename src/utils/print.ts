@@ -1,5 +1,12 @@
+// @ts-ignore
+import chalk from 'chalk';
+
 export class Print {
     private static DEFAULT_INDENT_COUNT = 1;
+
+    public static RoomHeader(name: string): void {
+        console.log(chalk.bold(`─── ${name} ───`));
+    }
 
     public static NewLine(): string {
         console.log();

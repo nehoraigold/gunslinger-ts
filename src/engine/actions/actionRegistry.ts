@@ -176,6 +176,9 @@ export function executeActionByName(
 ): { state?: GameState; outcome: unknown } {
     const entry = actionRegistry[name];
     if (!entry) throw new Error(`Unknown action: ${name}`);
-    const parsedInput = entry.action.inputSchema.parse(input);
+    // LLMs always send {} for no-argument tools; normalise to undefined so z.void() actions pass.
+    const normalized =
+        input !== null && typeof input === 'object' && Object.keys(input as object).length === 0 ? undefined : input;
+    const parsedInput = entry.action.inputSchema.parse(normalized);
     return entry.action.execute(state, parsedInput);
 }

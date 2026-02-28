@@ -10,6 +10,8 @@ export interface CommandContext {
     history: AgentMessage[];
     storage: GameStorage;
     providerLabel: string;
+    /** Send a prompt through the LLM and print the narration. Handles spinner and room header. */
+    narrate: (prompt: string) => Promise<void>;
 }
 
 type CommandHandler = (args: string[], ctx: CommandContext) => void | Promise<void>;
