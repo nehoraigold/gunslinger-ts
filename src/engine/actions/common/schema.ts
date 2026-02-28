@@ -1,28 +1,26 @@
 import { z } from 'zod';
 import { Direction, LightLevel } from '../../room';
-import { ItemType, UseEffect } from '../../item';
+import { ItemType } from '../../item';
 import { NpcMood } from '../../npc';
 import { HealthProse } from '../../combat';
+import { HealEffectSchema } from '../useItem/effects/heal';
+import { DamageEffectSchema } from '../useItem/effects/damage';
+import { PoisonEffectSchema } from '../useItem/effects/poison';
+import { UnlockEffectSchema } from '../useItem/effects/unlock';
+import { RevealLoreEffectSchema } from '../useItem/effects/revealLore';
+import { RevealItemEffectSchema } from '../useItem/effects/revealItem';
+import { ApplyBuffEffectSchema } from '../useItem/effects/applyBuff';
 
 export const DirectionSchema: z.ZodType<Direction> = z.enum(['north', 'south', 'west', 'east', 'up', 'down']);
 
-export const UseEffectSchema: z.ZodType<UseEffect> = z.discriminatedUnion('type', [
-    z.object({ type: z.literal('heal'), value: z.number().describe('HP restored') }),
-    z.object({ type: z.literal('damage'), value: z.number().describe('HP dealt to target') }),
-    z.object({
-        type: z.literal('poison'),
-        damage: z.number().describe('HP dealt per turn'),
-        duration: z.number().describe('Number of turns the effect lasts'),
-    }),
-    z.object({ type: z.literal('unlock'), flagKey: z.string().describe('Flag set to true in game state') }),
-    z.object({ type: z.literal('revealLore'), text: z.string().describe('The lore text revealed') }),
-    z.object({
-        type: z.literal('applyBuff'),
-        effectId: z.string(),
-        name: z.string(),
-        description: z.string(),
-        duration: z.number().describe('Number of turns the buff lasts'),
-    }),
+export const UseEffectSchema = z.discriminatedUnion('type', [
+    HealEffectSchema,
+    DamageEffectSchema,
+    PoisonEffectSchema,
+    UnlockEffectSchema,
+    RevealLoreEffectSchema,
+    RevealItemEffectSchema,
+    ApplyBuffEffectSchema,
 ]);
 export const ItemTypeSchema: z.ZodType<ItemType> = z.enum(['weapon', 'armor', 'consumable', 'key', 'lore', 'misc']);
 export const NpcMoodSchema: z.ZodType<NpcMood> = z.enum(['friendly', 'neutral', 'guarded', 'suspicious', 'hostile']);

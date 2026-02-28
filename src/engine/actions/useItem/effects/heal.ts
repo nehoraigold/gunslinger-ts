@@ -1,7 +1,13 @@
+import { z } from 'zod';
 import { produce } from 'immer';
 import { healthValueToProse } from '../../../state/utils';
 import { defineEffectHandler } from '../defineEffectHandler';
 import { consumeItem } from '../types';
+
+export const HealEffectSchema = z.object({
+    type: z.literal('heal'),
+    value: z.number().describe('HP restored'),
+});
 
 export const handleHeal = defineEffectHandler('heal', ({ state, item, quantity }, effect) => {
     const { player } = state;

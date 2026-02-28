@@ -1,6 +1,12 @@
+import { z } from 'zod';
 import { produce } from 'immer';
 import { defineEffectHandler } from '../defineEffectHandler';
 import { consumeItem } from '../types';
+
+export const RevealItemEffectSchema = z.object({
+    type: z.literal('revealItem'),
+    itemId: z.string().describe('ID of the item to make visible'),
+});
 
 export const handleRevealItem = defineEffectHandler('revealItem', ({ state, item, quantity }, effect) => {
     const target = state.world.items[effect.itemId];
