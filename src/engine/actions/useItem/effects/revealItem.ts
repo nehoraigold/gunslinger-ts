@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 import { defineEffectHandler } from '../defineEffectHandler';
-import { consumeItem } from '../types';
+import { consumeItem } from '../consumeItem';
 
 export const RevealItemEffectSchema = z.object({
     type: z.literal('revealItem'),

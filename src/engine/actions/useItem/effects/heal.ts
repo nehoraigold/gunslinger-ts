@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { produce } from 'immer';
 import { healthValueToProse } from '../../../state/utils';
 import { defineEffectHandler } from '../defineEffectHandler';
-import { consumeItem } from '../types';
+import { consumeItem } from '../consumeItem';
 
 export const HealEffectSchema = z.object({
     type: z.literal('heal'),

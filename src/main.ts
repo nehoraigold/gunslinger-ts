@@ -1,24 +1,9 @@
 import { formatToHeader, getLogger, getUserInput, Print } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
 import { initGameState } from './initGameState';
-import { Direction } from './engine/room';
 import { StateManager } from './engine/state/StateManager';
 import { GameState } from './engine/state/GameState';
-import { MoveAction } from './engine/actions/move';
-import { LookRoomAction } from './engine/actions/lookRoom';
-import { LookNpcAction } from './engine/actions/lookNpc';
-import { LookItemAction } from './engine/actions/lookItem';
-import { LookExitAction } from './engine/actions/lookExit';
-import { CheckInventoryAction } from './engine/actions/checkInventory';
-import { PickUpAction } from './engine/actions/pickUp';
-import { DropAction } from './engine/actions/drop';
-import { EquipAction } from './engine/actions/equip';
-import { UnequipAction } from './engine/actions/unequip';
-import { UseItemAction } from './engine/actions/useItem';
-import { AttackAction } from './engine/actions/attack';
-import { FleeAction } from './engine/actions/flee';
-import { StartCombatAction } from './engine/actions/startCombat';
-import { TalkToAction } from './engine/actions/talkTo';
+import { actionRegistry, resolveActionName } from './engine/actions/actionRegistry';
 
 const log = getLogger('main');
 
@@ -49,67 +34,11 @@ async function main() {
 }
 
 function takeAction(state: GameState, input: string): { state?: GameState; outcome: any } {
-    const [action, ...inputs] = input.split(' ');
-    switch (action) {
-        case 'attack':
-            return AttackAction.execute(state, { targetId: inputs.join(' ') });
-        case 'flee':
-            return FleeAction.execute(state);
-        case 'startCombat':
-            return StartCombatAction.execute(state, { targetId: inputs.join(' ') });
-        case 'move':
-            return MoveAction.execute(state, { direction: inputToDirection(inputs.join(' ')) });
-        case 'lookRoom':
-        case 'look':
-            return LookRoomAction.execute(state);
-        case 'lookNpc':
-            return LookNpcAction.execute(state, { npcId: inputs.join(' ') });
-        case 'lookItem':
-            return LookItemAction.execute(state, { itemId: inputs.join(' ') });
-        case 'lookExit':
-            return LookExitAction.execute(state, { direction: inputToDirection(inputs.join(' ')) });
-        case 'checkInventory':
-        case 'inventory':
-        case 'i':
-            return CheckInventoryAction.execute(state);
-        case 'pickUp':
-        case 'take':
-            return PickUpAction.execute(state, { itemId: inputs[0], quantity: parseInt(inputs[1] ?? '1') });
-        case 'drop':
-        case 'leave':
-            return DropAction.execute(state, { itemId: inputs[0], quantity: parseInt(inputs[1] ?? '1') });
-        case 'equip':
-            return EquipAction.execute(state, { itemId: inputs[0] });
-        case 'unequip':
-            return UnequipAction.execute(state, { slot: inputs[0] as 'weapon' | 'armor' });
-        case 'useItem':
-        case 'use':
-            return UseItemAction.execute(state, { itemId: inputs[0], targetId: inputs[1] || undefined });
-        case 'talkTo':
-        case 'talk':
-            return TalkToAction.execute(state, { npcId: inputs[0], topic: inputs[1] });
-        default:
-            throw new Error(`Unknown action: ${action}`);
-    }
-}
-
-function inputToDirection(input: string): Direction {
-    switch (input) {
-        case 'n':
-            return 'north';
-        case 'e':
-            return 'east';
-        case 'w':
-            return 'west';
-        case 's':
-            return 'south';
-        case 'u':
-            return 'up';
-        case 'd':
-            return 'down';
-        default:
-            return '' as Direction;
-    }
+    const [cmd, ...tokens] = input.split(' ');
+    const name = resolveActionName(cmd);
+    if (!name) throw new Error(`Unknown action: ${cmd}`);
+    const { action, parseCli } = actionRegistry[name];
+    return action.execute(state, parseCli ? parseCli(tokens) : undefined);
 }
 
 main();

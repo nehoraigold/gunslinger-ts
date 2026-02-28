@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 import { defineEffectHandler } from '../defineEffectHandler';
+import { consumeItem } from '../consumeItem';
+import { createFlagEntry } from '../../common/utils';
+import { evaluateCondition } from '../../../condition';
 
 export const UnlockEffectSchema = z.object({
     type: z.literal('unlock'),
     flagKey: z.string().describe('Flag set to true in game state'),
 });
-import { consumeItem } from '../types';
-import { createFlagEntry } from '../../common/utils';
-import { evaluateCondition } from '../../../condition';
 
 export const handleUnlock = defineEffectHandler('unlock', ({ state, item, quantity }, effect) => {
     const { player, world } = state;
