@@ -1,6 +1,6 @@
 import { GameState } from '../../state/GameState';
 
-export function consumeItem(
+export function applyItemUse(
     draft: GameState,
     itemId: string,
     quantity: number,

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 import { defineEffectHandler } from '../defineEffectHandler';
-import { consumeItem } from '../consumeItem';
+import { applyItemUse } from '../applyItemUse';
 import { createFlagEntry } from '../../common/utils';
 import { evaluateCondition } from '../../../condition';
 
@@ -44,7 +44,7 @@ export const handleUnlock = defineEffectHandler('unlock', ({ state, item, quanti
                 exit.isBlocked = false;
             }
         }
-        consumeItem(draft, item.id, quantity, item.consumedOnUse, state.turnCount);
+        applyItemUse(draft, item.id, quantity, item.consumedOnUse, state.turnCount);
         return draft;
     });
 

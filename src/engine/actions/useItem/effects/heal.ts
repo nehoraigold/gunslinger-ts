@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { produce } from 'immer';
 import { healthValueToProse } from '../../../state/utils';
 import { defineEffectHandler } from '../defineEffectHandler';
-import { consumeItem } from '../consumeItem';
+import { applyItemUse } from '../applyItemUse';
 
 export const HealEffectSchema = z.object({
     type: z.literal('heal'),
@@ -25,7 +25,7 @@ export const handleHeal = defineEffectHandler('heal', ({ state, item, quantity }
     const newHealth = Math.min(player.health + effect.value, player.maxHealth);
     const nextState = produce(state, (draft) => {
         draft.player.health = newHealth;
-        consumeItem(draft, item.id, quantity, item.consumedOnUse, state.turnCount);
+        applyItemUse(draft, item.id, quantity, item.consumedOnUse, state.turnCount);
         return draft;
     });
 

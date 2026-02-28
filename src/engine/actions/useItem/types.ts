@@ -10,6 +10,9 @@ export const successDataSchema = z.object({
     itemConsumed: z.boolean().describe('Whether the item was removed from inventory'),
     newPlayerHealth: HealthProseSchema.optional().describe('Player health after a heal effect'),
     unlockedExits: z.array(DirectionSchema).optional().describe('Exits in the current room that were unblocked'),
+    targetHealthProse: HealthProseSchema.optional().describe('Target NPC health after a damage or poison effect'),
+    targetDefeated: z.boolean().optional().describe('Whether the target NPC was defeated by this effect'),
+    xpGained: z.number().optional().describe('XP awarded if the target was defeated'),
 });
 
 export const failReasonSchema = z.string();

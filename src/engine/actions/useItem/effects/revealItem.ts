@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { produce } from 'immer';
 import { defineEffectHandler } from '../defineEffectHandler';
-import { consumeItem } from '../consumeItem';
+import { applyItemUse } from '../applyItemUse';
 
 export const RevealItemEffectSchema = z.object({
     type: z.literal('revealItem'),
@@ -22,7 +22,7 @@ export const handleRevealItem = defineEffectHandler('revealItem', ({ state, item
 
     const nextState = produce(state, (draft) => {
         draft.world.items[effect.itemId].revealCondition = { type: 'true' };
-        consumeItem(draft, item.id, quantity, item.consumedOnUse, state.turnCount);
+        applyItemUse(draft, item.id, quantity, item.consumedOnUse, state.turnCount);
         return draft;
     });
 
