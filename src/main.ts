@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Ollama } from 'ollama';
-import { getLogger, getUserInput, Print } from './utils';
+import { config } from './config';
+import { getLogger, setLogLevel, getUserInput, Print } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
 import { initGameState } from './initGameState';
 import { StateManager } from './engine/state/StateManager';
@@ -10,52 +11,64 @@ import { OllamaClient } from './agent/llm/OllamaClient';
 import { buildToolDefinitions } from './agent/toolDefinitions';
 import { buildSystemPrompt } from './agent/systemPrompt';
 import { runTurn } from './agent/adventureAgent';
+import { CommandRegistry } from './commands/CommandRegistry';
+import { registerBuiltins } from './commands/builtins';
 
 const log = getLogger('main');
 
 async function main() {
-    const storage = new GameStorage('./saves');
-    const stateManager = new StateManager(initGameState());
+    setLogLevel(config.logLevel);
+
+    const storage = new GameStorage(config.savePath);
 
     // ── Provider selection ────────────────────────────────────────────────────
-    const ollamaModel = process.env.OLLAMA_MODEL;
-    const llmClient = ollamaModel
-        ? new OllamaClient(new Ollama(), ollamaModel)
-        : new AnthropicClient(new Anthropic(), 'claude-sonnet-4-6');
+    const providerLabel = config.ollamaModel
+        ? `Ollama (${config.ollamaModel})`
+        : `Anthropic (${config.anthropicModel})`;
+
+    const llmClient = config.ollamaModel
+        ? new OllamaClient(new Ollama({ host: config.ollamaHost }), config.ollamaModel)
+        : new AnthropicClient(new Anthropic(), config.anthropicModel, config.maxTokens);
 
     const tools = buildToolDefinitions();
     const systemPrompt = buildSystemPrompt(tools);
 
-    log.info(`Provider: ${ollamaModel ? `Ollama (${ollamaModel})` : 'Anthropic (claude-sonnet-4-6)'}`);
+    log.info(`Provider: ${providerLabel}`);
+    log.info(`Log level: ${config.logLevel}`);
 
-    // ── Conversation history ──────────────────────────────────────────────────
-    let history: AgentMessage[] = [];
+    // ── Command registry ──────────────────────────────────────────────────────
+    const registry = new CommandRegistry();
+    registerBuiltins(registry);
 
-    let input = '';
-    while (input !== 'q') {
-        input = await getUserInput();
-        if (input === 'q' || input === 'quit') {
-            break;
-        }
+    // ── Mutable game context (commands may replace stateManager or clear history)
+    const ctx = {
+        stateManager: new StateManager(initGameState()),
+        history: [] as AgentMessage[],
+        storage,
+        providerLabel,
+    };
+
+    // ── Game loop ─────────────────────────────────────────────────────────────
+    while (true) {
+        const input = await getUserInput();
+
+        if (await registry.dispatch(input, ctx)) continue;
 
         try {
             const { narration, updatedHistory } = await runTurn(
                 input,
-                stateManager,
+                ctx.stateManager,
                 llmClient,
                 systemPrompt,
                 tools,
-                history,
+                ctx.history,
             );
-            history = updatedHistory;
+            ctx.history = updatedHistory;
             Print.Message(narration);
         } catch (err) {
             Print.Message(`[Error] ${err instanceof Error ? err.message : String(err)}`);
         }
     }
-
-    await storage.save('1', stateManager.getState());
-    Print.Message('Goodbye!');
 }
 
 main();

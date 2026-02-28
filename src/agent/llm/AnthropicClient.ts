@@ -66,6 +66,7 @@ export class AnthropicClient implements LlmClient {
     constructor(
         private readonly client: Anthropic,
         private readonly model: string,
+        private readonly maxTokens: number = 2048,
     ) {}
 
     async complete(systemPrompt: string, messages: AgentMessage[], tools: LlmTool[]): Promise<AgentAssistantTurn> {
@@ -73,7 +74,7 @@ export class AnthropicClient implements LlmClient {
 
         const response = await this.client.messages.create({
             model: this.model,
-            max_tokens: 2048,
+            max_tokens: this.maxTokens,
             system: systemPrompt,
             tools: tools.map((t) => ({
                 name: t.name,

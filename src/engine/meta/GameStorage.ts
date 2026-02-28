@@ -1,4 +1,4 @@
-import { writeFile, readFile, mkdir, access } from 'fs/promises';
+import { writeFile, readFile, mkdir, access, readdir } from 'fs/promises';
 import { join } from 'path';
 
 import { GameState } from '../state/GameState';
@@ -35,6 +35,14 @@ export class GameStorage {
             log.error(`Error loading game from ${slotId}: ${error}`);
             return null;
         }
+    }
+
+    public async listSaves(): Promise<string[]> {
+        if (!(await this.isSaveDirExists())) {
+            return [];
+        }
+        const files = await readdir(this.saveDir);
+        return files.filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
     }
 
     private async makeSaveDir(): Promise<void> {
