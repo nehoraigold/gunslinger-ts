@@ -9,7 +9,7 @@ export const LookExitAction = defineAction({
     }),
     successDataSchema: z.object({
         direction: DirectionSchema,
-        destinationName: z.string(),
+        destinationName: z.string().optional().describe('Only present if the player has visited that room before'),
         description: z.string(),
         isBlocked: z.boolean(),
         blockReason: z.string().optional(),
@@ -26,10 +26,11 @@ export const LookExitAction = defineAction({
             return fail('exit_not_found', `No exit in direction ${direction}`);
         }
 
+        const dest = world.rooms[exit.destinationRoomId];
         return succeed(
             {
                 direction,
-                destinationName: world.rooms[exit.destinationRoomId].name,
+                destinationName: dest.visited ? dest.name : undefined,
                 description: exit.description,
                 isBlocked: exit.isBlocked,
                 blockReason: exit.blockReason,

@@ -5,8 +5,8 @@ import { getLogger, initLogger, getUserInput, Print, setNarrativeFn, setInputFn 
 import { GameStorage } from './engine/meta/GameStorage';
 import { initGameState } from './initGameState';
 import { StateManager } from './engine/state/StateManager';
-import { AgentMessage } from './agent/llm/LlmClient';
 import { AnthropicClient } from './agent/llm/AnthropicClient';
+import { ConversationManager } from './agent/ConversationManager';
 import { OllamaClient } from './agent/llm/OllamaClient';
 import { buildToolDefinitions } from './agent/toolDefinitions';
 import { buildSystemPrompt } from './agent/systemPrompt';
@@ -74,7 +74,7 @@ async function main() {
     // ── Game context ──────────────────────────────────────────────────────────
     const ctx: CommandContext = {
         stateManager: new StateManager(initialState),
-        history: [] as AgentMessage[],
+        conversationManager: new ConversationManager(),
         storage,
         providerLabel,
         narrate: async (prompt: string): Promise<void> => {
@@ -110,17 +110,22 @@ async function main() {
             ui.narrative.showThinking();
 
             try {
-                const { narration, updatedHistory } = await runTurn(
+                const historyMessages = ctx.conversationManager.getMessagesForAgent();
+                const { narration, turnMessages } = await runTurn(
                     prompt,
                     ctx.stateManager,
                     llmClient,
                     systemPrompt,
                     tools,
-                    ctx.history,
+                    historyMessages,
                     callbacks,
                 );
                 ui.narrative.flushStream();
-                ctx.history = updatedHistory;
+                ctx.conversationManager.appendTurn(turnMessages);
+
+                if (ctx.conversationManager.shouldCompress()) {
+                    ctx.conversationManager.compressAsync(llmClient, systemPrompt);
+                }
 
                 // narration was already streamed chunk by chunk;
                 // only append if the provider doesn't support streaming (fallback)
@@ -169,7 +174,7 @@ async function main() {
                 const loaded = await ctx.storage.load(slotId);
                 if (loaded) {
                     ctx.stateManager = new StateManager(loaded);
-                    ctx.history = [];
+                    ctx.conversationManager.reset();
                     Print.Message(`Loaded save: ${slotId}.`);
                     ui.sidebar.update(ctx.stateManager.getState());
                 } else {

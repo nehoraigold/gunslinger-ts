@@ -1,13 +1,13 @@
 import { StateManager } from '../engine/state/StateManager';
 import { GameStorage } from '../engine/meta/GameStorage';
-import { AgentMessage } from '../agent/llm/LlmClient';
+import { ConversationManager } from '../agent/ConversationManager';
 import { Print } from '../utils';
 
 export interface CommandContext {
     /** May be replaced by the /load command. */
     stateManager: StateManager;
-    /** May be cleared by the /load command. */
-    history: AgentMessage[];
+    /** May be reset by the /load command. */
+    conversationManager: ConversationManager;
     storage: GameStorage;
     providerLabel: string;
     /** Send a prompt through the LLM and print the narration. Handles spinner and room header. */

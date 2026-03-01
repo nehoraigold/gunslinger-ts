@@ -37,11 +37,14 @@ export const LookRoomAction = defineAction({
                 id: nextRoom.id,
                 name: nextRoom.name,
                 description: nextRoom.description,
-                exits: nextRoom.exits.map((exit) => ({
-                    direction: exit.direction,
-                    destinationName: nextState.world.rooms[exit.destinationRoomId].name,
-                    hint: exit.hint,
-                })),
+                exits: nextRoom.exits.map((exit) => {
+                    const dest = nextState.world.rooms[exit.destinationRoomId];
+                    return {
+                        direction: exit.direction,
+                        destinationName: dest.visited ? dest.name : undefined,
+                        hint: exit.hint,
+                    };
+                }),
                 items: getVisibleRoomItems(nextState, nextRoom),
                 npcs: getRoomNpcs(nextState, nextRoom),
                 lightLevel: nextRoom.lightLevel,

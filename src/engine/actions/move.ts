@@ -58,11 +58,14 @@ export const MoveAction = defineAction({
                 newRoomName: destRoom.name,
                 newRoomDescription: destRoom.description,
                 isFirstVisit,
-                exits: destRoom.exits.map((exit) => ({
-                    direction: exit.direction,
-                    destinationName: nextState.world.rooms[exit.destinationRoomId].name,
-                    hint: exit.hint,
-                })),
+                exits: destRoom.exits.map((exit) => {
+                    const dest = nextState.world.rooms[exit.destinationRoomId];
+                    return {
+                        direction: exit.direction,
+                        destinationName: dest.visited ? dest.name : undefined,
+                        hint: exit.hint,
+                    };
+                }),
                 items: getVisibleRoomItems(nextState, destRoom),
                 npcs: getRoomNpcs(nextState, destRoom),
             },

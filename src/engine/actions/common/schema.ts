@@ -37,7 +37,10 @@ export const ItemStatsSchema = z.object({
 
 export const ExitSummarySchema = z.object({
     direction: DirectionSchema.describe('The direction of the exit'),
-    destinationName: z.string().describe('Where the exit leads'),
+    destinationName: z
+        .string()
+        .optional()
+        .describe('Where the exit leads — only present if the player has visited that room before'),
     hint: z.string().optional(),
 });
 

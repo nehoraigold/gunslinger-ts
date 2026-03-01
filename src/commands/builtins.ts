@@ -53,7 +53,7 @@ export function registerBuiltins(registry: CommandRegistry): void {
             const loaded = await ctx.storage.load(args[0]);
             if (loaded) {
                 ctx.stateManager = new StateManager(loaded);
-                ctx.history = [];
+                ctx.conversationManager.reset();
                 await ctx.narrate(
                     'The player has resumed their adventure. Briefly describe their current surroundings and situation to help orient them.',
                 );
@@ -75,7 +75,7 @@ export function registerBuiltins(registry: CommandRegistry): void {
         const loaded = await ctx.storage.load(slotName);
         if (loaded) {
             ctx.stateManager = new StateManager(loaded);
-            ctx.history = [];
+            ctx.conversationManager.reset();
             await ctx.narrate(
                 'The player has resumed their adventure. Briefly describe their current surroundings and situation to help orient them.',
             );

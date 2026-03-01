@@ -23,6 +23,8 @@ export interface AgentCallbacks {
 export interface RunTurnResult {
     narration: string;
     updatedHistory: AgentMessage[];
+    /** Only the messages added this turn (user input + tool rounds + narration). */
+    turnMessages: AgentMessage[];
 }
 
 const PresentDialogueChoicesSchema = z.object({
@@ -81,9 +83,11 @@ export async function runTurn(
                 const narration = turn.text ?? '';
                 log.info(`Turn complete | rounds: ${round} | narration: ${narration.length} chars`);
                 log.debug(`Narration:\n${narration}`);
+                const updatedHistory = [...currentMessages, { role: 'assistant' as const, text: narration }];
                 return {
                     narration,
-                    updatedHistory: [...currentMessages, { role: 'assistant' as const, text: narration }],
+                    updatedHistory,
+                    turnMessages: updatedHistory.slice(history.length),
                 };
             }
 
