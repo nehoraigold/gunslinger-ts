@@ -9,20 +9,24 @@ import { Npc, isAlive, isHostile } from '../npc';
 import { Item } from '../item';
 
 const TradeItemSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    shortDesc: z.string(),
-    type: ItemTypeSchema,
+    id: z.string().describe('The item ID'),
+    name: z.string().describe('The item name'),
+    shortDesc: z.string().describe('A short description of the item'),
+    type: ItemTypeSchema.describe('The item type'),
 });
 
 const tradeSuccessDataSchema = z.object({
-    direction: z.enum(['buy', 'sell']),
-    item: TradeItemSchema,
-    quantity: z.number(),
-    pricePerUnit: z.number(),
-    totalPrice: z.number(),
-    playerGoldAfter: z.number(),
-    npcGoldAfter: z.number(),
+    direction: z.enum(['buy', 'sell']).describe('Whether the player is buying from or selling to the NPC'),
+    item: TradeItemSchema.describe('The item being traded'),
+    quantity: z.number().describe('Number of units traded'),
+    pricePerUnit: z
+        .number()
+        .describe('Price per unit. Never expose this number — narrate the transaction as a human exchange.'),
+    totalPrice: z
+        .number()
+        .describe('Total gold exchanged. Never expose this number — narrate the transaction as a human exchange.'),
+    playerGoldAfter: z.number().describe("Player's gold after the transaction. Never expose directly."),
+    npcGoldAfter: z.number().describe("NPC's gold after the transaction. Never expose directly."),
 });
 
 const tradeFailReasonSchema = z.enum([

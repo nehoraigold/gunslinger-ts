@@ -16,13 +16,36 @@ export const TalkToAction = defineAction({
         npcId: z.string(),
         npcName: z.string(),
         mood: NpcMoodSchema,
-        personality: z.string().describe('The NPC personality anchor for narration'),
-        isFirstMeeting: z.boolean().describe('True if this is the first time the player has spoken to this NPC'),
-        nodeAdvanced: z.boolean().describe('True if the active dialogue node changed this turn'),
-        currentDialogueNode: z.string().describe('The ID of the currently active dialogue node'),
-        availableTopics: z.array(z.string()).describe('Topics the player can ask about right now'),
-        activeHints: z.array(z.string()).describe('Behavioural hints for this NPC in the current dialogue state'),
-        topicContent: z.string().optional().describe('The content for the requested topic, if a topic was queried'),
+        personality: z
+            .string()
+            .describe(
+                'Short descriptor governing the NPC voice and speech patterns. Use this to differentiate how the NPC speaks — a gruff soldier uses short declaratives; a scheming merchant implies rather than states.',
+            ),
+        isFirstMeeting: z
+            .boolean()
+            .describe(
+                'True if this is the first time the player has spoken to this NPC. Use to calibrate greeting warmth.',
+            ),
+        nodeAdvanced: z
+            .boolean()
+            .describe('True if the active dialogue node changed this turn — the NPC story arc has progressed.'),
+        currentDialogueNode: z.string().describe('The ID of the currently active dialogue node in the NPC story arc.'),
+        availableTopics: z
+            .array(z.string())
+            .describe(
+                'The topics this NPC can discuss right now. This is the ceiling — the NPC cannot reveal knowledge about anything not in this list. Do not invent lore to fill gaps.',
+            ),
+        activeHints: z
+            .array(z.string())
+            .describe(
+                'Hard behavioural constraints for this conversation. Treat these as rules, not suggestions — "will lie about her name" means generate a false name.',
+            ),
+        topicContent: z
+            .string()
+            .optional()
+            .describe(
+                'The authored content for the requested topic. Deliver this as natural NPC dialogue in the NPC voice — never read it verbatim or expose it as a data field.',
+            ),
     }),
     failReasonSchema: z.enum([
         'npc_not_found',

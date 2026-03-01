@@ -14,7 +14,11 @@ export const MoveAction = defineAction({
         newRoomId: z.string().describe('The room ID'),
         newRoomName: z.string().describe('The room name'),
         newRoomDescription: z.string().describe('The room description'),
-        isFirstVisit: z.boolean().describe('Whether this is the first time the player has visited this room'),
+        isFirstVisit: z
+            .boolean()
+            .describe(
+                'Whether this is the first time the player has visited this room. When true: deliver the full room description with atmosphere, weave in items and NPCs, 60–100 words max. When false: one sentence only acknowledging the return — do not re-describe the room.',
+            ),
         exits: z.array(ExitSummarySchema).describe('The exits in this room'),
         items: z.array(ItemSummarySchema).describe('The items present in this room'),
         npcs: z.array(NpcSummarySchema).describe('The NPCs present in this room'),

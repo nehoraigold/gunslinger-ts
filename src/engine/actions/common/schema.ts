@@ -41,7 +41,12 @@ export const ExitSummarySchema = z.object({
         .string()
         .optional()
         .describe('Where the exit leads — only present if the player has visited that room before'),
-    hint: z.string().optional(),
+    hint: z
+        .string()
+        .optional()
+        .describe(
+            'A flavour hint about the exit — e.g. "the door is ajar" or "a cold draft comes from here". Embed naturally; never append as a separate sentence.',
+        ),
 });
 
 export const ItemSummarySchema = z.object({
@@ -65,14 +70,31 @@ export const NpcSummarySchema = z.object({
 export const ItemSchema = z.object({
     id: z.string().describe('The item ID'),
     name: z.string().describe('The item name'),
-    fullDescription: z.string().describe('The full item description'),
+    fullDescription: z
+        .string()
+        .describe('The full item description. Deliver as prose — never read it as a data field.'),
     type: ItemTypeSchema,
-    stats: ItemStatsSchema.optional(),
+    stats: ItemStatsSchema.optional().describe(
+        'Weapon or armor stats. Translate to physical impressions — never expose numbers. Example: high attackPower = "the blade has real weight behind it".',
+    ),
     useEffect: UseEffectSchema.optional(),
     onInspectEffect: UseEffectSchema.optional().describe('Effect triggered when this item is examined via lookItem'),
-    consumedOnUse: z.boolean(),
-    usageHint: z.string().optional(),
-    revealedSecrets: z.array(z.string()),
+    consumedOnUse: z
+        .boolean()
+        .describe(
+            'True if the item is removed from inventory after use. When true, acknowledge it is gone — e.g. "You drain the last of the potion."',
+        ),
+    usageHint: z
+        .string()
+        .optional()
+        .describe(
+            'An in-world clue about how to use this item. Embed as a character observation — never frame it as a game hint or menu option.',
+        ),
+    revealedSecrets: z
+        .array(z.string())
+        .describe(
+            'Additional details the player notices on close inspection. Weave in naturally as things the character observes.',
+        ),
 });
 
 export const PlayerAttributesSchema = z.object({

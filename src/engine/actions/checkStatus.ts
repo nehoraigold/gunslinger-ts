@@ -9,18 +9,34 @@ export const CheckStatusAction = defineAction({
     name: 'checkStatus',
     inputSchema: z.void(),
     successDataSchema: z.object({
-        health: z.number().describe("The player's current HP"),
-        maxHealth: z.number().describe("The player's maximum HP"),
-        healthProse: HealthProseSchema.describe("The player's health as prose"),
-        currentRoomId: z.string().describe('The ID of the room the player is currently in'),
-        baseStats: PlayerAttributesSchema.describe(
-            "The player's base attributes (strength, agility, intelligence, endurance)",
+        health: z
+            .number()
+            .describe(
+                "The player's current HP. Only expose this number if the player explicitly asked for it — otherwise use healthProse.",
+            ),
+        maxHealth: z.number().describe("The player's maximum HP. Only expose if the player explicitly asked for it."),
+        healthProse: HealthProseSchema.describe(
+            "The player's health as prose. Always use this for narration — never expose raw HP.",
         ),
-        combatStats: CombatStatsSchema.describe('Derived combat stats including equipment bonuses'),
-        gold: z.number().describe('Gold carried by the player'),
-        turnCount: z.number().describe('Number of turns elapsed'),
-        equippedWeapon: ItemSchema.nullable().describe('Currently equipped weapon, or null'),
-        equippedArmor: ItemSchema.nullable().describe('Currently equipped armor, or null'),
+        currentRoomId: z.string().describe('The ID of the room the player is currently in.'),
+        baseStats: PlayerAttributesSchema.describe(
+            "The player's base attributes. Translate to physical impressions in narration — never expose numbers. Example: high strength + low agility = 'strong but slow'.",
+        ),
+        combatStats: CombatStatsSchema.describe(
+            'Derived combat stats including equipment bonuses. Translate to physical impressions — never expose numbers.',
+        ),
+        gold: z
+            .number()
+            .describe(
+                'Gold carried by the player. Mention only if non-zero or if something nearby is available to buy.',
+            ),
+        turnCount: z.number().describe('Number of turns elapsed. Do not narrate this directly.'),
+        equippedWeapon: ItemSchema.nullable().describe(
+            'Currently equipped weapon, or null if unarmed. Describe as part of the character, not the inventory.',
+        ),
+        equippedArmor: ItemSchema.nullable().describe(
+            'Currently equipped armor, or null if unarmored. Describe as part of the character, not the inventory.',
+        ),
     }),
     failReasonSchema: z.never(),
     execute: (state, _, { succeed }) => {

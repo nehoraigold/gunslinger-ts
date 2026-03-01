@@ -19,16 +19,50 @@ export const AttackAction = defineAction({
         ability: z.string().nullish().describe('Optional special ability or attack style'),
     }),
     successDataSchema: z.object({
-        playerDamageDealt: z.number().describe('Damage dealt by the player to the enemy this round'),
-        playerAttackType: AttackTypeSchema.describe("The nature of the player's attack"),
-        enemyDamageDealt: z.number().describe('Damage dealt by the enemy to the player this round'),
-        enemyAttackType: AttackTypeSchema.describe("The nature of the enemy's counterattack"),
-        playerHealthProse: HealthProseSchema.describe('Player health state after the round'),
-        enemyHealthProse: HealthProseSchema.describe('Enemy health state after the round'),
-        enemyDefeated: z.boolean().describe('Whether the enemy was defeated this round'),
-        playerDefeated: z.boolean().describe('Whether the player was defeated this round'),
-        lootDropped: z.array(ItemSchema).optional().describe('Items dropped by the enemy on defeat'),
-        xpGained: z.number().optional().describe('XP awarded to the player on enemy defeat'),
+        playerDamageDealt: z
+            .number()
+            .describe(
+                'Damage dealt by the player to the enemy this round. Never expose this number in narration — translate to prose using playerAttackType.',
+            ),
+        playerAttackType: AttackTypeSchema.describe(
+            "The nature of the player's attack. Use to calibrate narration: critical = visceral and dramatic; hit = clean and confident; glancing = half a sentence; miss = brief, enemy still dangerous.",
+        ),
+        enemyDamageDealt: z
+            .number()
+            .describe(
+                'Damage dealt by the enemy to the player this round. Never expose this number in narration — translate to prose using enemyAttackType.',
+            ),
+        enemyAttackType: AttackTypeSchema.describe(
+            "The nature of the enemy's counterattack. Use to calibrate narration the same way as playerAttackType.",
+        ),
+        playerHealthProse: HealthProseSchema.describe(
+            'Player health state after the round. Always use this for narration — never expose raw HP numbers.',
+        ),
+        enemyHealthProse: HealthProseSchema.describe(
+            'Enemy health state after the round. Always use this for narration — end every round with this. Never expose raw HP numbers.',
+        ),
+        enemyDefeated: z
+            .boolean()
+            .describe(
+                'Whether the enemy was defeated this round. If true: give the kill one sentence of weight, then mention loot naturally as part of the aftermath — never list it.',
+            ),
+        playerDefeated: z
+            .boolean()
+            .describe(
+                'Whether the player was defeated this round. If true: narrate death with full gravity, then step outside fiction to offer restart.',
+            ),
+        lootDropped: z
+            .array(ItemSchema)
+            .optional()
+            .describe(
+                'Items dropped by the enemy on defeat. Mention naturally as part of the aftermath — never list them as a reward screen.',
+            ),
+        xpGained: z
+            .number()
+            .optional()
+            .describe(
+                'XP awarded to the player on enemy defeat. Do not narrate this value — no level system exists yet.',
+            ),
     }),
     failReasonSchema: z.enum(['not_in_combat', 'enemy_not_found', 'enemy_already_defeated']),
     execute: (state, { targetId }, { fail, succeed }) => {
