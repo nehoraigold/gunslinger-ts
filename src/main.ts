@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Ollama } from 'ollama';
 import { config } from './config';
-import { getLogger, initLogger, getUserInput, Print, startSpinner } from './utils';
+import { getLogger, initLogger, getUserInput, Print, setNarrativeFn, setInputFn } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
 import { initGameState } from './initGameState';
 import { StateManager } from './engine/state/StateManager';
@@ -10,17 +10,45 @@ import { AnthropicClient } from './agent/llm/AnthropicClient';
 import { OllamaClient } from './agent/llm/OllamaClient';
 import { buildToolDefinitions } from './agent/toolDefinitions';
 import { buildSystemPrompt } from './agent/systemPrompt';
-import { runTurn } from './agent/adventureAgent';
+import { runTurn, AgentCallbacks } from './agent/adventureAgent';
 import { CommandRegistry } from './commands/CommandRegistry';
 import { registerBuiltins } from './commands/builtins';
 import { CommandContext } from './commands/CommandRegistry';
+import { initUI } from './ui';
 
 const log = getLogger('main');
 
 async function main() {
     initLogger(config.logPath, config.logLevel);
 
+    // ── TUI ───────────────────────────────────────────────────────────────────
+    const ui = initUI();
+
+    // Redirect Print → narrative panel
+    setNarrativeFn((text) => ui.narrative.append(text));
+
+    // Replace readline with TUI input
+    setInputFn(() => ui.input.read());
+
     const storage = new GameStorage(config.savePath);
+
+    // ── Start menu ────────────────────────────────────────────────────────────
+    ui.input.block();
+    const startResult = await ui.modals.startMenu.show(storage);
+    ui.input.unblock();
+
+    if (startResult.action === 'quit') {
+        ui.screen.destroy();
+        process.exit(0);
+    }
+
+    let initialState;
+    if (startResult.action === 'new') {
+        initialState = initGameState(startResult.playerName);
+    } else {
+        const loaded = await storage.load(startResult.slotId);
+        initialState = loaded ?? initGameState('Stranger');
+    }
 
     // ── Provider selection ────────────────────────────────────────────────────
     const providerLabel = config.ollamaModel
@@ -45,12 +73,42 @@ async function main() {
 
     // ── Game context ──────────────────────────────────────────────────────────
     const ctx: CommandContext = {
-        stateManager: new StateManager(initGameState()),
+        stateManager: new StateManager(initialState),
         history: [] as AgentMessage[],
         storage,
         providerLabel,
         narrate: async (prompt: string): Promise<void> => {
-            const spinner = startSpinner();
+            let streamingStarted = false;
+
+            const callbacks: AgentCallbacks = {
+                onText: (chunk: string) => {
+                    if (!streamingStarted) {
+                        ui.narrative.clearThinking();
+                        streamingStarted = true;
+                    }
+                    ui.narrative.stream(chunk);
+                },
+                onStateUpdate: (state) => {
+                    ui.sidebar.update(state);
+                    // Print room header as soon as the move tool commits,
+                    // before the LLM starts streaming narration.
+                    const currentRoomId = state.player.currentRoomId;
+                    if (currentRoomId !== previousRoomId) {
+                        const room = state.world.rooms[currentRoomId];
+                        if (room) Print.RoomHeader(room.name);
+                        previousRoomId = currentRoomId;
+                    }
+                },
+                onDialogueChoices: async (_npcId, prompt, choices) => {
+                    ui.input.block();
+                    const idx = await ui.modals.dialogue.show(prompt, choices);
+                    ui.input.unblock();
+                    return idx;
+                },
+            };
+
+            ui.narrative.showThinking();
+
             try {
                 const { narration, updatedHistory } = await runTurn(
                     prompt,
@@ -59,20 +117,20 @@ async function main() {
                     systemPrompt,
                     tools,
                     ctx.history,
+                    callbacks,
                 );
-                spinner.stop();
+                ui.narrative.flushStream();
                 ctx.history = updatedHistory;
 
-                const currentRoomId = ctx.stateManager.getState().player.currentRoomId;
-                if (currentRoomId !== previousRoomId) {
-                    const room = ctx.stateManager.getState().world.rooms[currentRoomId];
-                    if (room) Print.RoomHeader(room.name);
-                    previousRoomId = currentRoomId;
+                // narration was already streamed chunk by chunk;
+                // only append if the provider doesn't support streaming (fallback)
+                if (narration && !streamingStarted) {
+                    Print.Message(narration);
                 }
 
-                Print.Message(narration);
+                ui.sidebar.update(ctx.stateManager.getState());
             } catch (err) {
-                spinner.stop();
+                ui.narrative.flushStream();
                 Print.Message(`[Error] ${err instanceof Error ? err.message : String(err)}`);
             }
         },
@@ -80,12 +138,63 @@ async function main() {
 
     registerBuiltins(registry);
 
-    // ── Print starting room header and narrate opening scene ─────────────────
-    const initialState = ctx.stateManager.getState();
-    const initialRoomId = initialState.player.currentRoomId;
-    const initialRoom = initialState.world.rooms[initialRoomId];
+    // ── Auto-save helper ──────────────────────────────────────────────────────
+    const autoSave = async () => {
+        const state = ctx.stateManager.getState();
+        const slotId = state.player.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        await ctx.storage.save(slotId, state);
+    };
+
+    // ── Keyboard shortcuts — wired via InputBar callbacks ─────────────────────
+    // These fire from the InputBar's keypress handler only when the buffer is
+    // empty, so they never conflict with typing.
+
+    ui.input.onOpenMenu = async () => {
+        ui.input.block();
+        const choice = await ui.modals.system.show();
+        ui.input.unblock();
+        if (choice === 'save') {
+            await autoSave();
+            const slotId = ctx.stateManager
+                .getState()
+                .player.name.toLowerCase()
+                .replace(/[^a-z0-9]/g, '_');
+            Print.Message(`Game saved (slot: ${slotId}).`);
+        } else if (choice === 'load') {
+            ui.input.block();
+            const slotId = await ui.modals.startMenu.showLoadList(storage);
+            ui.input.unblock();
+            if (slotId) {
+                await autoSave(); // preserve current state before loading
+                const loaded = await ctx.storage.load(slotId);
+                if (loaded) {
+                    ctx.stateManager = new StateManager(loaded);
+                    ctx.history = [];
+                    Print.Message(`Loaded save: ${slotId}.`);
+                    ui.sidebar.update(ctx.stateManager.getState());
+                } else {
+                    Print.Message('Could not load that save.');
+                }
+            }
+        } else if (choice === 'quit') {
+            ui.screen.destroy();
+            process.exit(0);
+        }
+    };
+
+    ui.input.onOpenInventory = async () => {
+        ui.input.block();
+        await ui.modals.inventory.show(ctx.stateManager.getState());
+        ui.input.unblock();
+    };
+
+    // ── Print starting room header and initial sidebar ────────────────────────
+    const startingState = ctx.stateManager.getState();
+    const initialRoomId = startingState.player.currentRoomId;
+    const initialRoom = startingState.world.rooms[initialRoomId];
     if (initialRoom) Print.RoomHeader(initialRoom.name);
     previousRoomId = initialRoomId;
+    ui.sidebar.update(startingState);
 
     await ctx.narrate(
         'Narrate the opening scene. Describe the setting, atmosphere, and immediate surroundings to draw the player in.',
@@ -94,8 +203,11 @@ async function main() {
     // ── Game loop ─────────────────────────────────────────────────────────────
     while (true) {
         const input = await getUserInput();
+        if (!input.trim()) continue; // skip empty (e.g. Escape with empty buffer)
+        ui.narrative.append('\n{right}{cyan-fg}' + input + '{/cyan-fg}{/right}\n');
         if (await registry.dispatch(input, ctx)) continue;
         await ctx.narrate(input);
+        await autoSave();
     }
 }
 

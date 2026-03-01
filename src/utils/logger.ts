@@ -63,9 +63,6 @@ class ConsoleLogger {
         if (fileStream) {
             fileStream.write(plain + '\n');
         }
-        if (currentLevel === 'debug') {
-            process.stderr.write(this.prep(func, color, ...message) + '\n');
-        }
     }
 
     private prep(func: string, color: ChalkChain, ...message: any[]): string {

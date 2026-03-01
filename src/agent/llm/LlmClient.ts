@@ -29,6 +29,16 @@ export interface LlmTool {
     inputSchema: Record<string, unknown>; // JSON Schema object
 }
 
+export interface LlmStreamCallbacks {
+    onText: (chunk: string) => void;
+}
+
 export interface LlmClient {
     complete(systemPrompt: string, messages: AgentMessage[], tools: LlmTool[]): Promise<AgentAssistantTurn>;
+    stream(
+        systemPrompt: string,
+        messages: AgentMessage[],
+        tools: LlmTool[],
+        callbacks: LlmStreamCallbacks,
+    ): Promise<AgentAssistantTurn>;
 }

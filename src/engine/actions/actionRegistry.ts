@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { Direction } from '../room';
 import { GameState } from '../state/GameState';
 import { Action } from './Action';
@@ -176,9 +177,13 @@ export function executeActionByName(
 ): { state?: GameState; outcome: unknown } {
     const entry = actionRegistry[name];
     if (!entry) throw new Error(`Unknown action: ${name}`);
-    // LLMs always send {} for no-argument tools; normalise to undefined so z.void() actions pass.
+    // For z.void() actions, always pass undefined — LLMs sometimes send stray data for no-arg tools.
     const normalized =
-        input !== null && typeof input === 'object' && Object.keys(input as object).length === 0 ? undefined : input;
+        entry.action.inputSchema instanceof z.ZodVoid
+            ? undefined
+            : input !== null && typeof input === 'object' && Object.keys(input as object).length === 0
+              ? undefined
+              : input;
     const parsedInput = entry.action.inputSchema.parse(normalized);
     return entry.action.execute(state, parsedInput);
 }

@@ -1,9 +1,20 @@
 import * as readline from 'readline';
 import chalk from 'chalk';
 
-import { Print } from './print';
+import { Print } from './print.js';
+
+type InputFn = () => Promise<string>;
+let inputFn: InputFn | null = null;
+
+/** Wire the TUI input bar. Called once by main.ts after initUI(). */
+export function setInputFn(fn: InputFn): void {
+    inputFn = fn;
+}
 
 export const getUserInput = (query?: string): Promise<string> => {
+    if (inputFn) return inputFn();
+
+    // Fallback: readline for non-TUI mode
     console.log('');
     const rl = readline.createInterface({
         input: process.stdin,
@@ -15,14 +26,9 @@ export const getUserInput = (query?: string): Promise<string> => {
         rl.question('', (answer) => {
             if (process.stdout.isTTY) {
                 readline.moveCursor(process.stdout, 0, -1);
-
-                // Clear that line
                 readline.clearLine(process.stdout, 0);
-
-                // Re-print the input in green
                 console.log(chalk.cyan(answer));
             }
-
             rl.close();
             resolve(answer);
         });

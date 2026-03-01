@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getLogger } from '../../utils';
-import { AgentAssistantTurn, AgentMessage, LlmClient, LlmTool } from './LlmClient';
+import { AgentAssistantTurn, AgentMessage, LlmClient, LlmStreamCallbacks, LlmTool } from './LlmClient';
 
 const log = getLogger('anthropic');
 
@@ -62,6 +62,14 @@ function fromAnthropicResponse(response: Anthropic.Message): AgentAssistantTurn 
     };
 }
 
+function buildAnthropicTools(tools: LlmTool[]): Anthropic.Tool[] {
+    return tools.map((t) => ({
+        name: t.name,
+        description: t.description,
+        input_schema: t.inputSchema as Anthropic.Tool['input_schema'],
+    }));
+}
+
 export class AnthropicClient implements LlmClient {
     constructor(
         private readonly client: Anthropic,
@@ -76,11 +84,7 @@ export class AnthropicClient implements LlmClient {
             model: this.model,
             max_tokens: this.maxTokens,
             system: systemPrompt,
-            tools: tools.map((t) => ({
-                name: t.name,
-                description: t.description,
-                input_schema: t.inputSchema as Anthropic.Tool['input_schema'],
-            })),
+            tools: buildAnthropicTools(tools),
             messages: messages.map(toAnthropicMessage),
         });
 
@@ -89,10 +93,44 @@ export class AnthropicClient implements LlmClient {
 
         const turn = fromAnthropicResponse(response);
 
-        // Log thinking text: any text block emitted alongside tool calls
         if (turn.text && turn.toolCalls?.length) {
             log.debug(`Model thinking:\n${turn.text}`);
         }
+        if (turn.toolCalls?.length) {
+            log.debug(`Tool calls: ${turn.toolCalls.map((c) => `${c.name}(${JSON.stringify(c.input)})`).join(', ')}`);
+        }
+
+        return turn;
+    }
+
+    async stream(
+        systemPrompt: string,
+        messages: AgentMessage[],
+        tools: LlmTool[],
+        callbacks: LlmStreamCallbacks,
+    ): Promise<AgentAssistantTurn> {
+        log.info(`Stream request | model: ${this.model} | messages: ${messages.length} | tools: ${tools.length}`);
+
+        const stream = this.client.messages.stream({
+            model: this.model,
+            max_tokens: this.maxTokens,
+            system: systemPrompt,
+            tools: buildAnthropicTools(tools),
+            messages: messages.map(toAnthropicMessage),
+        });
+
+        stream.on('text', (chunk: string) => {
+            callbacks.onText(chunk);
+        });
+
+        const finalMessage = await stream.finalMessage();
+        const { stop_reason, usage } = finalMessage;
+        log.info(
+            `Stream response | stop_reason: ${stop_reason} | tokens: ${usage.input_tokens}→${usage.output_tokens}`,
+        );
+
+        const turn = fromAnthropicResponse(finalMessage);
+
         if (turn.toolCalls?.length) {
             log.debug(`Tool calls: ${turn.toolCalls.map((c) => `${c.name}(${JSON.stringify(c.input)})`).join(', ')}`);
         }

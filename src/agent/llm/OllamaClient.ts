@@ -1,6 +1,6 @@
 import { Ollama, Message as OllamaMessage, ChatResponse } from 'ollama';
 import { getLogger } from '../../utils';
-import { AgentAssistantTurn, AgentMessage, AgentToolCall, LlmClient, LlmTool } from './LlmClient';
+import { AgentAssistantTurn, AgentMessage, AgentToolCall, LlmClient, LlmStreamCallbacks, LlmTool } from './LlmClient';
 
 const log = getLogger('ollama');
 
@@ -60,6 +60,16 @@ function fromOllamaResponse(response: ChatResponse, tools: LlmTool[]): AgentAssi
     };
 }
 
+function buildOllamaMessages(systemPrompt: string, messages: AgentMessage[]): OllamaMessage[] {
+    return [
+        { role: 'system', content: systemPrompt },
+        ...messages.flatMap((m) => {
+            const converted = toOllamaMessage(m);
+            return Array.isArray(converted) ? converted : [converted];
+        }),
+    ];
+}
+
 export class OllamaClient implements LlmClient {
     constructor(
         private readonly ollama: Ollama,
@@ -67,13 +77,7 @@ export class OllamaClient implements LlmClient {
     ) {}
 
     async complete(systemPrompt: string, messages: AgentMessage[], tools: LlmTool[]): Promise<AgentAssistantTurn> {
-        const ollamaMessages: OllamaMessage[] = [
-            { role: 'system', content: systemPrompt },
-            ...messages.flatMap((m) => {
-                const converted = toOllamaMessage(m);
-                return Array.isArray(converted) ? converted : [converted];
-            }),
-        ];
+        const ollamaMessages = buildOllamaMessages(systemPrompt, messages);
 
         log.info(`Request | model: ${this.model} | messages: ${ollamaMessages.length} | tools: ${tools.length}`);
 
@@ -94,10 +98,63 @@ export class OllamaClient implements LlmClient {
 
         const turn = fromOllamaResponse(response, tools);
 
-        // Log thinking text: any content emitted alongside tool calls
         if (turn.text && turn.toolCalls?.length) {
             log.debug(`Model thinking:\n${turn.text}`);
         }
+        if (turn.toolCalls?.length) {
+            log.debug(`Tool calls: ${turn.toolCalls.map((c) => `${c.name}(${JSON.stringify(c.input)})`).join(', ')}`);
+        }
+
+        return turn;
+    }
+
+    async stream(
+        systemPrompt: string,
+        messages: AgentMessage[],
+        tools: LlmTool[],
+        callbacks: LlmStreamCallbacks,
+    ): Promise<AgentAssistantTurn> {
+        const ollamaMessages = buildOllamaMessages(systemPrompt, messages);
+
+        log.info(`Stream request | model: ${this.model} | messages: ${ollamaMessages.length} | tools: ${tools.length}`);
+
+        const streamResponse = await this.ollama.chat({
+            model: this.model,
+            stream: true,
+            tools: tools.map((t) => ({
+                type: 'function' as const,
+                function: {
+                    name: t.name,
+                    description: t.description,
+                    parameters: t.inputSchema,
+                },
+            })),
+            messages: ollamaMessages,
+        });
+
+        let accumulatedContent = '';
+        let lastChunk: ChatResponse | null = null;
+
+        for await (const chunk of streamResponse) {
+            const content = chunk.message?.content;
+            if (content) {
+                accumulatedContent += content;
+                callbacks.onText(content);
+            }
+            lastChunk = chunk;
+        }
+
+        if (!lastChunk) {
+            return { text: undefined, toolCalls: undefined };
+        }
+
+        // Reconstruct the final response with accumulated content
+        lastChunk.message.content = accumulatedContent;
+
+        log.info(`Stream response | done_reason: ${lastChunk.done_reason ?? 'n/a'} | model: ${lastChunk.model}`);
+
+        const turn = fromOllamaResponse(lastChunk, tools);
+
         if (turn.toolCalls?.length) {
             log.debug(`Tool calls: ${turn.toolCalls.map((c) => `${c.name}(${JSON.stringify(c.input)})`).join(', ')}`);
         }

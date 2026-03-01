@@ -3,6 +3,7 @@ import { PlayerAttributes } from './PlayerAttributes';
 
 export interface Player {
     id: string; // Always "player" in single-player
+    name: string; // Display name chosen at game start
 
     // Position
     currentRoomId: string;

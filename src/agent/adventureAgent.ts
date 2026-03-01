@@ -1,15 +1,35 @@
 import { getLogger } from '../utils';
 import { StateManager } from '../engine/state/StateManager';
+import { GameState } from '../engine/state/GameState';
 import { buildWorldSnapshot, snapshotToString } from './snapshotBuilder';
 import { executeActionByName } from '../engine/actions/actionRegistry';
 import { AgentMessage, AgentToolResult, LlmClient, LlmTool } from './llm/LlmClient';
+import { z } from 'zod';
 
 const log = getLogger('agent');
+
+export interface AgentCallbacks {
+    /** Called with each streaming text chunk from the LLM. */
+    onText?: (chunk: string) => void;
+    /** Called after each tool execution that produces a new state. */
+    onStateUpdate?: (state: GameState) => void;
+    /**
+     * Called when the LLM invokes the presentDialogueChoices tool.
+     * Returns the 0-based index of the player's selection.
+     */
+    onDialogueChoices?: (npcId: string, prompt: string, choices: string[]) => Promise<number>;
+}
 
 export interface RunTurnResult {
     narration: string;
     updatedHistory: AgentMessage[];
 }
+
+const PresentDialogueChoicesSchema = z.object({
+    npcId: z.string(),
+    prompt: z.string(),
+    choices: z.array(z.string()),
+});
 
 /**
  * Run a single player turn through the LLM agent loop.
@@ -27,6 +47,7 @@ export async function runTurn(
     systemPrompt: string,
     tools: LlmTool[],
     history: AgentMessage[],
+    callbacks?: AgentCallbacks,
 ): Promise<RunTurnResult> {
     log.info(`Turn start | input: "${input}" | history: ${history.length} messages`);
 
@@ -44,7 +65,10 @@ export async function runTurn(
             round++;
             log.info(`LLM call #${round} | context: ${currentMessages.length} messages`);
 
-            const turn = await llmClient.complete(systemPrompt, currentMessages, tools);
+            // Use streaming when onText callback is provided
+            const turn = callbacks?.onText
+                ? await llmClient.stream(systemPrompt, currentMessages, tools, { onText: callbacks.onText })
+                : await llmClient.complete(systemPrompt, currentMessages, tools);
 
             // Log any text the model emitted alongside tool calls — this is the model thinking aloud
             if (turn.text && turn.toolCalls?.length) {
@@ -69,8 +93,36 @@ export async function runTurn(
             const results: AgentToolResult[] = [];
             for (const call of turn.toolCalls) {
                 log.info(`Tool: ${call.name} | input: ${JSON.stringify(call.input)}`);
+
+                // Special-case: presentDialogueChoices is handled by the UI, not the action registry
+                if (call.name === 'presentDialogueChoices') {
+                    const parsed = PresentDialogueChoicesSchema.safeParse(call.input);
+                    let selectedIndex = 0;
+
+                    if (parsed.success && callbacks?.onDialogueChoices) {
+                        const { npcId, prompt, choices } = parsed.data;
+                        selectedIndex = await callbacks.onDialogueChoices(npcId, prompt, choices);
+                    } else if (!parsed.success) {
+                        log.error(`presentDialogueChoices: invalid input — ${parsed.error.message}`);
+                    } else {
+                        log.debug('presentDialogueChoices: no UI handler — defaulting to index 0');
+                    }
+
+                    const choiceText = parsed.success ? (parsed.data.choices[selectedIndex] ?? '') : '';
+                    const content = JSON.stringify({
+                        result: 'success',
+                        data: { selectedIndex, text: choiceText },
+                    });
+                    log.debug(`Dialogue result: ${content}`);
+                    results.push({ callId: call.id, name: call.name, content });
+                    continue;
+                }
+
                 const { state: nextState, outcome } = executeActionByName(state, call.name, call.input);
-                if (nextState) state = nextState;
+                if (nextState) {
+                    state = nextState;
+                    callbacks?.onStateUpdate?.(state);
+                }
                 const content = JSON.stringify(outcome);
                 log.debug(`Tool result: ${content}`);
                 results.push({ callId: call.id, name: call.name, content });

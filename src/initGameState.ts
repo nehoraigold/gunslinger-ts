@@ -483,7 +483,7 @@ function buildRoom(row: number, col: number): Room {
 // INIT
 // =============================================================================
 
-export function initGameState(): GameState {
+export function initGameState(playerName: string = 'Stranger'): GameState {
     // Build room registry
     const rooms: World['rooms'] = {};
     for (let row = 0; row < GRID_SIZE; row++) {
@@ -549,6 +549,7 @@ export function initGameState(): GameState {
 
     const player: Player = {
         id: 'player',
+        name: playerName,
         currentRoomId: startingRoomId,
         health: 100,
         maxHealth: 100,

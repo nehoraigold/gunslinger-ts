@@ -16,7 +16,7 @@ export const AttackAction = defineAction({
     name: 'attack',
     inputSchema: z.object({
         targetId: z.string().describe('The NPC ID of the enemy to attack'),
-        ability: z.string().optional().describe('Optional special ability or attack style'),
+        ability: z.string().nullish().describe('Optional special ability or attack style'),
     }),
     successDataSchema: z.object({
         playerDamageDealt: z.number().describe('Damage dealt by the player to the enemy this round'),

@@ -10,7 +10,7 @@
         "prebuild": "npm run clean && npm run typecheck",
         "typecheck": "tsc --noEmit",
         "update_content": "./scripts/download_csv_files.cjs",
-        "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=esnext --outfile=dist/index.js --loader:.md=text",
+        "build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=esnext --outfile=dist/index.js --loader:.md=text --external:blessed --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
         "test": "mocha",
@@ -20,6 +20,7 @@
     "author": "Ori Gold",
     "license": "ISC",
     "devDependencies": {
+        "@types/blessed": "^0.1.27",
         "@types/chai": "^5.2.3",
         "@types/chalk": "^0.4.31",
         "@types/mocha": "^10.0.10",
@@ -45,6 +46,7 @@
     },
     "dependencies": {
         "@anthropic-ai/sdk": "^0.78.0",
+        "blessed": "^0.1.81",
         "chalk": "^5.6.2",
         "immer": "^11.1.4",
         "ollama": "^0.6.3",

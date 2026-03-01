@@ -1,15 +1,29 @@
 // @ts-ignore
 import chalk from 'chalk';
 
-export class Print {
-    private static DEFAULT_INDENT_COUNT = 1;
+type NarrativeFn = (text: string) => void;
+let narrativeFn: NarrativeFn | null = null;
 
+/** Wire the TUI narrative panel. Called once by main.ts after initUI(). */
+export function setNarrativeFn(fn: NarrativeFn): void {
+    narrativeFn = fn;
+}
+
+export class Print {
     public static RoomHeader(name: string): void {
-        console.log(chalk.bold(`─── ${name} ───`));
+        if (narrativeFn) {
+            narrativeFn(`\n{bold}─── ${name} ───{/bold}\n`);
+        } else {
+            console.log(chalk.bold(`─── ${name} ───`));
+        }
     }
 
     public static NewLine(): string {
-        console.log();
+        if (narrativeFn) {
+            narrativeFn('\n');
+        } else {
+            console.log();
+        }
         return '\n';
     }
 
@@ -17,25 +31,11 @@ export class Print {
         if (newLine) {
             message += '\n';
         }
-        console.log(message);
+        if (narrativeFn) {
+            narrativeFn(message);
+        } else {
+            console.log(message);
+        }
         return message;
     }
-
-    // public static UnorderedList(list: Array<string>, indentCount = Print.DEFAULT_INDENT_COUNT, bullet = '-'): string
-    //     if (list.length === 0) {
-    //         return '';
-    //     }
-    //     const joiner = `${'\t'.repeat(indentCount)}${bullet}`;
-    //     let message = joiner;
-    //     message += list.join(`\n${joiner}`);
-    //     message += '\n';
-    //     console.log(message);
-    //     return message;
-    // }
-    //
-    // public static OrderedList(list: Array<string>, indentCount = Print.DEFAULT_INDENT_COUNT): string {
-    //     const message = list.reduce((accum, curr, i) => `${accum}\n${'\t'.repeat(indentCount)}${i + 1}. ${curr}`, '');
-    //     console.log(message);
-    //     return message;
-    // }
 }
