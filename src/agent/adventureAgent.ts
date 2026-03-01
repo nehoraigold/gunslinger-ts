@@ -25,6 +25,8 @@ export interface RunTurnResult {
     updatedHistory: AgentMessage[];
     /** Only the messages added this turn (user input + tool rounds + narration). */
     turnMessages: AgentMessage[];
+    /** True when an attack tool result contained playerDefeated: true this turn. */
+    playerDefeated?: boolean;
 }
 
 /**
@@ -91,6 +93,7 @@ export async function runTurn(
     let currentMessages: AgentMessage[] = [...history, userMessage];
 
     let round = 0;
+    let playerDefeatedThisTurn = false;
 
     try {
         while (true) {
@@ -148,6 +151,7 @@ export async function runTurn(
                     narration,
                     updatedHistory,
                     turnMessages: updatedHistory.slice(history.length),
+                    playerDefeated: playerDefeatedThisTurn || undefined,
                 };
             }
 
@@ -190,6 +194,12 @@ export async function runTurn(
                 const content = JSON.stringify(outcome);
                 log.debug(`Tool result: ${content}`);
                 results.push({ callId: call.id, name: call.name, content });
+
+                // Detect player death from attack tool results
+                const parsed = outcome as { result?: string; data?: Record<string, unknown> };
+                if (parsed.result === 'success' && parsed.data?.playerDefeated === true) {
+                    playerDefeatedThisTurn = true;
+                }
             }
 
             currentMessages = [

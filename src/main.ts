@@ -111,7 +111,7 @@ async function main() {
 
             try {
                 const historyMessages = ctx.conversationManager.getMessagesForAgent();
-                const { narration, turnMessages } = await runTurn(
+                const { narration, turnMessages, playerDefeated } = await runTurn(
                     prompt,
                     ctx.stateManager,
                     llmClient,
@@ -134,6 +134,42 @@ async function main() {
                 }
 
                 ui.sidebar.update(ctx.stateManager.getState());
+
+                // ── Player death ──────────────────────────────────────────────────
+                if (playerDefeated) {
+                    ui.input.block();
+                    const choice = await ui.modals.death.show();
+                    ui.input.unblock();
+
+                    if (choice === 'load') {
+                        ui.input.block();
+                        const slotId = await ui.modals.startMenu.showLoadList(ctx.storage);
+                        ui.input.unblock();
+
+                        if (slotId) {
+                            const loaded = await ctx.storage.load(slotId);
+                            if (loaded) {
+                                ctx.stateManager = new StateManager(loaded);
+                                ctx.conversationManager.reset();
+                                const newState = ctx.stateManager.getState();
+                                previousRoomId = newState.player.currentRoomId;
+                                ui.sidebar.update(newState);
+                                const room = newState.world.rooms[newState.player.currentRoomId];
+                                if (room) Print.RoomHeader(room.name);
+                                Print.Message(
+                                    'You wake, the memory of death still sharp. The world is as you left it.',
+                                );
+                            }
+                        } else {
+                            Print.Message('No saves found. The adventure ends here.');
+                            ui.screen.destroy();
+                            process.exit(0);
+                        }
+                    } else {
+                        ui.screen.destroy();
+                        process.exit(0);
+                    }
+                }
             } catch (err) {
                 ui.narrative.flushStream();
                 Print.Message(`[Error] ${err instanceof Error ? err.message : String(err)}`);

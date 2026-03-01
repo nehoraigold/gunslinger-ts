@@ -7,6 +7,7 @@ import { InventoryModal } from './modals/InventoryModal';
 import { DialogueModal } from './modals/DialogueModal';
 import { TradeModal } from './modals/TradeModal';
 import { StartMenu } from './modals/StartMenu';
+import { DeathModal } from './modals/DeathModal';
 
 export interface UIModals {
     system: SystemMenu;
@@ -14,6 +15,7 @@ export interface UIModals {
     dialogue: DialogueModal;
     trade: TradeModal;
     startMenu: StartMenu;
+    death: DeathModal;
 }
 
 export interface UI {
@@ -40,6 +42,7 @@ export function initUI(): UI {
         dialogue: new DialogueModal(screen),
         trade: new TradeModal(screen),
         startMenu: new StartMenu(screen),
+        death: new DeathModal(screen),
     };
 
     // Handle Ctrl+C to exit cleanly
