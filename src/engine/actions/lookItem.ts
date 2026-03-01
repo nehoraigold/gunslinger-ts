@@ -50,10 +50,16 @@ export const LookItemAction = defineAction({
             if (target) {
                 nextState = produce(state, (draft) => {
                     draft.world.items[revealId].revealCondition = { type: 'true' };
+                    // Clear after firing so stale data isn't shown if the item is already gone
+                    delete draft.world.items[itemId].onInspectEffect;
                     return draft;
                 });
-                const summary = toItemSummary(nextState, revealId);
-                if (summary) itemsRevealed = [{ ...summary, quantity: 1 }];
+                // Only report as revealed if the item is still present in the room
+                const currentRoom = nextState.world.rooms[nextState.player.currentRoomId];
+                if (revealId in currentRoom.items) {
+                    const summary = toItemSummary(nextState, revealId);
+                    if (summary) itemsRevealed = [{ ...summary, quantity: 1 }];
+                }
             }
         }
 
