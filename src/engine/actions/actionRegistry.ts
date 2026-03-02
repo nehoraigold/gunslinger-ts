@@ -117,7 +117,7 @@ export const actionRegistry: Record<string, RegistryEntry> = {
     attack: {
         action: AttackAction,
         description:
-            'Call each combat round when the player attacks the current enemy. Only valid during active combat.',
+            'Attack an NPC. If not already in combat, automatically initiates combat before resolving the attack. Use for all player attacks — hostile or non-hostile targets.',
         parseCli: (tokens) => ({ targetId: tokens.join(' ') }),
     },
     flee: {
@@ -127,7 +127,7 @@ export const actionRegistry: Record<string, RegistryEntry> = {
     startCombat: {
         action: StartCombatAction,
         description:
-            'Call when the player initiates an attack on a non-hostile NPC or hostile creature to start combat.',
+            'Explicitly initiate combat without attacking — use only when you need canFlee: false (inescapable boss fight) or want to narrate combat start before the first attack.',
         parseCli: (tokens) => ({ targetId: tokens.join(' ') }),
     },
     talkTo: {

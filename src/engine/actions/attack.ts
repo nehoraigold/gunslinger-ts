@@ -17,6 +17,12 @@ export const AttackAction = defineAction({
     inputSchema: z.object({
         targetId: z.string().describe('The NPC ID of the enemy to attack'),
         ability: z.string().nullish().describe('Optional special ability or attack style'),
+        canFlee: z
+            .boolean()
+            .optional()
+            .describe(
+                'Whether the player can flee this combat. Defaults to true. Only set false for inescapable encounters.',
+            ),
     }),
     successDataSchema: z.object({
         playerDamageDealt: z
@@ -63,28 +69,49 @@ export const AttackAction = defineAction({
             .describe(
                 'XP awarded to the player on enemy defeat. Do not narrate this value — no level system exists yet.',
             ),
+        combatStarted: z
+            .boolean()
+            .optional()
+            .describe(
+                'True when this attack also initiated combat — weave the ambush or confrontation into narration.',
+            ),
     }),
-    failReasonSchema: z.enum(['not_in_combat', 'enemy_not_found', 'enemy_already_defeated']),
-    execute: (state, { targetId }, { fail, succeed }) => {
-        if (!state.combat) {
-            return fail('not_in_combat', 'No active combat encounter');
-        }
-
+    failReasonSchema: z.enum(['enemy_not_found', 'enemy_not_in_room', 'enemy_already_defeated']),
+    execute: (state, { targetId, canFlee = true }, { fail, succeed }) => {
         const enemy = state.world.npcs[targetId];
-        if (!enemy || state.combat.enemyId !== targetId) {
-            return fail('enemy_not_found', `No enemy with ID ${targetId} in current combat`);
+
+        if (!state.combat) {
+            // Auto-start combat — validate same as startCombat
+            if (!enemy) {
+                return fail('enemy_not_found', `No NPC with ID ${targetId}`);
+            }
+            const room = state.world.rooms[state.player.currentRoomId];
+            if (!room.npcIds.includes(targetId)) {
+                return fail('enemy_not_in_room', `${enemy.name} is not in the current room`);
+            }
+            if (!isAlive(enemy)) {
+                return fail('enemy_already_defeated', `${enemy.name} is already dead`);
+            }
+        } else {
+            if (!enemy || state.combat.enemyId !== targetId) {
+                return fail('enemy_not_found', `No enemy with ID ${targetId} in current combat`);
+            }
+            if (!isAlive(enemy)) {
+                return fail('enemy_already_defeated', `${enemy.name} has already been defeated`);
+            }
         }
 
-        if (!isAlive(enemy)) {
-            return fail('enemy_already_defeated', `${enemy.name} has already been defeated`);
-        }
+        const combatStarted = state.combat === null;
 
         const playerStats = derivePlayerStats(state.player, state.world.items);
 
-        const playerAttackBonus = state.combat.playerModifiers.reduce((sum, m) => sum + (m.attackBonus ?? 0), 0);
-        const playerDefenseBonus = state.combat.playerModifiers.reduce((sum, m) => sum + (m.defenseBonus ?? 0), 0);
-        const enemyAttackBonus = state.combat.enemyModifiers.reduce((sum, m) => sum + (m.attackBonus ?? 0), 0);
-        const enemyDefenseBonus = state.combat.enemyModifiers.reduce((sum, m) => sum + (m.defenseBonus ?? 0), 0);
+        const combat = state.combat;
+        const playerAttackBonus = combat ? combat.playerModifiers.reduce((sum, m) => sum + (m.attackBonus ?? 0), 0) : 0;
+        const playerDefenseBonus = combat
+            ? combat.playerModifiers.reduce((sum, m) => sum + (m.defenseBonus ?? 0), 0)
+            : 0;
+        const enemyAttackBonus = combat ? combat.enemyModifiers.reduce((sum, m) => sum + (m.attackBonus ?? 0), 0) : 0;
+        const enemyDefenseBonus = combat ? combat.enemyModifiers.reduce((sum, m) => sum + (m.defenseBonus ?? 0), 0) : 0;
 
         const playerRoll = rollAttack(playerStats.attackPower + playerAttackBonus, enemy.defense + enemyDefenseBonus);
         const enemyRoll = rollAttack(enemy.attackPower + enemyAttackBonus, playerStats.defense + playerDefenseBonus);
@@ -107,6 +134,22 @@ export const AttackAction = defineAction({
         }
 
         const nextState = produce(state, (draft) => {
+            if (!draft.combat) {
+                if (draft.world.npcs[targetId].mood !== 'hostile') {
+                    draft.world.npcs[targetId].mood = 'hostile';
+                }
+                draft.combat = {
+                    enemyId: targetId,
+                    round: 1,
+                    playerTurn: true,
+                    canFlee,
+                    playerModifiers: [],
+                    enemyModifiers: [],
+                    roundLog: [],
+                    startedAtTurn: state.turnCount,
+                };
+            }
+
             draft.world.npcs[targetId].health = newEnemyHealth;
             draft.player.health = newPlayerHealth;
 
@@ -142,6 +185,7 @@ export const AttackAction = defineAction({
                 playerDefeated,
                 lootDropped: lootEntries.length > 0 ? lootEntries.map(({ item }) => toItemSchema(item)) : undefined,
                 xpGained: enemyDefeated ? enemy.xpValue : undefined,
+                combatStarted: combatStarted || undefined,
             },
             nextState,
         );

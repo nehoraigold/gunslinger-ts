@@ -5,6 +5,12 @@ export type BlessedScreen = blessed.Widgets.Screen;
 export type BlessedLog = blessed.Widgets.Log;
 export type BlessedBox = blessed.Widgets.BoxElement;
 
+export interface BlessedKey {
+    name: string;
+    ctrl: boolean;
+    meta: boolean;
+}
+
 export interface ScreenWidgets {
     screen: BlessedScreen;
     narrativeBox: BlessedLog;

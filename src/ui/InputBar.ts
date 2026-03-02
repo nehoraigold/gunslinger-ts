@@ -1,14 +1,12 @@
-import { BlessedBox, BlessedScreen } from './screen';
+import { BlessedBox, BlessedScreen, BlessedKey } from './screen';
+
+type DispatchFn = (ch: string | null, key: BlessedKey, bufferLength: number) => boolean;
 
 export class InputBar {
-    /** Called when the user presses Escape with an empty buffer. */
-    onOpenMenu?: () => void;
-    /** Called when the user presses Tab to open inventory. */
-    onOpenInventory?: () => void;
-
     private buffer = '';
     private active = false;
     private pendingResolve: ((value: string) => void) | null = null;
+    private _dispatcher: DispatchFn | null = null;
 
     constructor(
         private readonly box: BlessedBox,
@@ -46,8 +44,31 @@ export class InputBar {
         }
     }
 
+    /**
+     * Register the shortcut dispatcher. Called once from main.ts after the
+     * ShortcutContext is built. The dispatcher returns true if the key was
+     * consumed so InputBar skips adding it to the buffer.
+     */
+    setDispatcher(fn: DispatchFn): void {
+        this._dispatcher = fn;
+    }
+
+    /**
+     * Programmatically resolve the pending read() promise with a synthetic
+     * value. Used by shortcuts (e.g. Ctrl+N) that need to wake the game loop
+     * without user input. Clears the buffer and deactivates the bar.
+     */
+    resolveWith(value: string): void {
+        const resolve = this.pendingResolve;
+        this.pendingResolve = null;
+        this.active = false;
+        this.buffer = '';
+        this._render();
+        if (resolve) resolve(value);
+    }
+
     private _setupKeyHandler(): void {
-        this.screen.on('keypress', (ch: string | null, key: { name: string; ctrl: boolean; meta: boolean }) => {
+        this.screen.on('keypress', (ch: string | null, key: BlessedKey) => {
             if (!this.active) return;
 
             if (key.name === 'enter' || key.name === 'return') {
@@ -67,29 +88,22 @@ export class InputBar {
                 return;
             }
 
-            if (key.name === 'escape') {
-                if (this.buffer.length > 0) {
-                    // Clear partial input
-                    this.buffer = '';
-                    this._render();
-                } else {
-                    // Empty buffer + Escape → system menu
-                    this.onOpenMenu?.();
-                }
-                return;
-            }
-
-            // Tab (same as Ctrl+I in terminals) → inventory shortcut
-            if (key.name === 'tab') {
-                this.onOpenInventory?.();
-                return;
-            }
-
             // Ctrl+U → clear line
             if (key.name === 'u' && key.ctrl) {
                 this.buffer = '';
                 this._render();
+                return;
             }
+
+            // Escape with non-empty buffer → clear buffer only
+            if (key.name === 'escape' && this.buffer.length > 0) {
+                this.buffer = '';
+                this._render();
+                return;
+            }
+
+            // Delegate to shortcut dispatcher (handles Escape+empty, Tab, Ctrl+S, Ctrl+N, …)
+            if (this._dispatcher?.(ch, key, this.buffer.length)) return;
 
             // Regular printable character
             if (ch && !key.ctrl && !key.meta) {

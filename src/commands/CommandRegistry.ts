@@ -19,13 +19,14 @@ type CommandHandler = (args: string[], ctx: CommandContext) => void | Promise<vo
 interface CommandEntry {
     description: string;
     handler: CommandHandler;
+    devOnly: boolean;
 }
 
 export class CommandRegistry {
     private readonly commands = new Map<string, CommandEntry>();
 
-    register(name: string, description: string, handler: CommandHandler): void {
-        this.commands.set(name.toLowerCase(), { description, handler });
+    register(name: string, description: string, handler: CommandHandler, devOnly = false): void {
+        this.commands.set(name.toLowerCase(), { description, handler, devOnly });
     }
 
     /**
@@ -40,11 +41,19 @@ export class CommandRegistry {
         const args = parts.slice(1);
 
         if (cmd === 'help') {
+            const playerCmds = [...this.commands.entries()].filter(([, e]) => !e.devOnly);
+            const devCmds = [...this.commands.entries()].filter(([, e]) => e.devOnly);
             const lines = ['Commands:'];
-            for (const [name, entry] of this.commands) {
+            for (const [name, entry] of playerCmds) {
                 lines.push(`  /${name.padEnd(18)} ${entry.description}`);
             }
             lines.push(`  /help               Show this help`);
+            if (devCmds.length > 0) {
+                lines.push('', 'Dev commands:');
+                for (const [name, entry] of devCmds) {
+                    lines.push(`  /${name.padEnd(18)} ${entry.description}`);
+                }
+            }
             Print.Message(lines.join('\n'));
             return true;
         }

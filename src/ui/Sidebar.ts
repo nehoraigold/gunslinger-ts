@@ -35,7 +35,7 @@ export class Sidebar {
                       exit.destinationKnown && world.rooms[exit.destinationRoomId]?.visited
                           ? (world.rooms[exit.destinationRoomId]?.name ?? '???')
                           : '???';
-                  const blocked = exit.isBlocked ? ' [blocked]' : '';
+                  const blocked = exit.isBlocked ? ` [blocked]` : '';
                   return `  ${dir} → ${dest}${blocked}`;
               })
             : [];
@@ -52,12 +52,12 @@ export class Sidebar {
         const lines: string[] = [];
 
         lines.push(`{bold}${player.name}{/bold}`);
+        lines.push(`Lv: ${player.level} | XP: ${player.xp}`);
         lines.push('');
         lines.push(`HP ${hpBar(player.health, player.maxHealth)}`);
         lines.push(`   ${player.health} / ${player.maxHealth}`);
         lines.push('');
         lines.push(`  ATK: ${playerStats.attackPower}  DEF: ${playerStats.defense}`);
-        lines.push(`  XP: ${player.xp}  Lv: ${player.level}`);
         lines.push('');
         lines.push(`  Weapon: ${weaponItem?.name ?? 'None'}`);
         lines.push(`  Armor:  ${armorItem?.name ?? 'None'}`);
@@ -85,7 +85,8 @@ export class Sidebar {
             exits.forEach((e) => lines.push(e));
         }
         if (npcNames.length > 0) {
-            lines.push(`  Here: ${npcNames.join(', ')}`);
+            lines.push('');
+            lines.push(`Here: ${npcNames.join(', ')}`);
         }
         lines.push('');
 

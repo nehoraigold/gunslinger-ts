@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Ollama } from 'ollama';
+
 import { config } from './config';
 import { getLogger, initLogger, getUserInput, Print, setNarrativeFn, setInputFn } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
@@ -14,9 +15,15 @@ import { runTurn, AgentCallbacks } from './agent/adventureAgent';
 import { CommandRegistry } from './commands/CommandRegistry';
 import { registerBuiltins } from './commands/builtins';
 import { CommandContext } from './commands/CommandRegistry';
+import { ShortcutRegistry, ShortcutContext } from './commands/ShortcutRegistry';
+import { registerShortcutBuiltins, SYNTHETIC_OPEN } from './commands/shortcutBuiltins';
 import { initUI } from './ui';
+import { validateWorldData } from './engine/world';
 
 const log = getLogger('main');
+
+const OPENING_NARRATION =
+    'Narrate the opening scene. Describe the setting, atmosphere, and immediate surroundings to draw the player in.';
 
 async function main() {
     initLogger(config.logPath, config.logLevel);
@@ -48,6 +55,24 @@ async function main() {
     } else {
         const loaded = await storage.load(startResult.slotId);
         initialState = loaded ?? initGameState('Stranger');
+    }
+
+    // ── World validation ──────────────────────────────────────────────────────
+    const validation = validateWorldData(initialState);
+    for (const warning of validation.warnings) {
+        log.warn(`[world] ${warning}`);
+    }
+    if (validation.errors.length > 0) {
+        for (const error of validation.errors) {
+            log.error(`[world] ${error}`);
+        }
+        ui.screen.destroy();
+        process.stderr.write(
+            `\nWorld data validation failed with ${validation.errors.length} error(s):\n` +
+                validation.errors.map((e) => `  - ${e}`).join('\n') +
+                '\n',
+        );
+        process.exit(1);
     }
 
     // ── Provider selection ────────────────────────────────────────────────────
@@ -186,48 +211,37 @@ async function main() {
         await ctx.storage.save(slotId, state);
     };
 
-    // ── Keyboard shortcuts — wired via InputBar callbacks ─────────────────────
-    // These fire from the InputBar's keypress handler only when the buffer is
-    // empty, so they never conflict with typing.
+    // ── Shortcut registry ─────────────────────────────────────────────────────
+    const shortcuts = new ShortcutRegistry();
 
-    ui.input.onOpenMenu = async () => {
-        ui.input.block();
-        const choice = await ui.modals.system.show();
-        ui.input.unblock();
-        if (choice === 'save') {
-            await autoSave();
-            const slotId = ctx.stateManager
-                .getState()
-                .player.name.toLowerCase()
-                .replace(/[^a-z0-9]/g, '_');
-            Print.Message(`Game saved (slot: ${slotId}).`);
-        } else if (choice === 'load') {
-            ui.input.block();
-            const slotId = await ui.modals.startMenu.showLoadList(storage);
-            ui.input.unblock();
-            if (slotId) {
-                await autoSave(); // preserve current state before loading
-                const loaded = await ctx.storage.load(slotId);
-                if (loaded) {
-                    ctx.stateManager = new StateManager(loaded);
-                    ctx.conversationManager.reset();
-                    Print.Message(`Loaded save: ${slotId}.`);
-                    ui.sidebar.update(ctx.stateManager.getState());
-                } else {
-                    Print.Message('Could not load that save.');
-                }
-            }
-        } else if (choice === 'quit') {
-            ui.screen.destroy();
-            process.exit(0);
-        }
+    const shortcutCtx: ShortcutContext = {
+        block: () => ui.input.block(),
+        unblock: () => ui.input.unblock(),
+        resolveWith: (v) => ui.input.resolveWith(v),
+        get stateManager() {
+            return ctx.stateManager;
+        },
+        set stateManager(v) {
+            ctx.stateManager = v;
+        },
+        get conversationManager() {
+            return ctx.conversationManager;
+        },
+        set conversationManager(v) {
+            ctx.conversationManager = v;
+        },
+        storage: ctx.storage,
+        narrate: (p) => ctx.narrate(p),
+        modals: ui.modals,
+        sidebar: ui.sidebar,
+        setPreviousRoomId: (id) => {
+            previousRoomId = id;
+        },
     };
 
-    ui.input.onOpenInventory = async () => {
-        ui.input.block();
-        await ui.modals.inventory.show(ctx.stateManager.getState());
-        ui.input.unblock();
-    };
+    registerShortcutBuiltins(shortcuts);
+
+    ui.input.setDispatcher((ch, key, bufferLen) => shortcuts.dispatch(ch, key, bufferLen, shortcutCtx));
 
     // ── Print starting room header and initial sidebar ────────────────────────
     const startingState = ctx.stateManager.getState();
@@ -237,17 +251,19 @@ async function main() {
     previousRoomId = initialRoomId;
     ui.sidebar.update(startingState);
 
-    await ctx.narrate(
-        'Narrate the opening scene. Describe the setting, atmosphere, and immediate surroundings to draw the player in.',
-    );
-
     // ── Game loop ─────────────────────────────────────────────────────────────
+    await ctx.narrate(OPENING_NARRATION);
+
     while (true) {
         const input = await getUserInput();
         if (!input.trim()) continue; // skip empty (e.g. Escape with empty buffer)
-        ui.narrative.append('\n{right}{cyan-fg}' + input + '{/cyan-fg}{/right}\n');
-        if (await registry.dispatch(input, ctx)) continue;
-        await ctx.narrate(input);
+
+        const isSynthetic = input === SYNTHETIC_OPEN;
+        if (!isSynthetic) {
+            ui.narrative.append('\n{right}{cyan-fg}' + input + '{/cyan-fg}{/right}\n');
+        }
+        if (!isSynthetic && (await registry.dispatch(input, ctx))) continue;
+        await ctx.narrate(isSynthetic ? OPENING_NARRATION : input);
         await autoSave();
     }
 }

@@ -46,6 +46,14 @@ export class StartMenu {
         return this._showLoadOnce(storage);
     }
 
+    /**
+     * Show just the new-game name prompt. Used by the Ctrl+N shortcut mid-game.
+     * Returns the player name, or null if the user cancelled (empty input).
+     */
+    showNewGamePrompt(): Promise<string | null> {
+        return this._showNewGameOnce();
+    }
+
     // ── Phase A: Main menu ─────────────────────────────────────────────────────
 
     private _showMainMenuOnce(): Promise<number> {

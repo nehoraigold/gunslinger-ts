@@ -93,20 +93,30 @@ export function registerBuiltins(registry: CommandRegistry): void {
         }
     });
 
-    registry.register('model', 'Show current LLM provider and model', (_args, ctx) => {
-        Print.Message(`Provider: ${ctx.providerLabel}`);
-    });
+    registry.register(
+        'model',
+        'Show current LLM provider and model',
+        (_args, ctx) => {
+            Print.Message(`Provider: ${ctx.providerLabel}`);
+        },
+        true,
+    );
 
-    registry.register('debug', 'Toggle debug logging: on | off (no arg = show current level)', (args) => {
-        const arg = args[0];
-        if (arg === 'on') {
-            setLogLevel('debug');
-            Print.Message('Debug logging enabled.');
-        } else if (arg === 'off') {
-            setLogLevel('error');
-            Print.Message('Debug logging disabled.');
-        } else {
-            Print.Message(`Log level: ${getLogLevel()}`);
-        }
-    });
+    registry.register(
+        'debug',
+        'Toggle debug logging: on | off (no arg = show current level)',
+        (args) => {
+            const arg = args[0];
+            if (arg === 'on') {
+                setLogLevel('debug');
+                Print.Message('Debug logging enabled.');
+            } else if (arg === 'off') {
+                setLogLevel('error');
+                Print.Message('Debug logging disabled.');
+            } else {
+                Print.Message(`Log level: ${getLogLevel()}`);
+            }
+        },
+        true,
+    );
 }
