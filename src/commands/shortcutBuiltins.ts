@@ -1,6 +1,6 @@
 import { ShortcutRegistry, ShortcutContext } from './ShortcutRegistry';
 import { StateManager } from '../engine/state/StateManager';
-import { initGameState } from '../initGameState';
+import { loadWorld } from '../loadWorld';
 import { Print } from '../utils';
 
 export const SYNTHETIC_OPEN = '\x00';
@@ -77,7 +77,7 @@ export function registerShortcutBuiltins(registry: ShortcutRegistry): void {
         await ctx.storage.save(curSlot, cur);
 
         // Reset to fresh state
-        ctx.stateManager = new StateManager(initGameState(playerName));
+        ctx.stateManager = new StateManager(loadWorld(playerName));
         ctx.conversationManager.reset();
         const newState = ctx.stateManager.getState();
         ctx.setPreviousRoomId(newState.player.currentRoomId);

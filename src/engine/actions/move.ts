@@ -4,6 +4,7 @@ import { produce } from 'immer';
 import { DirectionSchema, ExitSummarySchema, ItemSummarySchema, NpcSummarySchema } from './common/schema';
 import { defineAction } from './Action';
 import { getVisibleRoomItems, getRoomNpcs } from './common/utils';
+import { evaluateCondition } from '../condition';
 
 export const MoveAction = defineAction({
     name: 'move',
@@ -39,6 +40,13 @@ export const MoveAction = defineAction({
 
         if (exit.isBlocked) {
             return fail('exit_is_blocked', exit.blockReason ?? `The exit ${direction} is blocked`);
+        }
+
+        if (exit.blockCondition && evaluateCondition(state, exit.blockCondition)) {
+            return fail(
+                'exit_is_blocked',
+                exit.blockConditionReason ?? exit.blockReason ?? `The exit ${direction} is blocked`,
+            );
         }
 
         const nextRoom = world.rooms[exit.destinationRoomId];

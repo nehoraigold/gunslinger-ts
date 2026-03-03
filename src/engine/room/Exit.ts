@@ -26,4 +26,14 @@ export interface Exit {
     // Condition that, when true, means the exit can be unblocked.
     // Evaluated by the unlock effect handler to find matching exits.
     unlockCondition?: Condition;
+
+    // Condition that, when true, dynamically blocks this exit regardless of isBlocked.
+    // Unlike isBlocked (which is toggled permanently by unlock), blockCondition is
+    // re-evaluated each move attempt. Use for state-dependent barriers:
+    // e.g. "can't enter tavern while carrying a mule"
+    blockCondition?: Condition;
+
+    // Human-readable reason shown when blockCondition evaluates to true.
+    // Falls back to blockReason if absent.
+    blockConditionReason?: string;
 }

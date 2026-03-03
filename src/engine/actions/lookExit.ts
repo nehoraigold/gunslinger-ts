@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { DirectionSchema } from './common/schema';
 import { defineAction } from './Action';
+import { evaluateCondition } from '../condition';
 
 export const LookExitAction = defineAction({
     name: 'lookExit',
@@ -27,13 +28,21 @@ export const LookExitAction = defineAction({
         }
 
         const dest = world.rooms[exit.destinationRoomId];
+        const conditionBlocked = exit.blockCondition ? evaluateCondition(state, exit.blockCondition) : false;
+        const isBlocked = exit.isBlocked || conditionBlocked;
+        const blockReason = isBlocked
+            ? conditionBlocked
+                ? (exit.blockConditionReason ?? exit.blockReason)
+                : exit.blockReason
+            : undefined;
+
         return succeed(
             {
                 direction,
                 destinationName: dest.visited ? dest.name : undefined,
                 description: exit.description,
-                isBlocked: exit.isBlocked,
-                blockReason: exit.blockReason,
+                isBlocked,
+                blockReason,
             },
             state,
         );

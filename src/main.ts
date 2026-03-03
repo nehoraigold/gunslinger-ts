@@ -4,7 +4,7 @@ import { Ollama } from 'ollama';
 import { config } from './config';
 import { getLogger, initLogger, getUserInput, Print, setNarrativeFn, setInputFn } from './utils';
 import { GameStorage } from './engine/meta/GameStorage';
-import { initGameState } from './initGameState';
+import { loadWorld } from './loadWorld';
 import { StateManager } from './engine/state/StateManager';
 import { AnthropicClient } from './agent/llm/AnthropicClient';
 import { ConversationManager } from './agent/ConversationManager';
@@ -51,10 +51,10 @@ async function main() {
 
     let initialState;
     if (startResult.action === 'new') {
-        initialState = initGameState(startResult.playerName);
+        initialState = loadWorld(startResult.playerName);
     } else {
         const loaded = await storage.load(startResult.slotId);
-        initialState = loaded ?? initGameState('Stranger');
+        initialState = loaded ?? loadWorld('Stranger');
     }
 
     // ── World validation ──────────────────────────────────────────────────────
