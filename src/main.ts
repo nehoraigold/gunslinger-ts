@@ -11,7 +11,7 @@ import { ConversationManager } from './agent/ConversationManager';
 import { OllamaClient } from './agent/llm/OllamaClient';
 import { buildToolDefinitions } from './agent/toolDefinitions';
 import { buildSystemPrompt } from './agent/systemPrompt';
-import { runTurn, AgentCallbacks } from './agent/adventureAgent';
+import { runTurn, AgentCallbacks, TradeResult } from './agent/adventureAgent';
 import { CommandRegistry } from './commands/CommandRegistry';
 import { registerBuiltins } from './commands/builtins';
 import { CommandContext } from './commands/CommandRegistry';
@@ -129,6 +129,13 @@ async function main() {
                     const idx = await ui.modals.dialogue.show(prompt, choices);
                     ui.input.unblock();
                     return idx;
+                },
+                onOpenTradeMenu: async (currentState, npcId): Promise<TradeResult> => {
+                    ui.input.block();
+                    const result = await ui.modals.trade.show(currentState, npcId);
+                    ui.input.unblock();
+                    ui.sidebar.update(result.finalState);
+                    return result;
                 },
             };
 

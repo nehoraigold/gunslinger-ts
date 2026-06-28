@@ -30,6 +30,8 @@ type RegistryEntry = {
     aliases?: readonly string[];
     /** Parse raw CLI tokens into action input. Omit for z.void() actions (passes undefined). */
     parseCli?: (tokens: string[]) => unknown;
+    /** When false, this action is excluded from the LLM tool list. Defaults to true. */
+    llmVisible?: boolean;
 };
 
 const inputToDirection = (input: string): Direction => {
@@ -139,6 +141,7 @@ export const actionRegistry: Record<string, RegistryEntry> = {
     trade: {
         action: TradeAction,
         description: 'Call when the player offers to buy, sell, or trade items with an NPC.',
+        llmVisible: false,
     },
     getFlag: {
         action: GetFlagAction,

@@ -1,15 +1,22 @@
 import { HealthProse } from '../combat';
 
+const HEALTHY_RANGE = [80, 100] as const;
+const BRUISED_RANGE = [60, 79] as const;
+const WOUNDED_RANGE = [35, 59] as const;
+const BATTERED_RANGE = [10, 34] as const;
+const FATAL_RANGE = [0, 9] as const;
+
+const HEALTH_RANGES: Record<HealthProse, readonly [number, number]> = {
+    healthy: HEALTHY_RANGE,
+    bruised: BRUISED_RANGE,
+    wounded: WOUNDED_RANGE,
+    battered: BATTERED_RANGE,
+    fatal: FATAL_RANGE,
+};
+
 export const healthValueToProse = ({ health, maxHealth }: { health: number; maxHealth: number }): HealthProse => {
     const percentage = Math.ceil((health * 100) / maxHealth);
-    const ranges: Record<HealthProse, [number, number]> = {
-        healthy: [80, 100],
-        bruised: [60, 79],
-        wounded: [35, 59],
-        battered: [10, 34],
-        fatal: [0, 9],
-    };
-    for (let [prose, [min, max]] of Object.entries(ranges)) {
+    for (let [prose, [min, max]] of Object.entries(HEALTH_RANGES)) {
         if (percentage >= min && percentage <= max) {
             return prose as HealthProse;
         }

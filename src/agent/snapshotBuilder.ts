@@ -23,7 +23,7 @@ const EXPLORATION_ACTIONS = [
     'useItem',
     'startCombat',
     'talkTo',
-    'trade',
+    'openTradeMenu',
     'getFlag',
     'setFlag',
 ];

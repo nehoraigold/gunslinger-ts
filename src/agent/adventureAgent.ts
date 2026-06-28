@@ -8,6 +8,22 @@ import { z } from 'zod';
 
 const log = getLogger('agent');
 
+export interface TradeTransaction {
+    direction: 'buy' | 'sell';
+    itemName: string;
+    quantity: number;
+    totalPrice: number;
+}
+
+export interface TradeResult {
+    finalState: GameState;
+    summary: {
+        transactions: TradeTransaction[];
+        playerGoldBefore: number;
+        playerGoldAfter: number;
+    };
+}
+
 export interface AgentCallbacks {
     /** Called with each streaming text chunk from the LLM. */
     onText?: (chunk: string) => void;
@@ -18,6 +34,11 @@ export interface AgentCallbacks {
      * Returns the 0-based index of the player's selection.
      */
     onDialogueChoices?: (npcId: string, prompt: string, choices: string[]) => Promise<number>;
+    /**
+     * Called when the LLM invokes the openTradeMenu tool.
+     * Shows the interactive trade UI and returns the result.
+     */
+    onOpenTradeMenu?: (state: GameState, npcId: string) => Promise<TradeResult>;
 }
 
 export interface RunTurnResult {
@@ -64,6 +85,8 @@ const PresentDialogueChoicesSchema = z.object({
     prompt: z.string(),
     choices: z.array(z.string()),
 });
+
+const OpenTradeMenuSchema = z.object({ npcId: z.string() });
 
 /**
  * Run a single player turn through the LLM agent loop.
@@ -182,6 +205,53 @@ export async function runTurn(
                         data: { selectedIndex, text: choiceText },
                     });
                     log.debug(`Dialogue result: ${content}`);
+                    results.push({ callId: call.id, name: call.name, content });
+                    continue;
+                }
+
+                // Special-case: openTradeMenu suspends the loop and shows the interactive trade UI
+                if (call.name === 'openTradeMenu') {
+                    const parsed = OpenTradeMenuSchema.safeParse(call.input);
+                    let content: string;
+                    if (parsed.success && callbacks?.onOpenTradeMenu) {
+                        try {
+                            const result = await callbacks.onOpenTradeMenu(state, parsed.data.npcId);
+                            state = result.finalState;
+                            callbacks.onStateUpdate?.(state);
+                            content = JSON.stringify({
+                                result: 'success',
+                                data: {
+                                    npcId: parsed.data.npcId,
+                                    transactions: result.summary.transactions,
+                                    playerGoldBefore: result.summary.playerGoldBefore,
+                                    playerGoldAfter: result.summary.playerGoldAfter,
+                                    message:
+                                        result.summary.transactions.length === 0
+                                            ? 'Player browsed but made no trades.'
+                                            : `Player completed ${result.summary.transactions.length} transaction(s).`,
+                                },
+                            });
+                        } catch (err) {
+                            content = JSON.stringify({
+                                result: 'failure',
+                                reason: 'npc_unavailable',
+                                message: String(err),
+                            });
+                        }
+                    } else if (!parsed.success) {
+                        log.error(`openTradeMenu: invalid input — ${parsed.error.message}`);
+                        content = JSON.stringify({
+                            result: 'failure',
+                            reason: 'npc_not_found',
+                            message: 'Invalid input.',
+                        });
+                    } else {
+                        content = JSON.stringify({
+                            result: 'success',
+                            data: { transactions: [], message: 'Trade UI unavailable.' },
+                        });
+                    }
+                    log.debug(`Trade result: ${content}`);
                     results.push({ callId: call.id, name: call.name, content });
                     continue;
                 }

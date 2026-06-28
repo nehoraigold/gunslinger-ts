@@ -40,12 +40,31 @@ const PRESENT_DIALOGUE_CHOICES_TOOL: LlmTool = {
     },
 };
 
-export function buildToolDefinitions(): LlmTool[] {
-    const actionTools: LlmTool[] = Object.entries(actionRegistry).map(([name, { action, description }]) => ({
-        name,
-        description: description ?? name,
-        inputSchema: toJsonSchema(action.inputSchema),
-    }));
+/** Tool invoked by the LLM to open the interactive trade screen for the player. */
+const OPEN_TRADE_MENU_TOOL: LlmTool = {
+    name: 'openTradeMenu',
+    description:
+        'Open the interactive trade screen so the player can buy or sell items with an NPC. ' +
+        'Call this when the player wants to trade, buy, sell, or barter with an NPC. ' +
+        'The player selects items themselves; you receive a transaction summary to narrate. ' +
+        'Only call if the NPC is alive, non-hostile, and present in the room.',
+    inputSchema: {
+        type: 'object',
+        properties: {
+            npcId: { type: 'string', description: 'The exact ID of the NPC to trade with.' },
+        },
+        required: ['npcId'],
+    },
+};
 
-    return [...actionTools, PRESENT_DIALOGUE_CHOICES_TOOL];
+export function buildToolDefinitions(): LlmTool[] {
+    const actionTools: LlmTool[] = Object.entries(actionRegistry)
+        .filter(([, { llmVisible }]) => llmVisible !== false)
+        .map(([name, { action, description }]) => ({
+            name,
+            description: description ?? name,
+            inputSchema: toJsonSchema(action.inputSchema),
+        }));
+
+    return [...actionTools, PRESENT_DIALOGUE_CHOICES_TOOL, OPEN_TRADE_MENU_TOOL];
 }
