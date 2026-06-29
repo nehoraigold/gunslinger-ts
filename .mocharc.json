@@ -6,7 +6,7 @@
     "tsx"
   ],
   "spec": [
-    "test/**/*.test.ts"
+    "src/**/*.test.ts"
   ],
   "node-option": [
     "experimental-specifier-resolution=node",
