@@ -7,7 +7,8 @@ export default [
   {
     ignores: [
       "node_modules/**/*",
-      "lib/**/*"
+      "lib/**/*",
+      "src_old/**/*"
     ]
   },
   {
