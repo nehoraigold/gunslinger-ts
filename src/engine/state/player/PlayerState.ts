@@ -1,8 +1,9 @@
 import { EquipmentState } from './EquipmentState';
+import { RoomId } from '../room';
 
 export type PlayerState = {
     id: 'player';
     name: string;
-    currentRoomId: string;
+    currentRoomId: RoomId;
     equipment: EquipmentState;
 };

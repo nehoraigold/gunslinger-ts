@@ -1,14 +1,11 @@
 import { GameState } from '../state/GameState';
-import { EntityStoreImpl, ValueStoreImpl, EntityStore, ValueStore } from '../store';
-import { PlayerState } from '../state/player';
-import { ItemId, ItemState } from '../state/item';
-import { RoomId, RoomState } from '../state/room';
+import { EntityStoreImpl, ItemStore, PlayerStore, RoomStore, ValueStoreImpl } from '../store';
 import { GameTransaction } from './GameTransaction';
 
 export class GameTransactionImpl implements GameTransaction {
-    private readonly playerStore: ValueStore<PlayerState>;
-    private readonly itemStore: EntityStore<ItemId, ItemState>;
-    private readonly roomStore: EntityStore<RoomId, RoomState>;
+    private readonly playerStore: PlayerStore;
+    private readonly roomStore: RoomStore;
+    private readonly itemStore: ItemStore;
 
     constructor(state: GameState) {
         this.playerStore = new ValueStoreImpl(state.player);
@@ -16,23 +13,23 @@ export class GameTransactionImpl implements GameTransaction {
         this.roomStore = new EntityStoreImpl(state.rooms);
     }
 
-    get player(): ValueStore<PlayerState> {
+    player(): PlayerStore {
         return this.playerStore;
     }
 
-    get items(): EntityStore<ItemId, ItemState> {
+    items(): ItemStore {
         return this.itemStore;
     }
 
-    get rooms(): EntityStore<RoomId, RoomState> {
+    rooms(): RoomStore {
         return this.roomStore;
     }
 
     commit(): GameState {
         return {
-            player: this.player.get(),
-            items: this.items.getAll(),
-            rooms: this.rooms.getAll(),
+            player: this.playerStore.get(),
+            items: this.itemStore.getAll(),
+            rooms: this.roomStore.getAll(),
         };
     }
 }

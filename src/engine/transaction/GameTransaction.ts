@@ -1,13 +1,10 @@
-import { EntityStore, ValueStore } from '../store';
-import { PlayerState } from '../state/player';
-import { ItemId, ItemState } from '../state/item';
-import { RoomId, RoomState } from '../state/room';
 import { GameState } from '../state/GameState';
+import { ItemStore, RoomStore, PlayerStore } from '../store';
 
 export interface GameTransaction {
-    player: ValueStore<PlayerState>;
-    items: EntityStore<ItemId, ItemState>;
-    rooms: EntityStore<RoomId, RoomState>;
+    player(): PlayerStore;
+    rooms(): RoomStore;
+    items(): ItemStore;
 
     commit(): GameState;
 }
