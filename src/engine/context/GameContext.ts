@@ -1,11 +1,8 @@
-import { Repository } from './Repository';
-import { GameTransaction } from '../../transaction';
-import { ItemId } from '../../state/item';
-import { RoomId } from '../../state/room';
-import { Item, ItemFactory } from '../item';
-import { Room, RoomFactory } from '../room';
-import { Player, PlayerImpl } from '../player';
-import { KeyedValueStore, ValueStore } from '../../store';
+import { Context } from './Context';
+import { Transaction } from '../transaction';
+import { ItemId, RoomId } from '../state';
+import { Item, ItemFactory, Room, RoomFactory, Player, DefaultPlayer } from '../entity';
+import { KeyedValueStore, ValueStore } from '../store';
 
 type EntityCache = {
     player?: Player;
@@ -18,11 +15,11 @@ type Factories = {
     room: RoomFactory;
 };
 
-export class EntityRepository implements Repository {
+export class GameContext implements Context {
     private readonly cache: EntityCache;
 
     constructor(
-        private readonly tx: GameTransaction,
+        private readonly tx: Transaction,
         private readonly factories: Factories,
     ) {
         this.cache = {
@@ -33,7 +30,7 @@ export class EntityRepository implements Repository {
 
     player(): Player {
         if (!this.cache.player) {
-            this.cache.player = new PlayerImpl(this.tx.player);
+            this.cache.player = new DefaultPlayer(this.tx.player);
         }
         return this.cache.player;
     }

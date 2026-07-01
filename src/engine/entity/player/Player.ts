@@ -1,4 +1,4 @@
-import { RoomId } from '../../state/room';
+import { RoomId } from '../../state';
 import { Room } from '../room';
 
 export interface Player {

@@ -1,9 +1,9 @@
 import { Room } from '../room';
 import { PlayerStore } from '../../store';
+import { RoomId } from '../../state';
 import { Player } from './Player';
-import { RoomId } from '../../state/room';
 
-export class PlayerImpl implements Player {
+export class DefaultPlayer implements Player {
     constructor(private readonly store: PlayerStore) {}
 
     get currentRoomId(): RoomId {

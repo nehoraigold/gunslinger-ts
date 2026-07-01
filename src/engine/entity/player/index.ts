@@ -1,2 +1,2 @@
 export * from './Player';
-export * from './PlayerImpl';
+export * from './DefaultPlayer';

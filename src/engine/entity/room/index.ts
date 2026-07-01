@@ -1,3 +1,3 @@
 export * from './Room';
-export * from './RoomImpl';
+export * from './DefaultRoom';
 export * from './RoomFactory';

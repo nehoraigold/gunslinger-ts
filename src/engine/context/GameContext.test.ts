@@ -2,12 +2,12 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 
-import { EntityRepository } from './EntityRepository';
-import { GameTransactionImpl } from '../../transaction';
-import { createGameState } from '../../state/GameState.test.utils';
+import { GameContext } from './GameContext';
+import { GameTransaction } from '../transaction';
+import { createGameState } from '../state/GameState.test.utils';
 
-describe(EntityRepository.name, () => {
-    const tx = new GameTransactionImpl(createGameState());
+describe(GameContext.name, () => {
+    const tx = new GameTransaction(createGameState());
     const itemFactory = {
         create: sinon.stub().callsFake((id) => ({ id })),
     };
@@ -15,13 +15,13 @@ describe(EntityRepository.name, () => {
         create: sinon.stub().callsFake((id) => ({ id })),
     };
     const factories = { item: itemFactory, room: roomFactory };
-    let repository: EntityRepository;
+    let repository: GameContext;
 
     beforeEach(() => {
         Object.values(factories).forEach((factory) => {
             factory.create.resetHistory();
         });
-        repository = new EntityRepository(tx, factories);
+        repository = new GameContext(tx, factories);
     });
 
     describe('player', () => {

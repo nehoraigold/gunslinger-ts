@@ -1,4 +1,4 @@
-import { RoomId } from '../../state/room';
+import { RoomId } from '../../state';
 import { RoomStore } from '../../store';
 import { Room } from './Room';
 

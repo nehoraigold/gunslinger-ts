@@ -1,15 +1,15 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-import { GameTransactionImpl } from './GameTransactionImpl';
+import { GameTransaction } from './GameTransaction';
 import { createGameState } from '../state/GameState.test.utils';
 
-describe(GameTransactionImpl.name, () => {
+describe(GameTransaction.name, () => {
     const initialState = createGameState();
 
     describe('commit', () => {
         it('should return a copy of the initial game state', () => {
-            const tx = new GameTransactionImpl(initialState);
+            const tx = new GameTransaction(initialState);
 
             const state = tx.commit();
 
@@ -17,7 +17,7 @@ describe(GameTransactionImpl.name, () => {
         });
 
         it('should reflect updates made during the transaction', () => {
-            const tx = new GameTransactionImpl(initialState);
+            const tx = new GameTransaction(initialState);
             const room3 = {
                 name: 'Room 3',
                 description: 'The third room',

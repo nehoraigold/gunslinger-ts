@@ -1,7 +1,6 @@
 import { PlayerState } from './player';
 import { ItemId, ItemState } from './item';
-import { RoomId } from './room/RoomId';
-import { RoomState } from './room/RoomState';
+import { RoomId, RoomState } from './room';
 
 export type GameState = {
     player: PlayerState;

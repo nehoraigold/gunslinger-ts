@@ -1,13 +1,13 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-import { PlayerImpl } from './PlayerImpl';
+import { DefaultPlayer } from './DefaultPlayer';
 import { RootValueStore } from '../../store';
-import { PlayerState } from '../../state/player';
-import { Room } from '../room';
+import { PlayerState } from '../../state';
+import { createMockRoom } from '../room/MockRoom';
 
-describe(PlayerImpl.name, () => {
-    let player: PlayerImpl;
+describe(DefaultPlayer.name, () => {
+    let player: DefaultPlayer;
 
     beforeEach(() => {
         const state: PlayerState = {
@@ -21,7 +21,7 @@ describe(PlayerImpl.name, () => {
         };
 
         const store = new RootValueStore(state);
-        player = new PlayerImpl(store);
+        player = new DefaultPlayer(store);
     });
 
     describe('currentRoomId', () => {
@@ -34,9 +34,7 @@ describe(PlayerImpl.name, () => {
 
     describe('moveTo', () => {
         it('should change the current room id', () => {
-            const newRoom: Room = {
-                id: 'room_2',
-            };
+            const newRoom = createMockRoom({ id: 'room_2' });
 
             player.moveTo(newRoom);
 
