@@ -2,9 +2,9 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import { PlayerImpl } from './PlayerImpl';
-import { ValueStoreImpl } from '../../store';
+import { RootValueStore } from '../../store';
 import { PlayerState } from '../../state/player';
-import { Room, RoomImpl } from '../room';
+import { Room } from '../room';
 
 describe(PlayerImpl.name, () => {
     let player: PlayerImpl;
@@ -20,7 +20,7 @@ describe(PlayerImpl.name, () => {
             },
         };
 
-        const store = new ValueStoreImpl(state);
+        const store = new RootValueStore(state);
         player = new PlayerImpl(store);
     });
 

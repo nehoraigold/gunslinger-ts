@@ -1,4 +1,4 @@
-import { EntityStore } from './EntityStore';
-import { ItemId, ItemState } from '../state/item';
+import { ValueStore } from './value_store';
+import { ItemState } from '../state/item';
 
-export type ItemStore = EntityStore<ItemId, ItemState>;
+export type ItemStore = ValueStore<ItemState>;

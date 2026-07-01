@@ -13,10 +13,16 @@ const player: PlayerState = {
     },
 };
 
-const sword: ItemState = {
-    name: 'Sword',
-    description: 'A normal sword',
+const item1: ItemState = {
+    name: 'Item 1',
+    description: 'The first item',
     type: 'weapon',
+};
+
+const item2: ItemState = {
+    name: 'Item 2',
+    description: 'The second item',
+    type: 'consumable',
 };
 
 const room1: RoomState = {
@@ -44,7 +50,8 @@ const room2: RoomState = {
 const initialState: GameState = {
     player,
     items: {
-        sword_1: sword,
+        item_1: item1,
+        item_2: item2,
     },
     rooms: {
         room_1: room1,

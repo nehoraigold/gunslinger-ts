@@ -12,7 +12,7 @@ type EntityCache = {
     items: Record<ItemId, Item>;
 };
 
-export class RepositoryImpl implements Repository {
+export class EntityRepository implements Repository {
     private readonly cache: EntityCache;
 
     constructor(private readonly tx: GameTransaction) {
@@ -24,7 +24,7 @@ export class RepositoryImpl implements Repository {
 
     player(): Player {
         if (!this.cache.player) {
-            this.cache.player = new PlayerImpl(this.tx.player());
+            this.cache.player = new PlayerImpl(this.tx.player);
         }
         return this.cache.player;
     }
@@ -37,10 +37,11 @@ export class RepositoryImpl implements Repository {
         if (this.cache.rooms[id]) {
             return this.cache.rooms[id];
         }
-        if (!this.tx.rooms().get(id)) {
+        const store = this.tx.rooms.store(id);
+        if (!store) {
             return undefined;
         }
-        const room = new RoomImpl(id, this.tx.rooms());
+        const room = new RoomImpl(id, store);
         this.cache.rooms[id] = room;
         return room;
     }

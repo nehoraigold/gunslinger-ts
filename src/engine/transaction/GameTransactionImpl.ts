@@ -1,27 +1,27 @@
 import { GameState } from '../state/GameState';
-import { EntityStoreImpl, ItemStore, PlayerStore, RoomStore, ValueStoreImpl } from '../store';
+import { DefaultKeyedValueStore, ItemsStore, PlayerStore, RoomsStore, RootValueStore } from '../store';
 import { GameTransaction } from './GameTransaction';
 
 export class GameTransactionImpl implements GameTransaction {
     private readonly playerStore: PlayerStore;
-    private readonly roomStore: RoomStore;
-    private readonly itemStore: ItemStore;
+    private readonly roomStore: RoomsStore;
+    private readonly itemStore: ItemsStore;
 
     constructor(state: GameState) {
-        this.playerStore = new ValueStoreImpl(state.player);
-        this.itemStore = new EntityStoreImpl(state.items);
-        this.roomStore = new EntityStoreImpl(state.rooms);
+        this.playerStore = new RootValueStore(state.player);
+        this.itemStore = new DefaultKeyedValueStore(state.items);
+        this.roomStore = new DefaultKeyedValueStore(state.rooms);
     }
 
-    player(): PlayerStore {
+    get player(): PlayerStore {
         return this.playerStore;
     }
 
-    items(): ItemStore {
+    get items(): ItemsStore {
         return this.itemStore;
     }
 
-    rooms(): RoomStore {
+    get rooms(): RoomsStore {
         return this.roomStore;
     }
 

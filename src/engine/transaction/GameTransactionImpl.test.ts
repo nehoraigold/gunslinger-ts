@@ -24,9 +24,10 @@ describe(GameTransactionImpl.name, () => {
                 exits: [],
             };
 
-            tx.player().update((player) => (player.name = 'Ori'));
-            tx.items().remove('sword_1');
-            tx.rooms().add('room_3', room3);
+            tx.player.update((player) => (player.name = 'Ori'));
+            tx.items.remove('item_1');
+            tx.items.remove('item_2');
+            tx.rooms.add('room_3', room3);
 
             const state = tx.commit();
 

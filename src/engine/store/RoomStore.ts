@@ -1,4 +1,4 @@
-import { EntityStore } from './EntityStore';
-import { RoomId, RoomState } from '../state/room';
+import { ValueStore } from './value_store';
+import { RoomState } from '../state/room';
 
-export type RoomStore = EntityStore<RoomId, RoomState>;
+export type RoomStore = ValueStore<RoomState>;

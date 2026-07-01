@@ -1,10 +1,10 @@
 import { GameState } from '../state/GameState';
-import { ItemStore, RoomStore, PlayerStore } from '../store';
+import { ItemsStore, RoomsStore, PlayerStore } from '../store';
 
 export interface GameTransaction {
-    player(): PlayerStore;
-    rooms(): RoomStore;
-    items(): ItemStore;
+    player: PlayerStore;
+    rooms: RoomsStore;
+    items: ItemsStore;
 
     commit(): GameState;
 }

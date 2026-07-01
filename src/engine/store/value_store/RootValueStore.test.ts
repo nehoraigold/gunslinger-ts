@@ -2,18 +2,18 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import * as sinon from 'sinon';
 
-import { ValueStoreImpl } from './ValueStoreImpl';
+import { RootValueStore } from './RootValueStore';
 
-describe(ValueStoreImpl.name, () => {
+describe(RootValueStore.name, () => {
     const initialData = {
         name: 'keyname',
         value: 'value',
     };
 
-    let store: ValueStoreImpl<typeof initialData>;
+    let store: RootValueStore<typeof initialData>;
 
     beforeEach(() => {
-        store = new ValueStoreImpl(initialData);
+        store = new RootValueStore(initialData);
     });
 
     describe('get', () => {
