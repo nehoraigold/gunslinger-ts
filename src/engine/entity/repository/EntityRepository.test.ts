@@ -1,5 +1,6 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 
 import { EntityRepository } from './EntityRepository';
 import { GameTransactionImpl } from '../../transaction';
@@ -7,7 +8,21 @@ import { createGameState } from '../../state/GameState.test.utils';
 
 describe(EntityRepository.name, () => {
     const tx = new GameTransactionImpl(createGameState());
-    const repository = new EntityRepository(tx);
+    const itemFactory = {
+        create: sinon.stub().callsFake((id) => ({ id })),
+    };
+    const roomFactory = {
+        create: sinon.stub().callsFake((id) => ({ id })),
+    };
+    const factories = { item: itemFactory, room: roomFactory };
+    let repository: EntityRepository;
+
+    beforeEach(() => {
+        Object.values(factories).forEach((factory) => {
+            factory.create.resetHistory();
+        });
+        repository = new EntityRepository(tx, factories);
+    });
 
     describe('player', () => {
         it('should return an identical player instance when called multiple times', () => {
@@ -39,6 +54,7 @@ describe(EntityRepository.name, () => {
                 const entity2 = repository[entityName](`${entityName}_2`);
 
                 expect(entity1).not.to.equal(entity2);
+                expect(factories[entityName].create.calledTwice, 'create not called twice').to.be.true;
             });
 
             it(`should return the same ${entityName} instance when called multiple times`, () => {
@@ -47,36 +63,8 @@ describe(EntityRepository.name, () => {
 
                 expect(firstEntity).not.to.be.undefined;
                 expect(secondEntity).to.equal(firstEntity);
+                expect(factories[entityName].create.calledOnce).to.be.true;
             });
-        });
-    });
-
-    describe('item', () => {
-        it('should return undefined if the item does not exist', () => {
-            const undefinedRoom = repository.room('nonexistent_item');
-
-            expect(undefinedRoom).to.be.undefined;
-        });
-
-        it('should not be undefined if the room exists', () => {
-            const room = repository.room('room_1');
-
-            expect(room).not.to.be.undefined;
-        });
-
-        it('should return different room instances for different ids', () => {
-            const room1 = repository.room('room_1');
-            const room2 = repository.room('room_2');
-
-            expect(room1).not.to.equal(room2);
-        });
-
-        it('should return the same room instance when called multiple times', () => {
-            const firstRoom1 = repository.room('room_1');
-            const secondRoom1 = repository.room('room_1');
-
-            expect(firstRoom1).not.to.be.undefined;
-            expect(firstRoom1).to.equal(secondRoom1);
         });
     });
 });
