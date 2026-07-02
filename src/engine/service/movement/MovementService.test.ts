@@ -1,6 +1,5 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import * as sinon from 'sinon';
 
 import { MovementService } from './MovementService';
 import { Context, GameContext } from '../../context';
@@ -19,8 +18,8 @@ describe(MovementService.name, () => {
         });
     }
 
-    function addExitToCurrentRoom(exit: ExitState): (state: GameState) => void {
-        return (state) => state.rooms[state.player.currentRoomId].exits.push(exit);
+    function setExitsInCurrentRoom(...exits: ExitState[]): (state: GameState) => void {
+        return (state) => (state.rooms[state.player.currentRoomId].exits = exits ?? []);
     }
 
     function setCurrentRoomId(id: RoomId): (state: GameState) => void {
@@ -29,7 +28,7 @@ describe(MovementService.name, () => {
 
     describe('move', () => {
         it('should move player to the destination room indicated by the exit', () => {
-            const ctx = createDefaultContext(addExitToCurrentRoom({ direction: 'west', destinationRoomId: 'room_2 ' }));
+            const ctx = createDefaultContext(setExitsInCurrentRoom({ direction: 'west', destinationRoomId: 'room_2' }));
             const movement = new MovementService(ctx);
             expect(ctx.player().currentRoomId).to.equal('room_1');
 
@@ -50,7 +49,7 @@ describe(MovementService.name, () => {
 
         it('should throw a RoomNotFoundError if the destination room is not found', () => {
             const ctx = createDefaultContext(
-                addExitToCurrentRoom({ direction: 'north', destinationRoomId: 'nonexistent_room' }),
+                setExitsInCurrentRoom({ direction: 'north', destinationRoomId: 'nonexistent_room' }),
             );
             const movement = new MovementService(ctx);
 
@@ -76,7 +75,7 @@ describe(MovementService.name, () => {
                 isBlocked: true,
                 blockReason: 'door_locked',
             };
-            const ctx = createDefaultContext(addExitToCurrentRoom(exit));
+            const ctx = createDefaultContext(setExitsInCurrentRoom(exit));
             const movement = new MovementService(ctx);
 
             movement.move('south');
