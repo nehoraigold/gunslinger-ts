@@ -3,76 +3,85 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 
 import { MovementService } from './MovementService';
-import { Player, Room } from '../../entity';
-import { Context } from '../../context';
-import { Direction, RoomId } from '../../state';
-
-import { MockPlayer } from '../../entity/player/MockPlayer';
-import { createMockRoom, MockRoomOptions } from '../../entity/room/MockRoom';
-import { MockContext } from '../../context/MockContext';
-import { RoomNotFoundError } from './error/RoomNotFoundError';
+import { Context, GameContext } from '../../context';
+import { ExitState, GameState, RoomId } from '../../state';
+import { GameTransaction } from '../../transaction';
+import { createGameState, ModifyState } from '../../state/GameState.test.utils';
+import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
+import { RoomNotFoundError } from './error';
 
 describe(MovementService.name, () => {
-    function createPlayerInRoom(roomId: RoomId): Player {
-        return new MockPlayer({ currentRoomId: roomId });
-    }
-
-    function createRoomMap(...rooms: MockRoomOptions[]) {
-        return rooms.reduce(
-            (map, opts) => {
-                const room = createMockRoom(opts);
-                if (map[room.id]) {
-                    throw new Error(`Room with id ${room.id} already exists!`);
-                }
-                map[room.id] = room;
-                return map;
-            },
-            {} as Record<RoomId, Room>,
-        );
-    }
-
-    function createContextWith(...rooms: MockRoomOptions[]): Context {
-        const player = createPlayerInRoom('room_1');
-        return new MockContext({
-            player,
-            rooms: createRoomMap(...rooms),
+    function createDefaultContext(modifyState?: ModifyState): Context {
+        const state = createGameState(modifyState);
+        return new GameContext(new GameTransaction(state), {
+            room: new DefaultRoomFactory(),
+            item: new DefaultItemFactory(),
         });
+    }
+
+    function addExitToCurrentRoom(exit: ExitState): (state: GameState) => void {
+        return (state) => state.rooms[state.player.currentRoomId].exits.push(exit);
+    }
+
+    function setCurrentRoomId(id: RoomId): (state: GameState) => void {
+        return (state) => (state.player.currentRoomId = id);
     }
 
     describe('move', () => {
         it('should move player to the destination room indicated by the exit', () => {
-            const ctx = createContextWith(
-                {
-                    id: 'room_1',
-                    getExit: sinon.stub().returns({ destinationRoomId: 'room_2' }),
-                },
-                { id: 'room_2' },
-            );
+            const ctx = createDefaultContext(addExitToCurrentRoom({ direction: 'west', destinationRoomId: 'room_2 ' }));
             const movement = new MovementService(ctx);
+            expect(ctx.player().currentRoomId).to.equal('room_1');
 
-            movement.move('north');
+            movement.move('west');
 
             expect(ctx.player().currentRoomId).to.equal('room_2');
         });
 
         it("should throw a RoomNotFoundError if the player's current room is not found", () => {
-            const player = createPlayerInRoom('room_1');
-            const ctx = new MockContext({ player });
+            const ctx = createDefaultContext(setCurrentRoomId('nonexistent_room'));
             const movement = new MovementService(ctx);
 
             const move = () => movement.move('north');
 
-            expect(move).to.throw(RoomNotFoundError);
+            expect(move).to.throw(RoomNotFoundError, /nonexistent_room/);
+            expect(ctx.player().currentRoomId).to.equal('nonexistent_room');
         });
 
-        it("should throw a RoomNotFoundError if the player's current room is not found", () => {
-            const player = createPlayerInRoom('room_1');
-            const ctx = new MockContext({ player });
+        it('should throw a RoomNotFoundError if the destination room is not found', () => {
+            const ctx = createDefaultContext(
+                addExitToCurrentRoom({ direction: 'north', destinationRoomId: 'nonexistent_room' }),
+            );
             const movement = new MovementService(ctx);
 
             const move = () => movement.move('north');
 
-            expect(move).to.throw(RoomNotFoundError);
+            expect(move).to.throw(RoomNotFoundError, /nonexistent_room/);
+            expect(ctx.player().currentRoomId).to.equal('room_1');
+        });
+
+        it('should not move the player if there is no exit in that direction', () => {
+            const ctx = createDefaultContext();
+            const movement = new MovementService(ctx);
+
+            movement.move('north');
+
+            expect(ctx.player().currentRoomId).to.equal('room_1');
+        });
+
+        it('should not move the player if the exit is blocked', () => {
+            const exit: ExitState = {
+                direction: 'south',
+                destinationRoomId: 'room_2',
+                isBlocked: true,
+                blockReason: 'door_locked',
+            };
+            const ctx = createDefaultContext(addExitToCurrentRoom(exit));
+            const movement = new MovementService(ctx);
+
+            movement.move('south');
+
+            expect(ctx.player().currentRoomId).to.equal('room_1');
         });
     });
 });

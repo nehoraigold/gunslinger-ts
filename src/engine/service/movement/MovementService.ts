@@ -12,8 +12,7 @@ export class MovementService {
             throw new RoomNotFoundError(player.currentRoomId);
         }
         const exit = room.getExit(direction);
-        if (!exit) {
-            // no exit, handle later
+        if (!exit || exit.isBlocked()) {
             return;
         }
         const destination = this.ctx.room(exit.destinationRoomId);

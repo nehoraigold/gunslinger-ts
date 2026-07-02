@@ -1,4 +1,4 @@
-import { GameState } from '../state/GameState';
+import { GameState } from '../state';
 import { DefaultKeyedValueStore, ItemsStore, PlayerStore, RoomsStore, RootValueStore } from '../store';
 import { Transaction } from './Transaction';
 

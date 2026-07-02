@@ -6,7 +6,7 @@ import { RoomState } from './room';
 const player: PlayerState = {
     id: 'player',
     name: 'Roland',
-    currentRoomId: '',
+    currentRoomId: 'room_1',
     equipment: {
         weapon: undefined,
         armor: undefined,
@@ -59,9 +59,16 @@ const initialState: GameState = {
     },
 };
 
-export const createGameState = (state?: GameState) => {
+export type ModifyState = Partial<GameState> | ((s: GameState) => GameState | void);
+
+export const createGameState = (modifyState?: ModifyState) => {
+    const state = structuredClone(initialState);
+    if (typeof modifyState === 'function') {
+        modifyState(state);
+        return state;
+    }
     return {
-        ...initialState,
         ...state,
+        ...modifyState,
     };
 };

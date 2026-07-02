@@ -1,6 +1,7 @@
-import { Direction, ExitState, RoomId } from '../../state';
+import { Direction, RoomId } from '../../state';
+import { Exit } from '../exit';
 
 export interface Room {
     id: RoomId;
-    getExit(direction: Direction): Readonly<ExitState> | undefined;
+    getExit(direction: Direction): Exit | undefined;
 }

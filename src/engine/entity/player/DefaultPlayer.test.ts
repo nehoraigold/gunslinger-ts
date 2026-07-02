@@ -4,7 +4,7 @@ import { expect } from 'chai';
 import { DefaultPlayer } from './DefaultPlayer';
 import { RootValueStore } from '../../store';
 import { PlayerState } from '../../state';
-import { createMockRoom } from '../room/MockRoom';
+import { DefaultRoom } from '../room';
 
 describe(DefaultPlayer.name, () => {
     let player: DefaultPlayer;
@@ -34,7 +34,10 @@ describe(DefaultPlayer.name, () => {
 
     describe('moveTo', () => {
         it('should change the current room id', () => {
-            const newRoom = createMockRoom({ id: 'room_2' });
+            const newRoom = new DefaultRoom(
+                'room_1',
+                new RootValueStore({ name: 'Room 1', description: 'description', exits: [] }),
+            );
 
             player.moveTo(newRoom);
 
