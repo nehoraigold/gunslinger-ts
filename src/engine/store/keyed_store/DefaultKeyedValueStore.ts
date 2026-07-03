@@ -1,5 +1,6 @@
 import { ValueStore, DerivedValueStore } from '../value_store';
 import { KeyedValueStore } from './KeyedValueStore';
+import { DeepReadonly } from '../../../utils/types';
 
 export class DefaultKeyedValueStore<Id extends string, T extends object> implements KeyedValueStore<Id, T> {
     private readonly state: Record<Id, T>;
@@ -8,13 +9,13 @@ export class DefaultKeyedValueStore<Id extends string, T extends object> impleme
         this.state = initialState ?? ({} as Record<Id, T>);
     }
 
-    getAll(): Readonly<Record<Id, T>> {
-        return structuredClone(this.state);
+    getAll(): DeepReadonly<Record<Id, T>> {
+        return structuredClone(this.state) as DeepReadonly<Record<Id, T>>;
     }
 
-    get(id: Id): Readonly<T> | undefined {
+    get(id: Id): DeepReadonly<T> | undefined {
         const value = this.state[id];
-        return value ? structuredClone(value) : undefined;
+        return value ? (structuredClone(value) as DeepReadonly<T>) : undefined;
     }
 
     store(id: Id): ValueStore<T> | undefined {

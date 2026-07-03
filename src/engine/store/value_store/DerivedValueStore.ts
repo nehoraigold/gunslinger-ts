@@ -1,4 +1,5 @@
 import { ValueStore } from './ValueStore';
+import { DeepReadonly } from '../../../utils/types';
 
 export class DerivedValueStore<T> implements ValueStore<T> {
     constructor(
@@ -6,8 +7,8 @@ export class DerivedValueStore<T> implements ValueStore<T> {
         private readonly setter: (value: T) => void,
     ) {}
 
-    get(): Readonly<T> {
-        return structuredClone(this.getter());
+    get(): DeepReadonly<T> {
+        return structuredClone(this.getter()) as DeepReadonly<T>;
     }
 
     update(updateFn: (draft: T) => void): void {

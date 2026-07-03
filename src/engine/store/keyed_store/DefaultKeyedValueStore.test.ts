@@ -42,6 +42,14 @@ describe(DefaultKeyedValueStore.name, () => {
 
             expect(data3).to.be.undefined;
         });
+
+        it('returns a new object reference so that modification must happen through the store', () => {
+            const data1 = store.get('data1') as SampleData;
+
+            data1.description = 'Setting a description outside the store';
+
+            expect(store.get('data1')).not.to.haveOwnProperty('description');
+        });
     });
 
     describe('getAll', () => {
@@ -58,6 +66,21 @@ describe(DefaultKeyedValueStore.name, () => {
             const values = store.getAll();
 
             expect(values).to.deep.equal({});
+        });
+
+        it('returns a new object reference so that modification must happen through the store', () => {
+            const values = store.getAll() as SampleState;
+
+            values.data1.description = 'Setting a description outside the store';
+
+            expect(store.get('data1')).not.to.haveOwnProperty('description');
+        });
+
+        it('does not allow modifying nested properties without an explicit cast', () => {
+            const values = store.getAll();
+
+            // @ts-expect-error nested properties of the returned value are deeply readonly
+            values.data1.description = 'Setting a description outside the store';
         });
     });
 

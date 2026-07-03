@@ -1,6 +1,7 @@
 import { GameState } from '../state';
 import { DefaultKeyedValueStore, ItemsStore, PlayerStore, RoomsStore, RootValueStore } from '../store';
 import { Transaction } from './Transaction';
+import { DeepReadonly } from '../../utils/types';
 
 export class GameTransaction implements Transaction {
     private readonly playerStore: PlayerStore;
@@ -25,7 +26,7 @@ export class GameTransaction implements Transaction {
         return this.roomStore;
     }
 
-    commit(): GameState {
+    commit(): DeepReadonly<GameState> {
         return {
             player: this.playerStore.get(),
             items: this.itemStore.getAll(),
