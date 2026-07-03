@@ -61,61 +61,50 @@ describe(DefaultKeyedValueStore.name, () => {
         });
     });
 
-    // describe('update', () => {
-    //     it('calls the update function with the current data', () => {
-    //         const updateFn = sinon.stub();
-    //
-    //         store.update('data1', updateFn);
-    //
-    //         expect(updateFn.calledOnce).to.be.true;
-    //         expect(updateFn.firstCall.firstArg).to.deep.equal({ name: 'Data1' });
-    //     });
-    //
-    //     it('does not call the update function if no matching id', () => {
-    //         const updateFn = sinon.stub();
-    //
-    //         store.update('data3', updateFn);
-    //
-    //         expect(updateFn.notCalled).to.be.true;
-    //     });
-    //
-    //     it('modifies the properties of the data', () => {
-    //         const updateFn = (data: SampleData) => {
-    //             data.description = 'Setting a description';
-    //         };
-    //
-    //         store.update('data1', updateFn);
-    //
-    //         expect(store.get('data1')).to.deep.equal({ name: 'Data1', description: 'Setting a description' });
-    //     });
-    //
-    //     it('does not modify preexisting data references', () => {
-    //         const originalData1 = store.get('data1');
-    //         const updateFn = (data: SampleData) => {
-    //             data.description = 'Setting a description';
-    //         };
-    //
-    //         store.update('data1', updateFn);
-    //
-    //         const newData1 = store.get('data1');
-    //         expect(originalData1).to.deep.equal({ name: 'Data1' });
-    //         expect(newData1).not.to.equal(originalData1);
-    //     });
-    //
-    //     it('does not modify the data if an error is thrown', () => {
-    //         const updateFn = sinon.mock().callsFake((data: SampleData) => {
-    //             data.description = 'Setting a description';
-    //             throw new Error();
-    //         });
-    //
-    //         const invokeUpdate = () => store.update('data1', updateFn);
-    //
-    //         expect(invokeUpdate).to.throw();
-    //         expect(updateFn.calledOnce).to.be.true;
-    //         expect(updateFn.threw()).to.be.true;
-    //         expect(store.get('data1')).to.deep.equal({ name: 'Data1' });
-    //     });
-    // });
+    describe('store', () => {
+        it('returns undefined if no matching id', () => {
+            const valueStore = store.store('data3');
+
+            expect(valueStore).to.be.undefined;
+        });
+
+        it('returns a value store whose get() reflects the current stored value', () => {
+            const valueStore = store.store('data1');
+
+            expect(valueStore!.get()).to.deep.equal({ name: 'Data1' });
+        });
+
+        it('persists updates made through the returned value store back into the keyed store', () => {
+            const valueStore = store.store('data1')!;
+
+            valueStore.update((data) => {
+                data.description = 'Setting a description';
+            });
+
+            expect(store.get('data1')).to.deep.equal({ name: 'Data1', description: 'Setting a description' });
+        });
+
+        it('does not modify other entries when updating one', () => {
+            const valueStore = store.store('data1')!;
+
+            valueStore.update((data) => {
+                data.description = 'Setting a description';
+            });
+
+            expect(store.get('data2')).to.deep.equal({ name: 'Data2' });
+        });
+
+        it('reflects updates made through one handle when read through another handle for the same id', () => {
+            const firstHandle = store.store('data1')!;
+            const secondHandle = store.store('data1')!;
+
+            firstHandle.update((data) => {
+                data.description = 'Setting a description';
+            });
+
+            expect(secondHandle.get()).to.deep.equal({ name: 'Data1', description: 'Setting a description' });
+        });
+    });
 
     describe('remove', () => {
         const expectOtherEntriesUnchanged = () => {

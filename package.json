@@ -14,7 +14,7 @@
         "lint": "eslint . --ext .ts",
         "lint:fix": "eslint . --ext .ts --fix",
         "test": "mocha",
-        "pre-commit": "./node_modules/.bin/lint-staged",
+        "pre-commit": "./node_modules/.bin/lint-staged && npm run typecheck && npm test",
         "prepare": "husky"
     },
     "author": "Ori Gold",
