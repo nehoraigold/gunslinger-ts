@@ -4,7 +4,7 @@ import { StateManager } from '../transaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
 import { PlayableSession } from './PlayableSession';
-import { DefaultGameTurn } from './DefaultGameTurn';
+import { DefaultActionExecution } from './DefaultActionExecution';
 
 export class GameSession implements PlayableSession {
     private readonly stateManager: StateManager;
@@ -27,11 +27,11 @@ export class GameSession implements PlayableSession {
         const input = action.schema.parse(rawInput);
 
         const tx = this.stateManager.beginTransaction();
-        const turn = new DefaultGameTurn(tx, this.factories);
+        const execution = new DefaultActionExecution(tx, this.factories);
         try {
-            return turn.play(action, input);
+            return execution.play(action, input);
         } finally {
-            if (turn.wasSuccessful()) {
+            if (execution.wasSuccessful()) {
                 this.stateManager.commit(tx);
             } else {
                 this.stateManager.rollback(tx);

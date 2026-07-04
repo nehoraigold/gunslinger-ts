@@ -15,7 +15,7 @@ import {
     UnboundedConversationManager,
     DefaultLLMRequestAssembler,
     OllamaLLMClient,
-    DefaultNarrationResolver,
+    DefaultTurnLifecycle,
     SequentialLLMLoop,
 } from './gamemaster';
 
@@ -58,7 +58,7 @@ const gameMaster: GameMaster = new LLMGameMaster(
         requestAssembler,
         new DefaultToolCallDispatcher(toolCatalog),
     ),
-    new DefaultNarrationResolver(new DefaultWorldSnapshotBuilder(), new UnboundedConversationManager()),
+    new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), new UnboundedConversationManager()),
 );
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });

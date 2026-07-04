@@ -1,9 +1,9 @@
 import { Action } from '../action';
 import { Context, GameContext, Factories } from '../context';
 import { Transaction } from '../transaction';
-import { GameTurn } from './GameTurn';
+import { ActionExecution } from './ActionExecution';
 
-export class DefaultGameTurn implements GameTurn {
+export class DefaultActionExecution implements ActionExecution {
     private used = false;
     private succeeded = false;
 
@@ -17,7 +17,7 @@ export class DefaultGameTurn implements GameTurn {
         input: InputT,
     ): OutcomeT {
         if (this.used) {
-            throw new Error('GameTurn allows only one action to be performed');
+            throw new Error('ActionExecution allows only one action to be performed');
         }
         this.used = true;
 

@@ -9,5 +9,5 @@ export * from './ollama';
 export * from './turn';
 export * from './request';
 export * from './loop';
-export * from './narration';
+export * from './lifecycle';
 export * from './LLMGameMaster';

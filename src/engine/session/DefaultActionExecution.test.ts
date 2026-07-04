@@ -2,7 +2,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { z } from 'zod';
 
-import { DefaultGameTurn } from './DefaultGameTurn';
+import { DefaultActionExecution } from './DefaultActionExecution';
 import { Action, Verdict, defineActionOutcome } from '../action';
 import { Factories } from '../context';
 import { GameTransaction } from '../transaction';
@@ -10,7 +10,7 @@ import { createGameState } from '../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../entity';
 import { ZodSchema } from '../../utils/schema';
 
-describe(DefaultGameTurn.name, () => {
+describe(DefaultActionExecution.name, () => {
     const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };
 
     const StubInputSchema = z.object({ value: z.string() });
@@ -33,42 +33,42 @@ describe(DefaultGameTurn.name, () => {
     describe('play', () => {
         it('should throw when play is called more than once', () => {
             const tx = new GameTransaction(createGameState());
-            const turn = new DefaultGameTurn(tx, factories);
+            const execution = new DefaultActionExecution(tx, factories);
             const action = createStubAction(() => Verdict.succeed({ value: 'ok' }));
 
-            turn.play(action, { value: 'ok' });
+            execution.play(action, { value: 'ok' });
 
-            expect(() => turn.play(action, { value: 'ok' })).to.throw(/one action/i);
+            expect(() => execution.play(action, { value: 'ok' })).to.throw(/one action/i);
         });
     });
 
     describe('wasSuccessful', () => {
         it('should return true when the action succeeded', () => {
             const tx = new GameTransaction(createGameState());
-            const turn = new DefaultGameTurn(tx, factories);
+            const execution = new DefaultActionExecution(tx, factories);
             const action = createStubAction((ctx, input) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
                 return Verdict.succeed({ value: input.value });
             });
-            turn.play(action, { value: 'ok' });
+            execution.play(action, { value: 'ok' });
 
-            expect(turn.wasSuccessful()).to.equal(true);
+            expect(execution.wasSuccessful()).to.equal(true);
         });
 
         it('should return false when the action failed', () => {
             const tx = new GameTransaction(createGameState());
-            const turn = new DefaultGameTurn(tx, factories);
+            const execution = new DefaultActionExecution(tx, factories);
             const action = createStubAction(() => Verdict.fail('nope'));
-            turn.play(action, { value: 'ok' });
+            execution.play(action, { value: 'ok' });
 
-            expect(turn.wasSuccessful()).to.equal(false);
+            expect(execution.wasSuccessful()).to.equal(false);
         });
 
         it('should return false when no action was ever played', () => {
             const tx = new GameTransaction(createGameState());
-            const turn = new DefaultGameTurn(tx, factories);
+            const execution = new DefaultActionExecution(tx, factories);
 
-            expect(turn.wasSuccessful()).to.equal(false);
+            expect(execution.wasSuccessful()).to.equal(false);
         });
     });
 });

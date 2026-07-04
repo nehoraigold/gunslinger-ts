@@ -4,7 +4,7 @@ import sinon from 'sinon';
 
 import { LLMGameMaster } from './LLMGameMaster';
 import { LLMLoop } from './loop';
-import { NarrationResolver } from './narration';
+import { TurnLifecycle } from './lifecycle';
 import { TurnDraft, TurnResult } from './turn';
 import { GameSession } from '../../engine/session';
 import { Factories } from '../../engine/context';
@@ -23,9 +23,9 @@ describe(LLMGameMaster.name, () => {
     }
 
     describe('handleInput', () => {
-        it('should prepare the turn, run the loop, and resolve the loop result into narration', async () => {
+        it('should begin the turn, run the loop, and end the turn into narration', async () => {
             const session = new GameSession(createGameState(), factories);
-            const prepared: TurnDraft = {
+            const turn: TurnDraft = {
                 toRequestMessages: sinon.stub().returns([{ role: 'user', text: 'go north\n\nsnapshot' }]),
                 recordUserRound: sinon.stub(),
                 recordToolRound: sinon.stub(),
@@ -38,36 +38,35 @@ describe(LLMGameMaster.name, () => {
                     { role: 'assistant', text: 'You head north.' },
                 ],
             };
-            const narrationResolver: NarrationResolver = {
-                prepare: sinon.stub().returns(prepared),
-                resolve: sinon.stub().returns('You head north.'),
+            const turnLifecycle: TurnLifecycle = {
+                begin: sinon.stub().returns(turn),
+                end: sinon.stub().returns('You head north.'),
             };
             const llmLoop: LLMLoop = { run: sinon.stub().resolves(loopResult) };
-            const gameMaster = new LLMGameMaster(session, llmLoop, narrationResolver);
+            const gameMaster = new LLMGameMaster(session, llmLoop, turnLifecycle);
 
             const chunks = await readAll(gameMaster.handleInput('go north'));
 
             expect(chunks).to.deep.equal(['You head north.']);
-            expect((narrationResolver.prepare as sinon.SinonStub).calledWith(session.getState(), 'go north')).to.be
-                .true;
-            expect((llmLoop.run as sinon.SinonStub).calledWith(session, prepared)).to.be.true;
-            expect((narrationResolver.resolve as sinon.SinonStub).calledWith(loopResult)).to.be.true;
+            expect((turnLifecycle.begin as sinon.SinonStub).calledWith(session.getState(), 'go north')).to.be.true;
+            expect((llmLoop.run as sinon.SinonStub).calledWith(session, turn)).to.be.true;
+            expect((turnLifecycle.end as sinon.SinonStub).calledWith(loopResult)).to.be.true;
         });
 
         it('should error the stream when the loop rejects', async () => {
             const session = new GameSession(createGameState(), factories);
-            const prepared: TurnDraft = {
+            const turn: TurnDraft = {
                 toRequestMessages: sinon.stub().returns([]),
                 recordUserRound: sinon.stub(),
                 recordToolRound: sinon.stub(),
                 complete: sinon.stub(),
             };
-            const narrationResolver: NarrationResolver = {
-                prepare: sinon.stub().returns(prepared),
-                resolve: sinon.stub(),
+            const turnLifecycle: TurnLifecycle = {
+                begin: sinon.stub().returns(turn),
+                end: sinon.stub(),
             };
             const llmLoop: LLMLoop = { run: sinon.stub().rejects(new Error('boom')) };
-            const gameMaster = new LLMGameMaster(session, llmLoop, narrationResolver);
+            const gameMaster = new LLMGameMaster(session, llmLoop, turnLifecycle);
 
             let error: unknown;
             try {
@@ -77,7 +76,7 @@ describe(LLMGameMaster.name, () => {
             }
 
             expect(error).to.be.instanceOf(Error);
-            expect((narrationResolver.resolve as sinon.SinonStub).called).to.be.false;
+            expect((turnLifecycle.end as sinon.SinonStub).called).to.be.false;
         });
     });
 });

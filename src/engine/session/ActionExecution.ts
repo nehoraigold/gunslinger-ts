@@ -1,6 +1,6 @@
 import { Action } from '../action';
 
-export interface GameTurn {
+export interface ActionExecution {
     play<InputT, OutcomeT extends { result: 'success' | 'failure' }>(
         action: Action<InputT, OutcomeT>,
         input: InputT,
