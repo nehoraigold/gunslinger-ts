@@ -2,13 +2,13 @@
   "compilerOptions": {
       "target": "esnext",
       "module": "esnext",
+      "lib": ["esnext", "dom", "dom.iterable", "dom.asynciterable"],
       "moduleResolution": "node",
       "downlevelIteration": true,
       "strict": true,
       "noImplicitAny": true,
       "strictNullChecks": true,
       "esModuleInterop": true,
-      "exactOptionalPropertyTypes": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
       "resolveJsonModule": true
