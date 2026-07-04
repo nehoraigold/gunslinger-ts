@@ -1,7 +1,8 @@
-import { z } from 'zod';
-import { ActionOutcome } from './ActionOutcome';
-
-export type Verdict<SuccessDataT extends z.ZodSchema, FailReasonT extends z.ZodSchema> = {
-    fail: (reason: z.infer<FailReasonT>, message?: string) => z.infer<ActionOutcome<SuccessDataT, FailReasonT>>;
-    succeed: (data: z.infer<SuccessDataT>) => z.infer<ActionOutcome<SuccessDataT, FailReasonT>>;
+export const Verdict = {
+    succeed<SuccessDataT>(data: SuccessDataT) {
+        return { result: 'success' as const, data };
+    },
+    fail<FailReasonT>(reason: FailReasonT, message?: string) {
+        return { result: 'failure' as const, reason, message };
+    },
 };

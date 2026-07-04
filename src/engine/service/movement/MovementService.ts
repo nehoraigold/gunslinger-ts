@@ -1,6 +1,6 @@
 import { Direction } from '../../state';
 import { Context } from '../../context';
-import { RoomNotFoundError } from './error/RoomNotFoundError';
+import { RoomNotFoundError } from './error';
 import { MovementOutcome } from './MovementOutcome';
 
 export class MovementService {

@@ -1,68 +1,92 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import sinon from 'sinon';
 
 import { MoveAction } from './MoveAction';
 import { Context, GameContext } from '../../context';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory, Room } from '../../entity';
 import { ExitState, GameState } from '../../state';
+import { MovementOutcome } from '../../service/movement/MovementOutcome';
 
 describe(MoveAction.name, () => {
-    function createDefaultContext(modifyState?: ModifyState): Context {
-        const state = createGameState(modifyState);
-        return new GameContext(new GameTransaction(state), {
-            room: new DefaultRoomFactory(),
-            item: new DefaultItemFactory(),
-        });
+    function createUnusedContext(): Context {
+        const unused = () => {
+            throw new Error('Context should not be used when the movement service is faked');
+        };
+        return { player: unused, room: unused, item: unused };
     }
 
-    function setExitsInCurrentRoom(...exits: ExitState[]): (state: GameState) => void {
-        return (state) => (state.rooms[state.player.currentRoomId].exits = exits ?? []);
+    function createFakeRoom(id: string): Room {
+        return { id, getExit: () => undefined };
     }
 
     describe('execute', () => {
-        it('should move the player and return a success outcome with the destination room id', () => {
-            const ctx = createDefaultContext(setExitsInCurrentRoom({ direction: 'west', destinationRoomId: 'room_2' }));
+        describe('wired to the real MovementService', () => {
+            function createDefaultContext(modifyState?: ModifyState): Context {
+                const state = createGameState(modifyState);
+                return new GameContext(new GameTransaction(state), {
+                    room: new DefaultRoomFactory(),
+                    item: new DefaultItemFactory(),
+                });
+            }
 
-            const outcome = MoveAction.execute(ctx, { direction: 'west' });
+            function setExitsInCurrentRoom(...exits: ExitState[]): (state: GameState) => void {
+                return (state) => (state.rooms[state.player.currentRoomId].exits = exits ?? []);
+            }
 
-            expect(outcome).to.deep.equal({ result: 'success', data: { roomId: 'room_2' } });
-            expect(ctx.player().currentRoomId).to.equal('room_2');
+            it('should move the player and return a success outcome with the destination room id', () => {
+                const ctx = createDefaultContext(
+                    setExitsInCurrentRoom({ direction: 'west', destinationRoomId: 'room_2' }),
+                );
+                const action = new MoveAction();
+
+                const outcome = action.execute(ctx, { direction: 'west' });
+
+                expect(outcome).to.deep.equal({ result: 'success', data: { roomId: 'room_2' } });
+                expect(ctx.player().currentRoomId).to.equal('room_2');
+            });
         });
 
-        it('should return a failure outcome when there is no exit in that direction', () => {
-            const ctx = createDefaultContext();
+        describe('with a fake MovementService', () => {
+            function createActionWithFakeMovement(outcome: MovementOutcome) {
+                return new MoveAction(() => ({ move: sinon.stub().returns(outcome) }));
+            }
 
-            const outcome = MoveAction.execute(ctx, { direction: 'north' });
+            it('should translate a "moved" outcome into a success outcome', () => {
+                const action = createActionWithFakeMovement({ type: 'moved', room: createFakeRoom('room_9') });
 
-            expect(outcome).to.deep.equal({ result: 'failure', reason: 'no_exit', message: undefined });
-            expect(ctx.player().currentRoomId).to.equal('room_1');
-        });
+                const outcome = action.execute(createUnusedContext(), { direction: 'west' });
 
-        it('should return a failure outcome when the exit is blocked', () => {
-            const exit: ExitState = {
-                direction: 'south',
-                destinationRoomId: 'room_2',
-                isBlocked: true,
-                blockReason: 'door_locked',
-            };
-            const ctx = createDefaultContext(setExitsInCurrentRoom(exit));
+                expect(outcome).to.deep.equal({ result: 'success', data: { roomId: 'room_9' } });
+            });
 
-            const outcome = MoveAction.execute(ctx, { direction: 'south' });
+            it('should translate a "noSuchExit" outcome into a "no_exit" failure', () => {
+                const action = createActionWithFakeMovement({ type: 'noSuchExit' });
 
-            expect(outcome).to.deep.equal({ result: 'failure', reason: 'exit_blocked', message: undefined });
-            expect(ctx.player().currentRoomId).to.equal('room_1');
+                const outcome = action.execute(createUnusedContext(), { direction: 'west' });
+
+                expect(outcome).to.deep.equal({ result: 'failure', reason: 'no_exit', message: undefined });
+            });
+
+            it('should translate an "exitBlocked" outcome into an "exit_blocked" failure', () => {
+                const action = createActionWithFakeMovement({ type: 'exitBlocked' });
+
+                const outcome = action.execute(createUnusedContext(), { direction: 'west' });
+
+                expect(outcome).to.deep.equal({ result: 'failure', reason: 'exit_blocked', message: undefined });
+            });
         });
     });
 
     describe('inputSchema', () => {
         it('should accept a valid direction', () => {
-            expect(() => MoveAction.inputSchema.parse({ direction: 'north' })).to.not.throw();
+            expect(() => new MoveAction().inputSchema.parse({ direction: 'north' })).to.not.throw();
         });
 
         it('should reject an invalid direction', () => {
-            expect(() => MoveAction.inputSchema.parse({ direction: 'sideways' })).to.throw();
+            expect(() => new MoveAction().inputSchema.parse({ direction: 'sideways' })).to.throw();
         });
     });
 });
