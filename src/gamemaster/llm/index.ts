@@ -8,3 +8,4 @@ export * from './instructions';
 export * from './ollama';
 export * from './request';
 export * from './turn';
+export * from './LLMGameMaster';

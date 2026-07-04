@@ -37,11 +37,7 @@ export class SequentialTurnRunner implements TurnRunner {
         const priorMessages = conversationManager.getMessagesForNextRequest();
         const turnMessages: ConversationMessage[] = [];
 
-        let built = this.requestBuilder.buildFromPlayerInput(
-            [...priorMessages, ...turnMessages],
-            session.getState(),
-            rawInput,
-        );
+        let built = this.requestBuilder.buildFromPlayerInput(priorMessages, session.getState(), rawInput);
         turnMessages.push(...built.newMessages);
 
         for (let round = 0; round < this.maxRounds; round++) {
