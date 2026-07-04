@@ -1,4 +1,4 @@
-import { GameState } from '../state/GameState';
+import { GameState } from '../state';
 import { ItemsStore, RoomsStore, PlayerStore } from '../store';
 import { DeepReadonly } from '../../utils/types';
 

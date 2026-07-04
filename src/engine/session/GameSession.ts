@@ -1,34 +1,40 @@
 import { Action } from '../action';
-import { Context, GameContext, Factories } from '../context';
-import { GameTransaction } from '../transaction';
+import { Factories } from '../context';
+import { StateManager } from '../transaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
+import { DefaultGameTurn } from './DefaultGameTurn';
 
 export class GameSession {
-    private state: DeepReadonly<GameState>;
+    private readonly stateManager: StateManager;
 
     constructor(
         initialState: GameState,
         private readonly factories: Factories,
     ) {
-        this.state = initialState;
+        this.stateManager = new StateManager(initialState);
     }
 
     getState(): DeepReadonly<GameState> {
-        return this.state;
+        return this.stateManager.getState();
     }
 
-    perform<InputT, OutcomeT extends { result: 'success' | 'failure' }>(
+    playTurn<InputT, OutcomeT extends { result: 'success' | 'failure' }>(
         action: Action<InputT, OutcomeT>,
         rawInput: unknown,
     ): OutcomeT {
         const input = action.inputParser.parse(rawInput);
-        const tx = new GameTransaction(this.state);
-        const ctx: Context = new GameContext(tx, this.factories);
-        const outcome = action.execute(ctx, input);
-        if (outcome.result === 'success') {
-            this.state = tx.commit();
+
+        const tx = this.stateManager.beginTransaction();
+        const turn = new DefaultGameTurn(tx, this.factories);
+        try {
+            return turn.play(action, input);
+        } finally {
+            if (turn.wasSuccessful()) {
+                this.stateManager.commit(tx);
+            } else {
+                this.stateManager.rollback(tx);
+            }
         }
-        return outcome;
     }
 }

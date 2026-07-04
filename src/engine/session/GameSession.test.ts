@@ -30,7 +30,7 @@ describe(GameSession.name, () => {
         };
     }
 
-    describe('perform', () => {
+    describe('playTurn', () => {
         it('should commit state changes made by the action when it succeeds', () => {
             const session = new GameSession(createGameState(), factories);
             const action = createStubAction((ctx, input) => {
@@ -38,7 +38,7 @@ describe(GameSession.name, () => {
                 return Verdict.succeed({ value: input.value });
             });
 
-            const outcome = session.perform(action, { value: 'ok' });
+            const outcome = session.playTurn(action, { value: 'ok' });
 
             expect(outcome).to.deep.equal({ result: 'success', data: { value: 'ok' } });
             expect(session.getState().player.currentRoomId).to.equal('room_2');
@@ -51,7 +51,7 @@ describe(GameSession.name, () => {
                 return Verdict.fail('nope');
             });
 
-            const outcome = session.perform(action, { value: 'ok' });
+            const outcome = session.playTurn(action, { value: 'ok' });
 
             expect(outcome).to.deep.equal({ result: 'failure', reason: 'nope', message: undefined });
             expect(session.getState().player.currentRoomId).to.equal('room_1');
@@ -63,7 +63,58 @@ describe(GameSession.name, () => {
                 throw new Error('should not be called when input is invalid');
             });
 
-            expect(() => session.perform(action, { value: 42 })).to.throw(ParseError);
+            expect(() => session.playTurn(action, { value: 42 })).to.throw(ParseError);
+        });
+
+        it('should not begin a transaction when the raw input fails to parse', () => {
+            const session = new GameSession(createGameState(), factories);
+            const invalidAction = createStubAction(() => {
+                throw new Error('should not be called when input is invalid');
+            });
+            const validAction = createStubAction((ctx) => {
+                ctx.player().moveTo(ctx.room('room_2')!);
+                return Verdict.succeed({ value: 'ok' });
+            });
+
+            expect(() => session.playTurn(invalidAction, { value: 42 })).to.throw(ParseError);
+            const outcome = session.playTurn(validAction, { value: 'ok' });
+
+            expect(outcome).to.deep.equal({ result: 'success', data: { value: 'ok' } });
+            expect(session.getState().player.currentRoomId).to.equal('room_2');
+        });
+
+        it('should start each new turn from the state committed by the previous turn', () => {
+            const session = new GameSession(createGameState(), factories);
+            const moveToRoom2 = createStubAction((ctx) => {
+                ctx.player().moveTo(ctx.room('room_2')!);
+                return Verdict.succeed({ value: 'ok' });
+            });
+            const moveToRoom1 = createStubAction((ctx) => {
+                ctx.player().moveTo(ctx.room('room_1')!);
+                return Verdict.succeed({ value: 'ok' });
+            });
+
+            session.playTurn(moveToRoom2, { value: 'ok' });
+            session.playTurn(moveToRoom1, { value: 'ok' });
+
+            expect(session.getState().player.currentRoomId).to.equal('room_1');
+        });
+
+        it('should allow a subsequent turn to be played after an action throws', () => {
+            const session = new GameSession(createGameState(), factories);
+            const throwingAction = createStubAction(() => {
+                throw new Error('boom');
+            });
+            const moveToRoom2 = createStubAction((ctx) => {
+                ctx.player().moveTo(ctx.room('room_2')!);
+                return Verdict.succeed({ value: 'ok' });
+            });
+
+            expect(() => session.playTurn(throwingAction, { value: 'ok' })).to.throw('boom');
+            const outcome = session.playTurn(moveToRoom2, { value: 'ok' });
+
+            expect(outcome).to.deep.equal({ result: 'success', data: { value: 'ok' } });
+            expect(session.getState().player.currentRoomId).to.equal('room_2');
         });
     });
 });
