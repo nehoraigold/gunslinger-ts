@@ -1,7 +1,7 @@
 import { ChatResponse } from 'ollama';
 import { LLMClient } from '../LLMClient';
 import { LLMRequest } from '../LLMRequest';
-import { AssistantTurn } from '../AssistantTurn';
+import { LLMResponse } from '../LLMResponse';
 import { OllamaChatClient } from './OllamaChatClient';
 import { toOllamaMessages } from './toOllamaMessages';
 import { toOllamaTools } from './toOllamaTools';
@@ -13,7 +13,7 @@ export class OllamaLLMClient implements LLMClient {
         private readonly model: string,
     ) {}
 
-    async complete(request: LLMRequest): Promise<AssistantTurn> {
+    async complete(request: LLMRequest): Promise<LLMResponse> {
         const response = await this.ollama.chat({
             model: this.model,
             stream: false,
@@ -23,7 +23,7 @@ export class OllamaLLMClient implements LLMClient {
         return fromOllamaResponse(response);
     }
 
-    async stream(request: LLMRequest, onChunk: (text: string) => void): Promise<AssistantTurn> {
+    async stream(request: LLMRequest, onChunk: (text: string) => void): Promise<LLMResponse> {
         const stream = await this.ollama.chat({
             model: this.model,
             stream: true,

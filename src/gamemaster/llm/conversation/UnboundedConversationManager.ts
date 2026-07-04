@@ -1,6 +1,5 @@
 import { ConversationManager } from './ConversationManager';
 import { ConversationMessage } from './ConversationMessage';
-import { LLMClient } from '../LLMClient';
 
 export class UnboundedConversationManager implements ConversationManager {
     private readonly messages: ConversationMessage[] = [];
@@ -11,13 +10,5 @@ export class UnboundedConversationManager implements ConversationManager {
 
     getMessagesForNextRequest(): ConversationMessage[] {
         return [...this.messages];
-    }
-
-    shouldCompress(): boolean {
-        return false;
-    }
-
-    compressAsync(llmClient: LLMClient): void {
-        // No-op: this implementation never compresses history.
     }
 }

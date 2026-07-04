@@ -1,7 +1,7 @@
 import { LLMRequest } from './LLMRequest';
-import { AssistantTurn } from './AssistantTurn';
+import { LLMResponse } from './LLMResponse';
 
 export interface LLMClient {
-    complete(request: LLMRequest): Promise<AssistantTurn>;
-    stream(request: LLMRequest, onChunk: (text: string) => void): Promise<AssistantTurn>;
+    complete(request: LLMRequest): Promise<LLMResponse>;
+    stream(request: LLMRequest, onChunk: (text: string) => void): Promise<LLMResponse>;
 }

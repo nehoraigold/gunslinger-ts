@@ -1,6 +1,6 @@
 import { ToolCall } from './tool';
 
-export type AssistantTurn = {
+export type LLMResponse = {
     text?: string;
     toolCalls?: ToolCall[];
 };

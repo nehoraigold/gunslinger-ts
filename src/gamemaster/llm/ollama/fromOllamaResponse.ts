@@ -1,8 +1,8 @@
 import { ChatResponse } from 'ollama';
-import { AssistantTurn } from '../AssistantTurn';
+import { LLMResponse } from '../LLMResponse';
 import { ToolCall } from '../tool';
 
-export function fromOllamaResponse(response: ChatResponse): AssistantTurn {
+export function fromOllamaResponse(response: ChatResponse): LLMResponse {
     const message = response.message;
     const text = message.content?.trim() || undefined;
     const toolCalls = (message.tool_calls ?? []).map((call, index) => toToolCall(call, index));

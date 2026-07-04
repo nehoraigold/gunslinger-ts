@@ -1,4 +1,4 @@
-export * from './AssistantTurn';
+export * from './LLMResponse';
 export * from './LLMRequest';
 export * from './LLMClient';
 export * from './conversation';
@@ -7,3 +7,4 @@ export * from './snapshot';
 export * from './instructions';
 export * from './ollama';
 export * from './request';
+export * from './turn';
