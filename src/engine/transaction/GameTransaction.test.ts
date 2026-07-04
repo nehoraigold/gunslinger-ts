@@ -7,6 +7,21 @@ import { createGameState } from '../state/GameState.test.utils';
 describe(GameTransaction.name, () => {
     const initialState = createGameState();
 
+    describe('constructor', () => {
+        it('should not mutate the provided state when rooms or items are added or removed', () => {
+            const state = createGameState();
+            const roomIdsBefore = Object.keys(state.rooms);
+            const itemIdsBefore = Object.keys(state.items);
+            const tx = new GameTransaction(state);
+
+            tx.rooms.add('room_3', { name: 'Room 3', description: 'The third room', exits: [] });
+            tx.items.remove('item_1');
+
+            expect(Object.keys(state.rooms)).to.deep.equal(roomIdsBefore);
+            expect(Object.keys(state.items)).to.deep.equal(itemIdsBefore);
+        });
+    });
+
     describe('commit', () => {
         it('should return a copy of the initial game state', () => {
             const tx = new GameTransaction(initialState);

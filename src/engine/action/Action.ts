@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { Context } from '../context';
+import { Parser } from '../../utils/parser';
 
-export interface Action<InputT extends z.ZodSchema, OutcomeT extends z.ZodSchema> {
+export interface Action<InputT, OutcomeT extends { result: 'success' | 'failure' }> {
     readonly name: string;
-    readonly inputSchema: InputT;
-    readonly outcomeSchema: OutcomeT;
-    execute(ctx: Context, input: z.infer<InputT>): z.infer<OutcomeT>;
+    readonly inputSchema: z.ZodSchema<InputT>;
+    readonly outcomeSchema: z.ZodSchema<OutcomeT>;
+    readonly inputParser: Parser<InputT>;
+    execute(ctx: Context, input: InputT): OutcomeT;
 }

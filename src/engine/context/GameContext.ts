@@ -10,7 +10,7 @@ type EntityCache = {
     items: Record<ItemId, Item>;
 };
 
-type Factories = {
+export type Factories = {
     item: ItemFactory;
     room: RoomFactory;
 };

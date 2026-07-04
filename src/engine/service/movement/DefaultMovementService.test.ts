@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-import { MovementService } from './MovementService';
+import { DefaultMovementService } from './DefaultMovementService';
 import { Context, GameContext } from '../../context';
 import { ExitState, GameState, RoomId } from '../../state';
 import { GameTransaction } from '../../transaction';
@@ -9,7 +9,7 @@ import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
 import { RoomNotFoundError } from './error';
 
-describe(MovementService.name, () => {
+describe(DefaultMovementService.name, () => {
     function createDefaultContext(modifyState?: ModifyState): Context {
         const state = createGameState(modifyState);
         return new GameContext(new GameTransaction(state), {
@@ -29,7 +29,7 @@ describe(MovementService.name, () => {
     describe('move', () => {
         it('should move player to the destination room indicated by the exit', () => {
             const ctx = createDefaultContext(setExitsInCurrentRoom({ direction: 'west', destinationRoomId: 'room_2' }));
-            const movement = new MovementService(ctx);
+            const movement = new DefaultMovementService(ctx);
             expect(ctx.player().currentRoomId).to.equal('room_1');
 
             const outcome = movement.move('west');
@@ -40,7 +40,7 @@ describe(MovementService.name, () => {
 
         it("should throw a RoomNotFoundError if the player's current room is not found", () => {
             const ctx = createDefaultContext(setCurrentRoomId('nonexistent_room'));
-            const movement = new MovementService(ctx);
+            const movement = new DefaultMovementService(ctx);
 
             const move = () => movement.move('north');
 
@@ -52,7 +52,7 @@ describe(MovementService.name, () => {
             const ctx = createDefaultContext(
                 setExitsInCurrentRoom({ direction: 'north', destinationRoomId: 'nonexistent_room' }),
             );
-            const movement = new MovementService(ctx);
+            const movement = new DefaultMovementService(ctx);
 
             const move = () => movement.move('north');
 
@@ -62,7 +62,7 @@ describe(MovementService.name, () => {
 
         it('should not move the player if there is no exit in that direction', () => {
             const ctx = createDefaultContext();
-            const movement = new MovementService(ctx);
+            const movement = new DefaultMovementService(ctx);
 
             const outcome = movement.move('north');
 
@@ -78,7 +78,7 @@ describe(MovementService.name, () => {
                 blockReason: 'door_locked',
             };
             const ctx = createDefaultContext(setExitsInCurrentRoom(exit));
-            const movement = new MovementService(ctx);
+            const movement = new DefaultMovementService(ctx);
 
             const outcome = movement.move('south');
 
