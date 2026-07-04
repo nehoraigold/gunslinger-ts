@@ -8,7 +8,7 @@ import { Factories } from '../context';
 import { GameTransaction } from '../transaction';
 import { createGameState } from '../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../entity';
-import { ZodParser } from '../../utils/parser';
+import { ZodSchema } from '../../utils/schema';
 
 describe(DefaultGameTurn.name, () => {
     const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };
@@ -24,9 +24,8 @@ describe(DefaultGameTurn.name, () => {
     function createStubAction(execute: Action<StubInput, StubOutcome>['execute']): Action<StubInput, StubOutcome> {
         return {
             name: 'stub',
-            inputSchema: StubInputSchema,
+            schema: new ZodSchema(StubInputSchema),
             outcomeSchema: StubOutcomeSchema,
-            inputParser: new ZodParser(StubInputSchema),
             execute,
         };
     }

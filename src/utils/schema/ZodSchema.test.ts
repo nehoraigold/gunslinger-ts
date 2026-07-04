@@ -2,12 +2,12 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { z } from 'zod';
 
-import { ZodParser } from './ZodParser';
+import { ZodSchema } from './ZodSchema';
 import { ParseError } from './ParseError';
 
-describe(ZodParser.name, () => {
+describe(ZodSchema.name, () => {
     describe('parse', () => {
-        const parser = new ZodParser(
+        const schema = new ZodSchema(
             z
                 .object({
                     str: z.string(),
@@ -36,7 +36,7 @@ describe(ZodParser.name, () => {
 
         VALID_INPUTS.forEach((input) => {
             it('should parse matching inputs correctly', () => {
-                const result = parser.parse(input);
+                const result = schema.parse(input);
 
                 expect(result).to.deep.equal(input);
             });
@@ -74,10 +74,27 @@ describe(ZodParser.name, () => {
 
         INVALID_CASES.forEach(({ name, input }) => {
             it(`should throw a ParseError if input ${name}`, () => {
-                const parse = () => parser.parse(input);
+                const parse = () => schema.parse(input);
 
                 expect(parse).to.throw(ParseError);
             });
+        });
+    });
+
+    describe('toJsonSchema', () => {
+        it('should convert an object schema to a JSON Schema object', () => {
+            const schema = new ZodSchema(z.object({ direction: z.string() }));
+
+            const jsonSchema = schema.toJsonSchema();
+
+            expect(jsonSchema.type).to.equal('object');
+            expect(jsonSchema.properties).to.have.property('direction');
+        });
+
+        it('should represent a void schema as an empty object schema', () => {
+            const schema = new ZodSchema(z.void());
+
+            expect(schema.toJsonSchema()).to.deep.equal({ type: 'object', properties: {} });
         });
     });
 });

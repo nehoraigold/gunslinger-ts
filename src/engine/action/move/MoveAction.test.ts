@@ -80,13 +80,13 @@ describe(MoveAction.name, () => {
         });
     });
 
-    describe('inputSchema', () => {
+    describe('schema', () => {
         it('should accept a valid direction', () => {
-            expect(() => new MoveAction().inputSchema.parse({ direction: 'north' })).to.not.throw();
+            expect(() => new MoveAction().schema.parse({ direction: 'north' })).to.not.throw();
         });
 
         it('should reject an invalid direction', () => {
-            expect(() => new MoveAction().inputSchema.parse({ direction: 'sideways' })).to.throw();
+            expect(() => new MoveAction().schema.parse({ direction: 'sideways' })).to.throw();
         });
     });
 });

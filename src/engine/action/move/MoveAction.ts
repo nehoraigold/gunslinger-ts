@@ -7,7 +7,7 @@ import { Direction } from '../../state';
 import { MovementService } from '../../service/movement/MovementService';
 import { DefaultMovementService } from '../../service/movement/DefaultMovementService';
 import { assertNever } from '../../../utils/assertNever';
-import { Parser, ZodParser } from '../../../utils/parser';
+import { Schema, ZodSchema } from '../../../utils/schema';
 
 const DirectionSchema = z.enum(['north', 'south', 'east', 'west', 'up', 'down']) satisfies z.ZodType<Direction>;
 const MoveInputSchema = z.object({ direction: DirectionSchema });
@@ -20,9 +20,8 @@ type MoveOutcome = z.infer<typeof MoveOutcomeSchema>;
 
 export class MoveAction implements Action<MoveInput, MoveOutcome> {
     readonly name = 'move';
-    readonly inputSchema = MoveInputSchema;
+    readonly schema: Schema<MoveInput> = new ZodSchema(MoveInputSchema);
     readonly outcomeSchema = MoveOutcomeSchema;
-    readonly inputParser: Parser<MoveInput> = new ZodParser(MoveInputSchema);
 
     constructor(
         private readonly createMovementService: (ctx: Context) => MovementService = (ctx) =>

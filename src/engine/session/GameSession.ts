@@ -23,7 +23,7 @@ export class GameSession {
         action: Action<InputT, OutcomeT>,
         rawInput: unknown,
     ): OutcomeT {
-        const input = action.inputParser.parse(rawInput);
+        const input = action.schema.parse(rawInput);
 
         const tx = this.stateManager.beginTransaction();
         const turn = new DefaultGameTurn(tx, this.factories);
