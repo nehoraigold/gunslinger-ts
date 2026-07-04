@@ -1,4 +1,4 @@
-import { GameSession } from '../../../engine/session';
+import { PlayableSession } from '../../../engine/session';
 import { ParseError } from '../../../utils/schema';
 import { ToolCallDispatcher } from './ToolCallDispatcher';
 import { ToolCatalog } from './ToolCatalog';
@@ -10,7 +10,7 @@ type DispatcherFailureReason = 'unknown_tool' | 'invalid_input' | 'internal_erro
 export class DefaultToolCallDispatcher implements ToolCallDispatcher {
     constructor(private readonly catalog: ToolCatalog) {}
 
-    dispatch(session: GameSession, call: ToolCall): ToolResult {
+    dispatch(session: PlayableSession, call: ToolCall): ToolResult {
         const entry = this.catalog.find(call.name);
         if (!entry) {
             return this.toFailureResult(call, 'unknown_tool');

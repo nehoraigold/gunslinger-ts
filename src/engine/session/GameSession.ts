@@ -3,9 +3,10 @@ import { Factories } from '../context';
 import { StateManager } from '../transaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
+import { PlayableSession } from './PlayableSession';
 import { DefaultGameTurn } from './DefaultGameTurn';
 
-export class GameSession {
+export class GameSession implements PlayableSession {
     private readonly stateManager: StateManager;
 
     constructor(

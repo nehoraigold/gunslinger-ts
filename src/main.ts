@@ -15,7 +15,8 @@ import {
     UnboundedConversationManager,
     DefaultLLMRequestBuilder,
     OllamaLLMClient,
-    SequentialTurnRunner,
+    DefaultNarrationResolver,
+    SequentialLLMLoop,
 } from './gamemaster';
 
 const SYSTEM_PROMPT = [
@@ -43,20 +44,22 @@ const toolCatalog = new ActionToolCatalog({
 });
 
 const ollama = new Ollama(process.env.OLLAMA_HOST ? { host: process.env.OLLAMA_HOST } : undefined);
-const model = process.env.OLLAMA_MODEL ?? 'llama3.1';
+const model = process.env.OLLAMA_MODEL ?? 'llama3.1:8b';
+
+const requestBuilder = new DefaultLLMRequestBuilder(
+    new StaticInstructionsProvider(SYSTEM_PROMPT),
+    new DefaultWorldSnapshotBuilder(),
+    toolCatalog.listDefinitions(),
+);
 
 const gameMaster: GameMaster = new LLMGameMaster(
     session,
-    new UnboundedConversationManager(),
-    new SequentialTurnRunner(
+    new SequentialLLMLoop(
         new OllamaLLMClient(ollama, model),
-        new DefaultLLMRequestBuilder(
-            new StaticInstructionsProvider(SYSTEM_PROMPT),
-            new DefaultWorldSnapshotBuilder(),
-            toolCatalog.listDefinitions(),
-        ),
+        requestBuilder,
         new DefaultToolCallDispatcher(toolCatalog),
     ),
+    new DefaultNarrationResolver(requestBuilder, new UnboundedConversationManager()),
 );
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
@@ -87,7 +90,7 @@ rl.on('line', (line) => {
     queue = queue.then(async () => {
         try {
             const stream = gameMaster.handleInput(input);
-            for await (const chunk of stream as unknown as AsyncIterable<string>) {
+            for await (const chunk of stream) {
                 process.stdout.write(chunk);
             }
             process.stdout.write('\n');

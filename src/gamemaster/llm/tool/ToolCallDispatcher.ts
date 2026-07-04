@@ -1,7 +1,7 @@
-import { GameSession } from '../../../engine/session';
+import { PlayableSession } from '../../../engine/session';
 import { ToolCall } from './ToolCall';
 import { ToolResult } from './ToolResult';
 
 export interface ToolCallDispatcher {
-    dispatch(session: GameSession, call: ToolCall): ToolResult;
+    dispatch(session: PlayableSession, call: ToolCall): ToolResult;
 }

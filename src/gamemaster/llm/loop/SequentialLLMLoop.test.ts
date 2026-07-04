@@ -2,49 +2,36 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import { SequentialTurnRunner } from './SequentialTurnRunner';
+import { SequentialLLMLoop } from './SequentialLLMLoop';
+import { MaxRoundsExceededError } from './error/MaxRoundsExceededError';
 import { LLMClient, LLMResponse } from '..';
 import { LLMRequestBuilder, BuiltRequest } from '../request';
 import { ToolCallDispatcher } from '../tool';
-import { ConversationManager, ConversationMessage } from '../conversation';
+import { ConversationMessage } from '../conversation';
 import { GameSession } from '../../../engine/session';
 import { Factories } from '../../../engine/context';
 import { createGameState } from '../../../engine/state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../../../engine/entity';
 
-describe(SequentialTurnRunner.name, () => {
+describe(SequentialLLMLoop.name, () => {
     const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };
 
     function createSession(): GameSession {
         return new GameSession(createGameState(), factories);
     }
 
-    function createConversationManager(): ConversationManager {
-        return {
-            appendTurn: sinon.stub(),
-            getMessagesForNextRequest: () => [],
-        };
-    }
-
     function fakeBuiltRequest(newMessages: ConversationMessage[]): BuiltRequest {
         return { request: { systemPrompt: 'sys', messages: [], tools: [] }, newMessages };
     }
 
-    async function readAll(stream: ReadableStream<string>): Promise<string[]> {
-        const chunks: string[] = [];
-        for await (const chunk of stream as unknown as AsyncIterable<string>) {
-            chunks.push(chunk);
-        }
-        return chunks;
-    }
+    const initialRequest = { systemPrompt: 'sys', messages: [], tools: [] };
+    const userMessage: ConversationMessage = { role: 'user', text: 'go north\n\nsnapshot' };
 
-    describe('runTurn', () => {
-        it('should return the narration when the first round has no tool calls', async () => {
+    describe('run', () => {
+        it('should return the narration and messages when the first round has no tool calls', async () => {
             const session = createSession();
-            const conversationManager = createConversationManager();
-            const userMessage: ConversationMessage = { role: 'user', text: 'go north\n\nsnapshot' };
             const requestBuilder: LLMRequestBuilder = {
-                buildFromPlayerInput: sinon.stub().returns(fakeBuiltRequest([userMessage])),
+                buildFromPlayerInput: sinon.stub(),
                 buildFromToolResults: sinon.stub(),
             };
             const llmClient: LLMClient = {
@@ -52,26 +39,22 @@ describe(SequentialTurnRunner.name, () => {
                 stream: sinon.stub(),
             };
             const toolCallDispatcher: ToolCallDispatcher = { dispatch: sinon.stub() };
-            const runner = new SequentialTurnRunner(llmClient, requestBuilder, toolCallDispatcher);
+            const loop = new SequentialLLMLoop(llmClient, requestBuilder, toolCallDispatcher);
 
-            const chunks = await readAll(runner.runTurn(session, conversationManager, 'go north'));
+            const result = await loop.run(session, {
+                priorMessages: [],
+                request: initialRequest,
+                messages: [userMessage],
+            });
 
-            expect(chunks).to.deep.equal(['You head north.']);
-            expect(
-                (requestBuilder.buildFromPlayerInput as sinon.SinonStub).calledWith([], session.getState(), 'go north'),
-            ).to.be.true;
-            expect(
-                (conversationManager.appendTurn as sinon.SinonStub).calledWith([
-                    userMessage,
-                    { role: 'assistant', text: 'You head north.' },
-                ]),
-            ).to.be.true;
+            expect(result).to.deep.equal({
+                text: 'You head north.',
+                messages: [userMessage, { role: 'assistant', text: 'You head north.' }],
+            });
         });
 
         it('should dispatch tool calls and continue until a round has no tool calls', async () => {
             const session = createSession();
-            const conversationManager = createConversationManager();
-            const userMessage: ConversationMessage = { role: 'user', text: 'go north\n\nsnapshot' };
             const toolCallMessages: ConversationMessage[] = [
                 {
                     role: 'assistant',
@@ -84,7 +67,7 @@ describe(SequentialTurnRunner.name, () => {
                 },
             ];
             const requestBuilder: LLMRequestBuilder = {
-                buildFromPlayerInput: sinon.stub().returns(fakeBuiltRequest([userMessage])),
+                buildFromPlayerInput: sinon.stub(),
                 buildFromToolResults: sinon.stub().returns(fakeBuiltRequest(toolCallMessages)),
             };
             const toolCall = { id: 'call_1', name: 'move', args: { direction: 'north' } };
@@ -99,35 +82,34 @@ describe(SequentialTurnRunner.name, () => {
                 stream: sinon.stub(),
             };
             const toolCallDispatcher: ToolCallDispatcher = { dispatch: sinon.stub().returns(toolResult) };
-            const runner = new SequentialTurnRunner(llmClient, requestBuilder, toolCallDispatcher);
+            const loop = new SequentialLLMLoop(llmClient, requestBuilder, toolCallDispatcher);
 
-            const chunks = await readAll(runner.runTurn(session, conversationManager, 'go north'));
+            const result = await loop.run(session, {
+                priorMessages: [userMessage],
+                request: initialRequest,
+                messages: [userMessage],
+            });
 
-            expect(chunks).to.deep.equal(['You head north.']);
             expect((toolCallDispatcher.dispatch as sinon.SinonStub).calledWith(session, toolCall)).to.be.true;
             // The second round's request must include round 1's user message, not just history from before the turn.
             expect(
                 (requestBuilder.buildFromToolResults as sinon.SinonStub).calledWith(
-                    [userMessage],
+                    [userMessage, userMessage],
                     [toolCall],
                     [toolResult],
                     undefined,
                 ),
             ).to.be.true;
-            expect(
-                (conversationManager.appendTurn as sinon.SinonStub).calledWith([
-                    userMessage,
-                    ...toolCallMessages,
-                    { role: 'assistant', text: 'You head north.' },
-                ]),
-            ).to.be.true;
+            expect(result).to.deep.equal({
+                text: 'You head north.',
+                messages: [userMessage, ...toolCallMessages, { role: 'assistant', text: 'You head north.' }],
+            });
         });
 
-        it('should error the stream once the maximum number of rounds is exceeded', async () => {
+        it('should throw a MaxRoundsExceededError once the maximum number of rounds is exceeded', async () => {
             const session = createSession();
-            const conversationManager = createConversationManager();
             const requestBuilder: LLMRequestBuilder = {
-                buildFromPlayerInput: sinon.stub().returns(fakeBuiltRequest([])),
+                buildFromPlayerInput: sinon.stub(),
                 buildFromToolResults: sinon.stub().returns(fakeBuiltRequest([])),
             };
             const toolCall = { id: 'call_1', name: 'move', args: { direction: 'north' } };
@@ -138,24 +120,22 @@ describe(SequentialTurnRunner.name, () => {
             const toolCallDispatcher: ToolCallDispatcher = {
                 dispatch: sinon.stub().returns({ callId: 'call_1', name: 'move', content: '{}' }),
             };
-            const runner = new SequentialTurnRunner(llmClient, requestBuilder, toolCallDispatcher, 2);
+            const loop = new SequentialLLMLoop(llmClient, requestBuilder, toolCallDispatcher, 2);
 
             let error: unknown;
             try {
-                await readAll(runner.runTurn(session, conversationManager, 'go north'));
+                await loop.run(session, { priorMessages: [], request: initialRequest, messages: [] });
             } catch (err) {
                 error = err;
             }
 
-            expect(error).to.be.instanceOf(Error);
-            expect((conversationManager.appendTurn as sinon.SinonStub).called).to.be.false;
+            expect(error).to.be.instanceOf(MaxRoundsExceededError);
         });
 
-        it('should error the stream when the LLM client rejects', async () => {
+        it('should propagate an error when the LLM client rejects', async () => {
             const session = createSession();
-            const conversationManager = createConversationManager();
             const requestBuilder: LLMRequestBuilder = {
-                buildFromPlayerInput: sinon.stub().returns(fakeBuiltRequest([])),
+                buildFromPlayerInput: sinon.stub(),
                 buildFromToolResults: sinon.stub(),
             };
             const llmClient: LLMClient = {
@@ -163,11 +143,11 @@ describe(SequentialTurnRunner.name, () => {
                 stream: sinon.stub(),
             };
             const toolCallDispatcher: ToolCallDispatcher = { dispatch: sinon.stub() };
-            const runner = new SequentialTurnRunner(llmClient, requestBuilder, toolCallDispatcher);
+            const loop = new SequentialLLMLoop(llmClient, requestBuilder, toolCallDispatcher);
 
             let error: unknown;
             try {
-                await readAll(runner.runTurn(session, conversationManager, 'go north'));
+                await loop.run(session, { priorMessages: [], request: initialRequest, messages: [] });
             } catch (err) {
                 error = err;
             }

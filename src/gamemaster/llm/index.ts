@@ -7,5 +7,6 @@ export * from './snapshot';
 export * from './instructions';
 export * from './ollama';
 export * from './request';
-export * from './turn';
+export * from './loop';
+export * from './narration';
 export * from './LLMGameMaster';
