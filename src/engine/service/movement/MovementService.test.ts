@@ -32,9 +32,10 @@ describe(MovementService.name, () => {
             const movement = new MovementService(ctx);
             expect(ctx.player().currentRoomId).to.equal('room_1');
 
-            movement.move('west');
+            const outcome = movement.move('west');
 
             expect(ctx.player().currentRoomId).to.equal('room_2');
+            expect(outcome).to.deep.equal({ type: 'moved', room: ctx.room('room_2') });
         });
 
         it("should throw a RoomNotFoundError if the player's current room is not found", () => {
@@ -63,9 +64,10 @@ describe(MovementService.name, () => {
             const ctx = createDefaultContext();
             const movement = new MovementService(ctx);
 
-            movement.move('north');
+            const outcome = movement.move('north');
 
             expect(ctx.player().currentRoomId).to.equal('room_1');
+            expect(outcome).to.deep.equal({ type: 'noSuchExit' });
         });
 
         it('should not move the player if the exit is blocked', () => {
@@ -78,9 +80,10 @@ describe(MovementService.name, () => {
             const ctx = createDefaultContext(setExitsInCurrentRoom(exit));
             const movement = new MovementService(ctx);
 
-            movement.move('south');
+            const outcome = movement.move('south');
 
             expect(ctx.player().currentRoomId).to.equal('room_1');
+            expect(outcome).to.deep.equal({ type: 'exitBlocked' });
         });
     });
 });
