@@ -4,12 +4,12 @@ import { z } from 'zod';
 
 import { DefaultToolCallDispatcher } from './DefaultToolCallDispatcher';
 import { ToolCatalog, ToolCatalogEntry } from './ToolCatalog';
-import { Action, Verdict, defineActionOutcome } from '../../engine/action';
-import { GameSession } from '../../engine/session';
-import { Factories } from '../../engine/context';
-import { createGameState } from '../../engine/state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../engine/entity';
-import { ZodSchema } from '../../utils/schema';
+import { Action, Verdict, defineActionOutcome } from '../../../engine/action';
+import { GameSession } from '../../../engine/session';
+import { Factories } from '../../../engine/context';
+import { createGameState } from '../../../engine/state/GameState.test.utils';
+import { DefaultRoomFactory, DefaultItemFactory } from '../../../engine/entity';
+import { ZodSchema } from '../../../utils/schema';
 
 describe(DefaultToolCallDispatcher.name, () => {
     const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };

@@ -3,8 +3,8 @@ import { expect } from 'chai';
 import { z } from 'zod';
 
 import { ActionToolCatalog } from './ActionToolCatalog';
-import { Action, Verdict, defineActionOutcome } from '../../engine/action';
-import { ZodSchema } from '../../utils/schema';
+import { Action, Verdict, defineActionOutcome } from '../../../engine/action';
+import { ZodSchema } from '../../../utils/schema';
 
 describe(ActionToolCatalog.name, () => {
     const MoveLikeInputSchema = z.object({ direction: z.string() });

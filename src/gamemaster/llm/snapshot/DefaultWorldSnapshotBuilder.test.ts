@@ -2,7 +2,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import { DefaultWorldSnapshotBuilder } from './DefaultWorldSnapshotBuilder';
-import { createGameState } from '../../engine/state/GameState.test.utils';
+import { createGameState } from '../../../engine/state/GameState.test.utils';
 
 describe(DefaultWorldSnapshotBuilder.name, () => {
     const builder = new DefaultWorldSnapshotBuilder();

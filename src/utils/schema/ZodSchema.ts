@@ -15,9 +15,9 @@ export class ZodSchema<T> implements Schema<T> {
         }
     }
 
-    /** z.void() cannot be represented in JSON Schema, so it's substituted with an empty object schema. */
     toJsonSchema(): Record<string, unknown> {
         if (this.schema instanceof z.ZodVoid) {
+            // z.void() cannot be represented in JSON Schema, so it's substituted with an empty object schema
             return EMPTY_OBJECT_SCHEMA;
         }
         return z.toJSONSchema(this.schema) as Record<string, unknown>;

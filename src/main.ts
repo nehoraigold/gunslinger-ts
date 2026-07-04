@@ -24,7 +24,7 @@ rl.on('line', (line) => {
 
     const direction = parseDirectionCommand(line);
     if (direction) {
-        session.perform(new MoveAction(), { direction });
+        session.playTurn(new MoveAction(), { direction });
     } else {
         console.log('Unknown command.');
     }

@@ -1,4 +1,4 @@
-import { GameSession } from '../../engine/session';
+import { GameSession } from '../../../engine/session';
 import { ToolCall } from './ToolCall';
 import { ToolResult } from './ToolResult';
 

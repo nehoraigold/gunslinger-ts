@@ -1,5 +1,5 @@
-import { GameSession } from '../../engine/session';
-import { ParseError } from '../../utils/schema';
+import { GameSession } from '../../../engine/session';
+import { ParseError } from '../../../utils/schema';
 import { ToolCallDispatcher } from './ToolCallDispatcher';
 import { ToolCatalog } from './ToolCatalog';
 import { ToolCall } from './ToolCall';

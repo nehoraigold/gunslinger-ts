@@ -1,4 +1,4 @@
-import { Action } from '../../engine/action';
+import { Action } from '../../../engine/action';
 import { ToolDefinition } from './ToolDefinition';
 
 export interface ToolCatalogEntry {

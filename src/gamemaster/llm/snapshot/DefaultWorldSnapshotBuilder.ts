@@ -1,6 +1,6 @@
 import { WorldSnapshotBuilder } from './WorldSnapshotBuilder';
-import { GameState, ItemId, ExitState, RoomState } from '../../engine/state';
-import { DeepReadonly } from '../../utils/types';
+import { GameState, ItemId, ExitState, RoomState } from '../../../engine/state';
+import { DeepReadonly } from '../../../utils/types';
 
 export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
     build(state: DeepReadonly<GameState>): string {
