@@ -2,7 +2,6 @@ import { ConversationManager } from './ConversationManager';
 import { ConversationMessage } from './ConversationMessage';
 import { LLMClient } from '../LLMClient';
 
-/** Keeps the full conversation history at full fidelity and never compresses it. */
 export class UnboundedConversationManager implements ConversationManager {
     private readonly messages: ConversationMessage[] = [];
 

@@ -5,7 +5,7 @@ import { ExitState, RoomId } from '../../state';
 export class DefaultExit implements Exit {
     constructor(
         private cachedState: ExitState,
-        private readonly roomStore: RoomStore, // for future state updates
+        private readonly roomStore: RoomStore,
     ) {}
 
     get destinationRoomId(): RoomId {

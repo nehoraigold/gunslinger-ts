@@ -5,3 +5,5 @@ export * from './conversation';
 export * from './tool';
 export * from './snapshot';
 export * from './instructions';
+export * from './ollama';
+export * from './request';
