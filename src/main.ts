@@ -13,7 +13,7 @@ import {
     DefaultWorldSnapshotBuilder,
     StaticInstructionsProvider,
     UnboundedConversationManager,
-    DefaultLLMRequestBuilder,
+    DefaultLLMRequestAssembler,
     OllamaLLMClient,
     DefaultNarrationResolver,
     SequentialLLMLoop,
@@ -46,9 +46,8 @@ const toolCatalog = new ActionToolCatalog({
 const ollama = new Ollama(process.env.OLLAMA_HOST ? { host: process.env.OLLAMA_HOST } : undefined);
 const model = process.env.OLLAMA_MODEL ?? 'llama3.1:8b';
 
-const requestBuilder = new DefaultLLMRequestBuilder(
+const requestAssembler = new DefaultLLMRequestAssembler(
     new StaticInstructionsProvider(SYSTEM_PROMPT),
-    new DefaultWorldSnapshotBuilder(),
     toolCatalog.listDefinitions(),
 );
 
@@ -56,10 +55,10 @@ const gameMaster: GameMaster = new LLMGameMaster(
     session,
     new SequentialLLMLoop(
         new OllamaLLMClient(ollama, model),
-        requestBuilder,
+        requestAssembler,
         new DefaultToolCallDispatcher(toolCatalog),
     ),
-    new DefaultNarrationResolver(requestBuilder, new UnboundedConversationManager()),
+    new DefaultNarrationResolver(new DefaultWorldSnapshotBuilder(), new UnboundedConversationManager()),
 );
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });

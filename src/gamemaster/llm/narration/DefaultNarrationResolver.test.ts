@@ -3,15 +3,11 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { DefaultNarrationResolver } from './DefaultNarrationResolver';
-import { LLMRequestBuilder, BuiltRequest } from '../request';
+import { WorldSnapshotBuilder } from '../snapshot';
 import { ConversationManager, ConversationMessage } from '../conversation';
 import { createGameState } from '../../../engine/state/GameState.test.utils';
 
 describe(DefaultNarrationResolver.name, () => {
-    function fakeBuiltRequest(newMessages: ConversationMessage[]): BuiltRequest {
-        return { request: { systemPrompt: 'sys', messages: [], tools: [] }, newMessages };
-    }
-
     function createConversationManager(priorMessages: ConversationMessage[] = []): ConversationManager {
         return {
             appendTurn: sinon.stub(),
@@ -20,38 +16,28 @@ describe(DefaultNarrationResolver.name, () => {
     }
 
     describe('prepare', () => {
-        it('should build the initial request from the prior conversation history and raw input', () => {
+        it('should start the turn from the prior conversation history and record the raw input with the world snapshot appended', () => {
             const priorMessages: ConversationMessage[] = [{ role: 'user', text: 'look around' }];
             const conversationManager = createConversationManager(priorMessages);
-            const userMessage: ConversationMessage = { role: 'user', text: 'go north\n\nsnapshot' };
-            const requestBuilder: LLMRequestBuilder = {
-                buildFromPlayerInput: sinon.stub().returns(fakeBuiltRequest([userMessage])),
-                buildFromToolResults: sinon.stub(),
-            };
-            const resolver = new DefaultNarrationResolver(requestBuilder, conversationManager);
+            const worldSnapshotBuilder: WorldSnapshotBuilder = { build: sinon.stub().returns('=== WORLD STATE ===') };
+            const resolver = new DefaultNarrationResolver(worldSnapshotBuilder, conversationManager);
             const state = createGameState();
 
-            const prepared = resolver.prepare(state, 'go north');
+            const turn = resolver.prepare(state, 'go north');
 
-            expect(
-                (requestBuilder.buildFromPlayerInput as sinon.SinonStub).calledWith(priorMessages, state, 'go north'),
-            ).to.be.true;
-            expect(prepared).to.deep.equal({
-                priorMessages,
-                request: { systemPrompt: 'sys', messages: [], tools: [] },
-                messages: [userMessage],
-            });
+            expect((worldSnapshotBuilder.build as sinon.SinonStub).calledWith(state)).to.be.true;
+            expect(turn.toRequestMessages()).to.deep.equal([
+                ...priorMessages,
+                { role: 'user', text: 'go north\n\n=== WORLD STATE ===' },
+            ]);
         });
     });
 
     describe('resolve', () => {
         it('should persist the given messages to the conversation and return the narration text', () => {
             const conversationManager = createConversationManager();
-            const requestBuilder: LLMRequestBuilder = {
-                buildFromPlayerInput: sinon.stub(),
-                buildFromToolResults: sinon.stub(),
-            };
-            const resolver = new DefaultNarrationResolver(requestBuilder, conversationManager);
+            const worldSnapshotBuilder: WorldSnapshotBuilder = { build: sinon.stub() };
+            const resolver = new DefaultNarrationResolver(worldSnapshotBuilder, conversationManager);
             const messages: ConversationMessage[] = [
                 { role: 'user', text: 'go north\n\nsnapshot' },
                 { role: 'assistant', text: 'You head north.' },

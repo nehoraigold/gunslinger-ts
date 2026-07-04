@@ -1,22 +1,25 @@
-import { NarrationResolver, PreparedTurn, ResolvedTurn } from './NarrationResolver';
+import { NarrationResolver } from './NarrationResolver';
 import { GameState } from '../../../engine/state';
 import { DeepReadonly } from '../../../utils/types';
-import { LLMRequestBuilder } from '../request';
 import { ConversationManager } from '../conversation';
+import { WorldSnapshotBuilder } from '../snapshot';
+import { DefaultTurnDraft, TurnDraft, TurnResult } from '../turn';
 
 export class DefaultNarrationResolver implements NarrationResolver {
     constructor(
-        private readonly requestBuilder: LLMRequestBuilder,
+        private readonly worldSnapshotBuilder: WorldSnapshotBuilder,
         private readonly conversationManager: ConversationManager,
     ) {}
 
-    prepare(state: DeepReadonly<GameState>, rawInput: string): PreparedTurn {
+    prepare(state: DeepReadonly<GameState>, rawInput: string): TurnDraft {
         const priorMessages = this.conversationManager.getMessagesForNextRequest();
-        const built = this.requestBuilder.buildFromPlayerInput(priorMessages, state, rawInput);
-        return { priorMessages, request: built.request, messages: built.newMessages };
+        const turn = DefaultTurnDraft.start(priorMessages);
+        const snapshot = this.worldSnapshotBuilder.build(state);
+        turn.recordUserRound(`${rawInput}\n\n${snapshot}`);
+        return turn;
     }
 
-    resolve(result: ResolvedTurn): string {
+    resolve(result: TurnResult): string {
         this.conversationManager.appendTurn(result.messages);
         return result.text;
     }

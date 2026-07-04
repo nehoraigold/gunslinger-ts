@@ -3,8 +3,9 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { LLMGameMaster } from './LLMGameMaster';
-import { LLMLoop, LLMLoopResult } from './loop';
-import { NarrationResolver, PreparedTurn } from './narration';
+import { LLMLoop } from './loop';
+import { NarrationResolver } from './narration';
+import { TurnDraft, TurnResult } from './turn';
 import { GameSession } from '../../engine/session';
 import { Factories } from '../../engine/context';
 import { createGameState } from '../../engine/state/GameState.test.utils';
@@ -24,14 +25,18 @@ describe(LLMGameMaster.name, () => {
     describe('handleInput', () => {
         it('should prepare the turn, run the loop, and resolve the loop result into narration', async () => {
             const session = new GameSession(createGameState(), factories);
-            const prepared: PreparedTurn = {
-                priorMessages: [],
-                request: { systemPrompt: 'sys', messages: [], tools: [] },
-                messages: [{ role: 'user', text: 'go north\n\nsnapshot' }],
+            const prepared: TurnDraft = {
+                toRequestMessages: sinon.stub().returns([{ role: 'user', text: 'go north\n\nsnapshot' }]),
+                recordUserRound: sinon.stub(),
+                recordToolRound: sinon.stub(),
+                complete: sinon.stub(),
             };
-            const loopResult: LLMLoopResult = {
+            const loopResult: TurnResult = {
                 text: 'You head north.',
-                messages: [...prepared.messages, { role: 'assistant', text: 'You head north.' }],
+                messages: [
+                    { role: 'user', text: 'go north\n\nsnapshot' },
+                    { role: 'assistant', text: 'You head north.' },
+                ],
             };
             const narrationResolver: NarrationResolver = {
                 prepare: sinon.stub().returns(prepared),
@@ -51,10 +56,11 @@ describe(LLMGameMaster.name, () => {
 
         it('should error the stream when the loop rejects', async () => {
             const session = new GameSession(createGameState(), factories);
-            const prepared: PreparedTurn = {
-                priorMessages: [],
-                request: { systemPrompt: 'sys', messages: [], tools: [] },
-                messages: [],
+            const prepared: TurnDraft = {
+                toRequestMessages: sinon.stub().returns([]),
+                recordUserRound: sinon.stub(),
+                recordToolRound: sinon.stub(),
+                complete: sinon.stub(),
             };
             const narrationResolver: NarrationResolver = {
                 prepare: sinon.stub().returns(prepared),

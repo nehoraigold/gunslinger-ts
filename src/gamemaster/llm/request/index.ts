@@ -1,2 +1,2 @@
-export * from './LLMRequestBuilder';
-export * from './DefaultLLMRequestBuilder';
+export * from './LLMRequestAssembler';
+export * from './DefaultLLMRequestAssembler';

@@ -1,43 +1,32 @@
-import { LLMLoop, LLMLoopInput, LLMLoopResult } from './LLMLoop';
+import { LLMLoop } from './LLMLoop';
 import { MaxRoundsExceededError } from './error/MaxRoundsExceededError';
 import { PlayableSession } from '../../../engine/session';
 import { LLMClient } from '../LLMClient';
-import { LLMRequestBuilder } from '../request';
+import { LLMRequestAssembler } from '../request';
 import { ToolCallDispatcher } from '../tool';
-import { ConversationMessage } from '../conversation';
+import { TurnDraft, TurnResult } from '../turn';
 
 const DEFAULT_MAX_ROUNDS = 10;
 
 export class SequentialLLMLoop implements LLMLoop {
     constructor(
         private readonly llmClient: LLMClient,
-        private readonly requestBuilder: LLMRequestBuilder,
+        private readonly requestAssembler: LLMRequestAssembler,
         private readonly toolCallDispatcher: ToolCallDispatcher,
         private readonly maxRounds: number = DEFAULT_MAX_ROUNDS,
     ) {}
 
-    async run(session: PlayableSession, input: LLMLoopInput): Promise<LLMLoopResult> {
-        const { priorMessages } = input;
-        let request = input.request;
-        const messages: ConversationMessage[] = [...input.messages];
-
+    async run(session: PlayableSession, turn: TurnDraft): Promise<TurnResult> {
         for (let round = 0; round < this.maxRounds; round++) {
+            const request = this.requestAssembler.assemble(turn);
             const response = await this.llmClient.complete(request);
 
             if (!response.toolCalls?.length) {
-                messages.push({ role: 'assistant', text: response.text });
-                return { text: response.text ?? '', messages };
+                return turn.complete(response.text ?? '');
             }
 
             const results = response.toolCalls.map((call) => this.toolCallDispatcher.dispatch(session, call));
-            const built = this.requestBuilder.buildFromToolResults(
-                [...priorMessages, ...messages],
-                response.toolCalls,
-                results,
-                response.text,
-            );
-            request = built.request;
-            messages.push(...built.newMessages);
+            turn.recordToolRound(response.toolCalls, results, response.text);
         }
 
         throw new MaxRoundsExceededError(this.maxRounds);
