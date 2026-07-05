@@ -43,6 +43,13 @@ npm run build        # esbuild bundle to dist/
 
 A git pre-commit hook (husky) runs lint-staged, typecheck, and the test suite — commits are blocked if any fail.
 
+## Verifying changes
+
+The husky gate (typecheck + test + lint) proves CI passes, not that a change *works at runtime*. For any non-trivial engine or CLI change, also:
+
+- Run **`/verify`** to observe the change actually executing. The project verify skill (`.claude/skills/verify/SKILL.md`) has this repo's two drive recipes: the deterministic engine surface via `GameSession.playTurn` (default; no LLM), and the full Ollama-backed CLI (`src/main.ts`). This is the durable home for the manual end-to-end smoke test that the `new-action` skill's step 5 describes — prefer it over hand-rolling a throwaway driver from scratch.
+- Run **`/code-review`** on the diff before committing — the "quality deteriorated last time" concern in *Non-negotiable priorities* is exactly what it guards.
+
 ## Testing conventions
 
 - Test framework: Mocha + Chai (`expect`) + Sinon. Config in `.mocharc.json`; specs are `src/**/*.test.ts`.
