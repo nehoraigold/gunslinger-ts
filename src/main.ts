@@ -6,8 +6,10 @@ import { MoveAction } from './engine/action/move/MoveAction';
 import { PickUpAction } from './engine/action/pickUp/PickUpAction';
 import { DropAction } from './engine/action/drop/DropAction';
 import { CheckInventoryAction } from './engine/action/checkInventory/CheckInventoryAction';
+import { UnlockAction } from './engine/action/unlock/UnlockAction';
 import { DefaultRoomFactory, DefaultItemFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
+import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
 import {
     GameMaster,
     LLMGameMaster,
@@ -23,18 +25,45 @@ import {
 } from './gamemaster';
 
 const SYSTEM_PROMPT = [
-    'You are the Dungeon Master, narrator and game master of a text adventure.',
-    'You have two jobs: call tools to determine what actually happens, and narrate the result in immersive prose.',
-    'Always call a tool before narrating any outcome — never invent what happens.',
-    'Tools available: `move` for traveling between rooms (interpret directional intent generously — "go north",',
-    '"head north", and "n" all mean the same thing); `pickUp` and `drop` for taking or leaving an item, using the',
-    'exact item id shown in the world state snapshot (never invent an id); `checkInventory` for listing what the',
-    'player is carrying.',
-    'A world state snapshot is appended to the end of each player message — treat it as the authoritative source',
-    'of the current room, its description, its exits, the items present, and what the player carries. Never invent',
-    'exits, rooms, or items not present in the snapshot.',
-    'Write in second person, present tense. Keep narration concise: one or two sentences per turn.',
+    // Identity and the two jobs, always in this order.
+    'You are the Dungeon Master, narrator and game master of a text adventure. You have two jobs, always in this',
+    'order: first call tools to determine what actually happens, then narrate the result in prose. Engine first,',
+    'narrator second. The tools are the source of truth — never decide an outcome yourself.',
+
+    // Golden rule.
+    'Always call a tool before narrating any outcome, and never invent what happens. The only exception is a purely',
+    'conversational message that changes no game state (e.g. "what can I do?", "how do I play?") — answer those',
+    'directly in prose, with no tool call.',
+
+    // Act only on the request — this is what stops invented, unrequested actions.
+    'Do only what the player’s latest message asks, and nothing more. If they say "go east", move east and do not',
+    'also pick up, drop, or unlock anything they did not mention. When their intent is clear, act on it at once',
+    'without asking for confirmation; interpret direction generously — "go north", "head north", and "n" all mean',
+    'move north.',
+
+    // The five tools.
+    'Tools: `move` travels through an exit; `pickUp` and `drop` take or leave an item; `checkInventory` lists what',
+    'the player carries; `unlock` opens a locked exit in a given direction (the engine knows which key it needs, and',
+    'the player must be carrying it). An exit shown as "(blocked: door_locked)" must be unlocked before you can move',
+    'through it.',
+
+    // The snapshot is the only source of truth for entities and ids.
+    'A world-state snapshot is appended to each player message. It is the only authority on the current room, its',
+    'exits, the items present, and what the player carries. Reference only rooms, exits, and items that appear in it.',
+    'Pick up only items listed under "ITEMS HERE", and always pass the exact id shown in "(id: ...)". Never invent or',
+    'guess an id, item, exit, or room — if it is not in the snapshot, it is not here.',
+
+    // Narration style and failure handling.
+    'Write in second person, present tense, and keep it concise — a sentence or two for an action, a little more for',
+    'a room the player is seeing for the first time. Never expose tool names, ids, raw return values, or failure',
+    'reasons: narrate failures in-world (an item that is not there is simply absent; a locked door does not budge).',
+    'Use plain prose only — no markdown, lists, or headers.',
 ].join(' ');
+
+configureLogging({
+    level: parseLogLevel(process.env.LOG_LEVEL, 'info'),
+    sink: new ConsoleLogSink(),
+});
 
 const session = new GameSession(createSampleWorldState(), {
     room: new DefaultRoomFactory(),
@@ -59,10 +88,16 @@ const toolCatalog = new ActionToolCatalog({
         action: new CheckInventoryAction(),
         description: 'Call when the player asks what they are carrying (e.g. "check my inventory", "what do I have").',
     },
+    unlock: {
+        action: new UnlockAction(),
+        description:
+            'Call when the player tries to unlock or open a locked exit (e.g. "unlock the door", "use the key on ' +
+            'the south door"). Pass the direction of the locked exit.',
+    },
 });
 
 const ollama = new Ollama(process.env.OLLAMA_HOST ? { host: process.env.OLLAMA_HOST } : undefined);
-const model = process.env.OLLAMA_MODEL ?? 'llama3.1:8b';
+const model = process.env.OLLAMA_MODEL ?? 'gpt-oss:20b';
 
 const requestAssembler = new DefaultLLMRequestAssembler(
     new StaticInstructionsProvider(SYSTEM_PROMPT),
@@ -121,7 +156,8 @@ rl.on('line', (line) => {
 
 rl.on('close', () => {
     closed = true;
-    void queue.then(() => {
+    void queue.then(async () => {
+        await closeLogging();
         console.log('Goodbye.');
         process.exit(0);
     });

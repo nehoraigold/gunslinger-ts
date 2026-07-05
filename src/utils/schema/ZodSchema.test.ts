@@ -79,6 +79,22 @@ describe(ZodSchema.name, () => {
                 expect(parse).to.throw(ParseError);
             });
         });
+
+        describe('void schema', () => {
+            const voidSchema = new ZodSchema(z.void());
+
+            it('should accept undefined', () => {
+                expect(voidSchema.parse(undefined)).to.equal(undefined);
+            });
+
+            it('should accept the empty object a tool-caller sends for a no-argument tool', () => {
+                expect(voidSchema.parse({})).to.equal(undefined);
+            });
+
+            it('should throw a ParseError for a populated object', () => {
+                expect(() => voidSchema.parse({ unexpected: true })).to.throw(ParseError);
+            });
+        });
     });
 
     describe('toJsonSchema', () => {

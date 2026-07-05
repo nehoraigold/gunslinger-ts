@@ -34,6 +34,13 @@ describe(DefaultLLMRequestAssembler.name, () => {
             expect(request.tools).to.deep.equal(toolDefinitions);
         });
 
+        it('should offer no tools when includeTools is false', () => {
+            const request = createAssembler().assemble(fakeTurn([]), { includeTools: false });
+
+            expect(request.tools).to.deep.equal([]);
+            expect(request.systemPrompt).to.equal('You are the Dungeon Master.');
+        });
+
         it("should use the turn's request messages verbatim", () => {
             const messages: ConversationMessage[] = [
                 { role: 'user', text: 'look around' },

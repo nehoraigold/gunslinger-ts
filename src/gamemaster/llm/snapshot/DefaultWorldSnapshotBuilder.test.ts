@@ -28,7 +28,11 @@ describe(DefaultWorldSnapshotBuilder.name, () => {
         it('should note the block reason for a blocked exit', () => {
             const state = createGameState((s) => {
                 s.rooms.room_1.exits = [
-                    { direction: 'west', destinationRoomId: 'room_2', isBlocked: true, blockReason: 'door_locked' },
+                    {
+                        direction: 'west',
+                        destinationRoomId: 'room_2',
+                        lock: { keyItemId: 'iron_key', isLocked: true, consumesKey: false },
+                    },
                 ];
             });
 

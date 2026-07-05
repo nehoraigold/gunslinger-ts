@@ -54,16 +54,34 @@ describe(createSampleWorldState.name, () => {
         }
     });
 
-    it('should have a locked door between the chapel and the well yard', () => {
+    it('should lock the chapel door to the well yard with the iron key', () => {
         const state = createSampleWorldState();
 
         const chapelExit = state.rooms.chapel.exits.find((exit) => exit.destinationRoomId === 'wellyard');
+
+        expect(chapelExit?.lock).to.deep.equal({ keyItemId: 'iron_key', isLocked: true, consumesKey: false });
+    });
+
+    it('should leave the well yard door open from the inside', () => {
+        const state = createSampleWorldState();
+
         const wellyardExit = state.rooms.wellyard.exits.find((exit) => exit.destinationRoomId === 'chapel');
 
-        expect(chapelExit?.isBlocked).to.equal(true);
-        expect(chapelExit?.blockReason).to.equal('door_locked');
-        expect(wellyardExit?.isBlocked).to.equal(true);
-        expect(wellyardExit?.blockReason).to.equal('door_locked');
+        expect(wellyardExit, 'the well yard should have an exit back to the chapel').to.not.equal(undefined);
+        expect(wellyardExit?.lock, 'the way out of the well yard should not be locked').to.equal(undefined);
+    });
+
+    it('should make the well yard reachable only through a locked door', () => {
+        const state = createSampleWorldState();
+
+        const exitsToWellyard = Object.values(state.rooms).flatMap((room) =>
+            room.exits.filter((exit) => exit.destinationRoomId === 'wellyard'),
+        );
+
+        expect(exitsToWellyard, 'there should be a way into the well yard').to.not.be.empty;
+        for (const exit of exitsToWellyard) {
+            expect(exit.lock?.isLocked, 'every entrance to the well yard must be locked').to.equal(true);
+        }
     });
 
     it('should place the iron key in the tower', () => {

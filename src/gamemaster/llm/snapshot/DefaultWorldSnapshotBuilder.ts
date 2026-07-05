@@ -27,7 +27,7 @@ export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
             return ['  none'];
         }
         return exits.map((exit) =>
-            exit.isBlocked ? `  ${exit.direction} (blocked: ${exit.blockReason})` : `  ${exit.direction}`,
+            exit.lock?.isLocked ? `  ${exit.direction} (blocked: door_locked)` : `  ${exit.direction}`,
         );
     }
 

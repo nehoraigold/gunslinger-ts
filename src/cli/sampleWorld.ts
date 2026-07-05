@@ -95,8 +95,7 @@ export function createSampleWorldState(): GameState {
                     {
                         direction: 'south',
                         destinationRoomId: 'wellyard',
-                        isBlocked: true,
-                        blockReason: 'door_locked',
+                        lock: { keyItemId: 'iron_key', isLocked: true, consumesKey: false },
                     },
                 ],
                 inventory: {},
@@ -120,7 +119,6 @@ export function createSampleWorldState(): GameState {
                 exits: [
                     { direction: 'north', destinationRoomId: 'courtyard' },
                     { direction: 'west', destinationRoomId: 'gatehouse' },
-                    { direction: 'east', destinationRoomId: 'wellyard' },
                 ],
                 inventory: {},
             },
@@ -128,16 +126,9 @@ export function createSampleWorldState(): GameState {
                 name: 'Well Yard',
                 description:
                     'A stone wellhead sits at the center of this small yard, its rope long rotted away. The ' +
-                    'water below, if any remains, cannot be seen. A rusted iron door to the north is bolted shut.',
-                exits: [
-                    {
-                        direction: 'north',
-                        destinationRoomId: 'chapel',
-                        isBlocked: true,
-                        blockReason: 'door_locked',
-                    },
-                    { direction: 'west', destinationRoomId: 'entrance' },
-                ],
+                    'water below, if any remains, cannot be seen. The rusted iron door to the north stands open ' +
+                    'behind you.',
+                exits: [{ direction: 'north', destinationRoomId: 'chapel' }],
                 inventory: {},
             },
         },

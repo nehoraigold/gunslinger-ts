@@ -70,12 +70,11 @@ describe(DefaultMovementService.name, () => {
             expect(outcome).to.deep.equal({ type: 'noSuchExit' });
         });
 
-        it('should not move the player if the exit is blocked', () => {
+        it('should not move the player if the exit is blocked by a locked lock', () => {
             const exit: ExitState = {
                 direction: 'south',
                 destinationRoomId: 'room_2',
-                isBlocked: true,
-                blockReason: 'door_locked',
+                lock: { keyItemId: 'iron_key', isLocked: true, consumesKey: false },
             };
             const ctx = createDefaultContext(setExitsInCurrentRoom(exit));
             const movement = new DefaultMovementService(ctx);

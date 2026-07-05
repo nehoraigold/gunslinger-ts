@@ -6,3 +6,4 @@ export * from './ItemsStore';
 export * from './RoomStore';
 export * from './ItemStore';
 export * from './InventoryStore';
+export * from './LockStore';

@@ -13,7 +13,7 @@ export class DefaultRoom implements Room {
     getExit(direction: Direction): Exit | undefined {
         const { exits } = this.store.get();
         const exitState = exits.find((exit) => exit.direction === direction);
-        return exitState ? new DefaultExit(exitState, this.store) : undefined;
+        return exitState ? new DefaultExit(direction, this.store) : undefined;
     }
 
     inventory(): Inventory {

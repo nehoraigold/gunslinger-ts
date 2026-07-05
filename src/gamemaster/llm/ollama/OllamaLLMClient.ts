@@ -1,4 +1,5 @@
 import { ChatResponse } from 'ollama';
+import { getLogger } from '../../../utils/logger';
 import { LLMClient } from '../LLMClient';
 import { LLMRequest } from '../LLMRequest';
 import { LLMResponse } from '../LLMResponse';
@@ -7,6 +8,8 @@ import { toOllamaMessages } from './toOllamaMessages';
 import { toOllamaTools } from './toOllamaTools';
 import { fromOllamaResponse } from './fromOllamaResponse';
 
+const log = getLogger('llm.ollama');
+
 export class OllamaLLMClient implements LLMClient {
     constructor(
         private readonly ollama: OllamaChatClient,
@@ -14,13 +17,17 @@ export class OllamaLLMClient implements LLMClient {
     ) {}
 
     async complete(request: LLMRequest): Promise<LLMResponse> {
+        const messages = toOllamaMessages(request);
+        log.debug('request', { model: this.model, messages: messages.length, tools: request.tools.length });
         const response = await this.ollama.chat({
             model: this.model,
             stream: false,
-            messages: toOllamaMessages(request),
+            messages,
             tools: toOllamaTools(request.tools),
         });
-        return fromOllamaResponse(response);
+        const parsed = fromOllamaResponse(response);
+        log.debug('response', { textChars: parsed.text?.length ?? 0, toolCalls: parsed.toolCalls?.length ?? 0 });
+        return parsed;
     }
 
     async stream(request: LLMRequest, onChunk: (text: string) => void): Promise<LLMResponse> {
