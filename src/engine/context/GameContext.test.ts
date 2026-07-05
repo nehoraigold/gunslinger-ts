@@ -5,6 +5,7 @@ import * as sinon from 'sinon';
 import { GameContext } from './GameContext';
 import { GameTransaction } from '../transaction';
 import { createGameState } from '../state/GameState.test.utils';
+import { RoomNotFoundError } from '../error';
 
 describe(GameContext.name, () => {
     const tx = new GameTransaction(createGameState());
@@ -65,6 +66,27 @@ describe(GameContext.name, () => {
                 expect(secondEntity).to.equal(firstEntity);
                 expect(factories[entityName].create.calledOnce).to.be.true;
             });
+        });
+    });
+
+    describe('requireCurrentRoom', () => {
+        it("should return the room matching the player's current room id", () => {
+            const room = repository.requireCurrentRoom();
+
+            expect(room).to.equal(repository.room('room_1'));
+        });
+
+        it("should throw a RoomNotFoundError if the player's current room does not exist", () => {
+            const brokenTx = new GameTransaction(
+                createGameState((state) => {
+                    state.player.currentRoomId = 'nonexistent_room';
+                }),
+            );
+            const brokenRepository = new GameContext(brokenTx, factories);
+
+            const requireCurrentRoom = () => brokenRepository.requireCurrentRoom();
+
+            expect(requireCurrentRoom).to.throw(RoomNotFoundError, /nonexistent_room/);
         });
     });
 });

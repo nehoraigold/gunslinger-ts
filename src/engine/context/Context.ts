@@ -5,4 +5,5 @@ export interface Context {
     player(): Player;
     room(id: RoomId): Room | undefined;
     item(id: ItemId): Item | undefined;
+    requireCurrentRoom(): Room;
 }

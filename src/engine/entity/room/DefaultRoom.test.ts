@@ -11,6 +11,7 @@ describe(DefaultRoom.name, () => {
             name: 'room_1',
             description: 'description',
             exits: [],
+            inventory: {},
             ...state,
         });
         return new DefaultRoom('room_1', roomStore);
@@ -39,6 +40,22 @@ describe(DefaultRoom.name, () => {
             const exit = room.getExit('south');
 
             expect(exit).to.be.undefined;
+        });
+    });
+
+    describe('inventory', () => {
+        it('should reflect the quantities held in room state', () => {
+            const room = createDefaultRoom({ inventory: { iron_key: 1 } });
+
+            expect(room.inventory().quantityOf('iron_key')).to.equal(1);
+        });
+
+        it('should persist changes made through the returned inventory back into room state', () => {
+            const room = createDefaultRoom();
+
+            room.inventory().add('coins', 5);
+
+            expect(room.inventory().quantityOf('coins')).to.equal(5);
         });
     });
 });

@@ -65,5 +65,41 @@ describe(DefaultWorldSnapshotBuilder.name, () => {
 
             expect(snapshot).to.match(/weapon: Item 1/);
         });
+
+        it('should report no items when the current room holds nothing', () => {
+            const state = createGameState();
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.match(/ITEMS HERE:\s*none/);
+        });
+
+        it('should list an item held in the current room by name, quantity, and id', () => {
+            const state = createGameState((s) => {
+                s.rooms.room_1.inventory = { item_1: 2 };
+            });
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.match(/ITEMS HERE:\s*Item 1 x2 \(id: item_1\)/);
+        });
+
+        it('should report nothing carried when the player holds no items', () => {
+            const state = createGameState();
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.match(/CARRIED:\s*none/);
+        });
+
+        it('should list an item held by the player by name, quantity, and id', () => {
+            const state = createGameState((s) => {
+                s.player.inventory = { item_1: 3 };
+            });
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.match(/CARRIED:\s*Item 1 x3 \(id: item_1\)/);
+        });
     });
 });

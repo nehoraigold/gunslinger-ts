@@ -3,6 +3,7 @@ import { Transaction } from '../transaction';
 import { ItemId, RoomId } from '../state';
 import { Item, ItemFactory, Room, RoomFactory, Player, DefaultPlayer } from '../entity';
 import { KeyedValueStore, ValueStore } from '../store';
+import { RoomNotFoundError } from '../error';
 
 type EntityCache = {
     player?: Player;
@@ -41,6 +42,15 @@ export class GameContext implements Context {
 
     room(id: RoomId): Room | undefined {
         return this.getOrCreateEntity(this.cache.rooms, id, this.tx.rooms, this.factories.room.create);
+    }
+
+    requireCurrentRoom(): Room {
+        const player = this.player();
+        const room = this.room(player.currentRoomId);
+        if (!room) {
+            throw new RoomNotFoundError(player.currentRoomId);
+        }
+        return room;
     }
 
     private getOrCreateEntity<Id extends string, State, Entity>(

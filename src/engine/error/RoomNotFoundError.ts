@@ -1,4 +1,4 @@
-import { RoomId } from '../../../state';
+import { RoomId } from '../state';
 
 export class RoomNotFoundError extends Error {
     constructor(roomId: RoomId) {

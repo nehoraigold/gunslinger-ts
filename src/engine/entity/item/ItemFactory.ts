@@ -1,5 +1,5 @@
 import { Item } from './Item';
-import { ItemId } from '../../state/item';
+import { ItemId } from '../../state';
 import { ItemStore } from '../../store';
 
 export interface ItemFactory {

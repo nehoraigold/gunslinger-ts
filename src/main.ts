@@ -3,6 +3,9 @@ import { Ollama } from 'ollama';
 
 import { GameSession } from './engine/session';
 import { MoveAction } from './engine/action/move/MoveAction';
+import { PickUpAction } from './engine/action/pickUp/PickUpAction';
+import { DropAction } from './engine/action/drop/DropAction';
+import { CheckInventoryAction } from './engine/action/checkInventory/CheckInventoryAction';
 import { DefaultRoomFactory, DefaultItemFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
 import {
@@ -23,10 +26,13 @@ const SYSTEM_PROMPT = [
     'You are the Dungeon Master, narrator and game master of a text adventure.',
     'You have two jobs: call tools to determine what actually happens, and narrate the result in immersive prose.',
     'Always call a tool before narrating any outcome — never invent what happens.',
-    'The only tool available right now is `move`, for traveling between rooms. Interpret directional intent',
-    'generously ("go north", "head north", and "n" all mean the same thing).',
+    'Tools available: `move` for traveling between rooms (interpret directional intent generously — "go north",',
+    '"head north", and "n" all mean the same thing); `pickUp` and `drop` for taking or leaving an item, using the',
+    'exact item id shown in the world state snapshot (never invent an id); `checkInventory` for listing what the',
+    'player is carrying.',
     'A world state snapshot is appended to the end of each player message — treat it as the authoritative source',
-    'of the current room, its description, and its exits. Never invent exits or rooms not present in the snapshot.',
+    'of the current room, its description, its exits, the items present, and what the player carries. Never invent',
+    'exits, rooms, or items not present in the snapshot.',
     'Write in second person, present tense. Keep narration concise: one or two sentences per turn.',
 ].join(' ');
 
@@ -40,6 +46,18 @@ const toolCatalog = new ActionToolCatalog({
         action: new MoveAction(),
         description:
             'Call when the player expresses intent to travel in any direction (north, south, east, west, up, down).',
+    },
+    pickUp: {
+        action: new PickUpAction(),
+        description: 'Call when the player expresses intent to take or pick up an item present in the room.',
+    },
+    drop: {
+        action: new DropAction(),
+        description: 'Call when the player expresses intent to drop or leave behind a carried item.',
+    },
+    checkInventory: {
+        action: new CheckInventoryAction(),
+        description: 'Call when the player asks what they are carrying (e.g. "check my inventory", "what do I have").',
     },
 });
 

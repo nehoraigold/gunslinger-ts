@@ -11,6 +11,7 @@ describe(DefaultExit.name, () => {
             name: 'Room 1',
             description: 'description',
             exits,
+            inventory: {},
         });
     }
 
@@ -50,6 +51,34 @@ describe(DefaultExit.name, () => {
             const exit = new DefaultExit(exitState, createRoomStoreWithExits([exitState]));
 
             expect(exit.isBlocked()).to.be.false;
+        });
+    });
+
+    describe('blockReason', () => {
+        it('should return the block reason if the exit state is blocked', () => {
+            const exitState: ExitState = {
+                direction: 'north',
+                destinationRoomId: 'room_2',
+                isBlocked: true,
+                blockReason: 'door_locked',
+            };
+            const exit = new DefaultExit(exitState, createRoomStoreWithExits([exitState]));
+
+            expect(exit.blockReason()).to.equal('door_locked');
+        });
+
+        it('should return undefined if the exit state is explicitly not blocked', () => {
+            const exitState: ExitState = { direction: 'north', destinationRoomId: 'room_2', isBlocked: false };
+            const exit = new DefaultExit(exitState, createRoomStoreWithExits([exitState]));
+
+            expect(exit.blockReason()).to.equal(undefined);
+        });
+
+        it('should return undefined if the exit state does not specify isBlocked', () => {
+            const exitState: ExitState = { direction: 'north', destinationRoomId: 'room_2' };
+            const exit = new DefaultExit(exitState, createRoomStoreWithExits([exitState]));
+
+            expect(exit.blockReason()).to.equal(undefined);
         });
     });
 });

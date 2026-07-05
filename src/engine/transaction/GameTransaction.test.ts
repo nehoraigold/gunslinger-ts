@@ -14,7 +14,7 @@ describe(GameTransaction.name, () => {
             const itemIdsBefore = Object.keys(state.items);
             const tx = new GameTransaction(state);
 
-            tx.rooms.add('room_3', { name: 'Room 3', description: 'The third room', exits: [] });
+            tx.rooms.add('room_3', { name: 'Room 3', description: 'The third room', exits: [], inventory: {} });
             tx.items.remove('item_1');
 
             expect(Object.keys(state.rooms)).to.deep.equal(roomIdsBefore);
@@ -37,6 +37,7 @@ describe(GameTransaction.name, () => {
                 name: 'Room 3',
                 description: 'The third room',
                 exits: [],
+                inventory: {},
             };
 
             tx.player.update((player) => (player.name = 'Ori'));

@@ -9,7 +9,12 @@ import { RoomState } from '../../state';
 describe(DefaultRoomFactory.name, () => {
     describe('create', () => {
         it('should create a DefaultRoom with the given id and store', () => {
-            const store = new RootValueStore<RoomState>({ name: 'Room 1', description: 'description', exits: [] });
+            const store = new RootValueStore<RoomState>({
+                name: 'Room 1',
+                description: 'description',
+                exits: [],
+                inventory: {},
+            });
             const factory = new DefaultRoomFactory();
 
             const room = factory.create('room_1', store);

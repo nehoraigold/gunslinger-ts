@@ -15,11 +15,17 @@ describe(MoveAction.name, () => {
         const unused = () => {
             throw new Error('Context should not be used when the movement service is faked');
         };
-        return { player: unused, room: unused, item: unused };
+        return { player: unused, room: unused, item: unused, requireCurrentRoom: unused };
     }
 
     function createFakeRoom(id: string): Room {
-        return { id, getExit: () => undefined };
+        return {
+            id,
+            getExit: () => undefined,
+            inventory: () => {
+                throw new Error('inventory should not be used in this test');
+            },
+        };
     }
 
     describe('execute', () => {

@@ -7,7 +7,7 @@ import { ExitState, GameState, RoomId } from '../../state';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
-import { RoomNotFoundError } from './error';
+import { RoomNotFoundError } from '../../error';
 
 describe(DefaultMovementService.name, () => {
     function createDefaultContext(modifyState?: ModifyState): Context {

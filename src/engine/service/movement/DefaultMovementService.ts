@@ -1,6 +1,6 @@
 import { Direction } from '../../state';
 import { Context } from '../../context';
-import { RoomNotFoundError } from './error';
+import { RoomNotFoundError } from '../../error';
 import { MovementOutcome } from './MovementOutcome';
 import { MovementService } from './MovementService';
 
@@ -9,10 +9,7 @@ export class DefaultMovementService implements MovementService {
 
     move(direction: Direction): MovementOutcome {
         const player = this.ctx.player();
-        const room = this.ctx.room(player.currentRoomId);
-        if (!room) {
-            throw new RoomNotFoundError(player.currentRoomId);
-        }
+        const room = this.ctx.requireCurrentRoom();
         const exit = room.getExit(direction);
         if (!exit) {
             return { type: 'noSuchExit' };

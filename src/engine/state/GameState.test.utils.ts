@@ -11,18 +11,21 @@ const player: PlayerState = {
         weapon: undefined,
         armor: undefined,
     },
+    inventory: {},
 };
 
 const item1: ItemState = {
     name: 'Item 1',
     description: 'The first item',
     type: 'weapon',
+    stackable: false,
 };
 
 const item2: ItemState = {
     name: 'Item 2',
     description: 'The second item',
     type: 'consumable',
+    stackable: true,
 };
 
 const room1: RoomState = {
@@ -34,6 +37,7 @@ const room1: RoomState = {
             destinationRoomId: 'room_2',
         },
     ],
+    inventory: {},
 };
 
 const room2: RoomState = {
@@ -45,6 +49,7 @@ const room2: RoomState = {
             destinationRoomId: 'room_1',
         },
     ],
+    inventory: {},
 };
 
 const initialState: GameState = {

@@ -1,5 +1,5 @@
 import { WorldSnapshotBuilder } from './WorldSnapshotBuilder';
-import { GameState, ItemId, ExitState, RoomState } from '../../../engine/state';
+import { GameState, InventoryState, ItemId, ExitState, RoomState } from '../../../engine/state';
 import { DeepReadonly } from '../../../utils/types';
 
 export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
@@ -9,7 +9,13 @@ export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
 
     private describeLocation(state: DeepReadonly<GameState>): string[] {
         const room = state.rooms[state.player.currentRoomId];
-        return [...this.describeCurrentRoom(room), 'EXITS:', ...this.describeExits(room.exits)];
+        return [
+            ...this.describeCurrentRoom(room),
+            'EXITS:',
+            ...this.describeExits(room.exits),
+            'ITEMS HERE:',
+            ...this.describeInventoryEntries(state, room.inventory),
+        ];
     }
 
     private describeCurrentRoom(room: DeepReadonly<RoomState>): string[] {
@@ -26,7 +32,12 @@ export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
     }
 
     private describeInventory(state: DeepReadonly<GameState>): string[] {
-        return ['EQUIPPED:', ...this.describeEquippedItems(state)];
+        return [
+            'EQUIPPED:',
+            ...this.describeEquippedItems(state),
+            'CARRIED:',
+            ...this.describeInventoryEntries(state, state.player.inventory),
+        ];
     }
 
     private describeEquippedItems(state: DeepReadonly<GameState>): string[] {
@@ -34,6 +45,17 @@ export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
             `  weapon: ${this.itemName(state, state.player.equipment.weapon)}`,
             `  armor: ${this.itemName(state, state.player.equipment.armor)}`,
         ];
+    }
+
+    private describeInventoryEntries(
+        state: DeepReadonly<GameState>,
+        inventory: DeepReadonly<InventoryState>,
+    ): string[] {
+        const entries = Object.entries(inventory);
+        if (entries.length === 0) {
+            return ['  none'];
+        }
+        return entries.map(([itemId, quantity]) => `  ${this.itemName(state, itemId)} x${quantity} (id: ${itemId})`);
     }
 
     private itemName(state: DeepReadonly<GameState>, itemId: ItemId | undefined): string {

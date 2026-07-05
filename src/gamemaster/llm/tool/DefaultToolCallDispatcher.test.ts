@@ -104,7 +104,7 @@ describe(DefaultToolCallDispatcher.name, () => {
             });
         });
 
-        it('should return an internal_error failure when the action throws unexpectedly', () => {
+        it('should return an internal_error failure carrying the thrown error message when the action throws unexpectedly', () => {
             const session = new GameSession(createGameState(), factories);
             const action = createStubAction(() => {
                 throw new Error('bug');
@@ -116,7 +116,7 @@ describe(DefaultToolCallDispatcher.name, () => {
             expect(result).to.deep.equal({
                 callId: 'call_1',
                 name: 'stub',
-                content: JSON.stringify({ result: 'failure', reason: 'internal_error', message: undefined }),
+                content: JSON.stringify({ result: 'failure', reason: 'internal_error', message: 'bug' }),
             });
         });
 

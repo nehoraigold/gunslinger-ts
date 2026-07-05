@@ -1,6 +1,6 @@
 import { Exit } from './Exit';
 import { RoomStore } from '../../store';
-import { ExitState, RoomId } from '../../state';
+import { ExitBlockReason, ExitState, RoomId } from '../../state';
 
 export class DefaultExit implements Exit {
     constructor(
@@ -14,5 +14,9 @@ export class DefaultExit implements Exit {
 
     isBlocked(): boolean {
         return !!this.cachedState.isBlocked;
+    }
+
+    blockReason(): ExitBlockReason | undefined {
+        return this.cachedState.isBlocked ? this.cachedState.blockReason : undefined;
     }
 }

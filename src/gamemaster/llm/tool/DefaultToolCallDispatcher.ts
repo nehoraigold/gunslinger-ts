@@ -22,12 +22,16 @@ export class DefaultToolCallDispatcher implements ToolCallDispatcher {
             if (error instanceof ParseError) {
                 return this.toFailureResult(call, 'invalid_input');
             }
-            return this.toFailureResult(call, 'internal_error');
+            return this.toFailureResult(call, 'internal_error', this.messageFor(error));
         }
     }
 
-    private toFailureResult(call: ToolCall, reason: DispatcherFailureReason): ToolResult {
-        return this.toResult(call, { result: 'failure' as const, reason, message: undefined });
+    private toFailureResult(call: ToolCall, reason: DispatcherFailureReason, message?: string): ToolResult {
+        return this.toResult(call, { result: 'failure' as const, reason, message });
+    }
+
+    private messageFor(error: unknown): string | undefined {
+        return error instanceof Error ? error.message : undefined;
     }
 
     private toResult(call: ToolCall, outcome: unknown): ToolResult {

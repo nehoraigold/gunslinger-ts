@@ -7,18 +7,138 @@ export function createSampleWorldState(): GameState {
             name: 'Adventurer',
             currentRoomId: 'entrance',
             equipment: { weapon: undefined, armor: undefined },
+            inventory: {},
         },
-        items: {},
+        items: {
+            coins: {
+                name: 'Coins',
+                description: 'A handful of tarnished silver coins.',
+                type: 'misc',
+                stackable: true,
+            },
+            iron_key: {
+                name: 'Iron Key',
+                description: 'A small iron key, its teeth worn smooth with age.',
+                type: 'key',
+                stackable: false,
+            },
+        },
         rooms: {
+            tower: {
+                name: 'Crumbling Tower',
+                description:
+                    'A spiral stair climbs into a tower whose upper floors have long since collapsed. Rusted ' +
+                    'weapon racks line the wall, empty but for cobwebs. An iron key glints atop one of the racks.',
+                exits: [
+                    { direction: 'south', destinationRoomId: 'armory' },
+                    { direction: 'east', destinationRoomId: 'rampart' },
+                ],
+                inventory: { iron_key: 1 },
+            },
+            rampart: {
+                name: 'North Rampart',
+                description:
+                    'A narrow walkway runs along the top of the outer wall. Gaps where stones have fallen away ' +
+                    'offer a long drop to the courtyard below.',
+                exits: [
+                    { direction: 'west', destinationRoomId: 'tower' },
+                    { direction: 'south', destinationRoomId: 'courtyard' },
+                    { direction: 'east', destinationRoomId: 'stairwell' },
+                ],
+                inventory: {},
+            },
+            stairwell: {
+                name: 'Collapsed Stairwell',
+                description:
+                    'A stone stairwell ends abruptly in a pile of rubble, the floors above having given way. ' +
+                    'Cold air drifts up from somewhere below the debris.',
+                exits: [
+                    { direction: 'west', destinationRoomId: 'rampart' },
+                    { direction: 'south', destinationRoomId: 'chapel' },
+                ],
+                inventory: {},
+            },
+            armory: {
+                name: 'Armory',
+                description:
+                    'Broken weapon racks and split barrels of rusted nails fill this cramped room. A few coins ' +
+                    'lie scattered in the dust, missed by whoever looted the rest.',
+                exits: [
+                    { direction: 'north', destinationRoomId: 'tower' },
+                    { direction: 'east', destinationRoomId: 'courtyard' },
+                    { direction: 'south', destinationRoomId: 'gatehouse' },
+                ],
+                inventory: { coins: 5 },
+            },
+            courtyard: {
+                name: 'Courtyard',
+                description:
+                    'Weeds push up through cracked flagstones in this open courtyard. A dry fountain stands at ' +
+                    'its center, its basin stained black with age.',
+                exits: [
+                    { direction: 'north', destinationRoomId: 'rampart' },
+                    { direction: 'west', destinationRoomId: 'armory' },
+                    { direction: 'east', destinationRoomId: 'chapel' },
+                    { direction: 'south', destinationRoomId: 'entrance' },
+                ],
+                inventory: {},
+            },
+            chapel: {
+                name: 'Ruined Chapel',
+                description:
+                    'Rows of splintered pews face a shattered altar. Whatever god this chapel once served, its ' +
+                    'name has been chiseled from every wall. A rusted iron door to the south is bolted shut, its ' +
+                    'keyhole clogged with grime.',
+                exits: [
+                    { direction: 'north', destinationRoomId: 'stairwell' },
+                    { direction: 'west', destinationRoomId: 'courtyard' },
+                    {
+                        direction: 'south',
+                        destinationRoomId: 'wellyard',
+                        isBlocked: true,
+                        blockReason: 'door_locked',
+                    },
+                ],
+                inventory: {},
+            },
+            gatehouse: {
+                name: 'Gatehouse',
+                description:
+                    'The iron portcullis here has rusted fast in the open position. Chains hang slack from the ' +
+                    'ceiling winch, long since rotted through.',
+                exits: [
+                    { direction: 'north', destinationRoomId: 'armory' },
+                    { direction: 'east', destinationRoomId: 'entrance' },
+                ],
+                inventory: {},
+            },
             entrance: {
                 name: 'Entrance Hall',
-                description: 'A dusty entrance hall.',
-                exits: [{ direction: 'north', destinationRoomId: 'chamber' }],
+                description:
+                    'A dusty entrance hall, its doors long since rotted from their hinges. Faint light filters ' +
+                    'in from the courtyard to the north.',
+                exits: [
+                    { direction: 'north', destinationRoomId: 'courtyard' },
+                    { direction: 'west', destinationRoomId: 'gatehouse' },
+                    { direction: 'east', destinationRoomId: 'wellyard' },
+                ],
+                inventory: {},
             },
-            chamber: {
-                name: 'Inner Chamber',
-                description: 'A quiet inner chamber.',
-                exits: [{ direction: 'south', destinationRoomId: 'entrance' }],
+            wellyard: {
+                name: 'Well Yard',
+                description:
+                    'A stone wellhead sits at the center of this small yard, its rope long rotted away. The ' +
+                    'water below, if any remains, cannot be seen. A rusted iron door to the north is bolted shut.',
+                exits: [
+                    {
+                        direction: 'north',
+                        destinationRoomId: 'chapel',
+                        isBlocked: true,
+                        blockReason: 'door_locked',
+                    },
+                    { direction: 'west', destinationRoomId: 'entrance' },
+                ],
+                inventory: {},
             },
         },
     };
