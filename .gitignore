@@ -135,7 +135,6 @@ dist
 .vscode/
 saves/
 .agent
-.claude
 src_old
 world
 # End of https://www.toptal.com/developers/gitignore/api/node
