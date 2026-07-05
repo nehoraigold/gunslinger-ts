@@ -7,6 +7,7 @@ import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
 import { GameState } from '../../state';
+import { ItemNotFoundError } from '../../error';
 
 describe(CheckInventoryAction.name, () => {
     function createDefaultContext(modifyState?: ModifyState): Context {
@@ -45,16 +46,13 @@ describe(CheckInventoryAction.name, () => {
             expect(outcome).to.deep.equal({ result: 'success', data: { items: [] } });
         });
 
-        it('should fall back to the item id if no item definition is found', () => {
+        it('should throw an ItemNotFoundError if a held item has no definition', () => {
             const ctx = createDefaultContext(withItemInInventory('nonexistent_item', 1));
             const action = new CheckInventoryAction();
 
-            const outcome = action.execute(ctx);
+            const check = () => action.execute(ctx);
 
-            expect(outcome).to.deep.equal({
-                result: 'success',
-                data: { items: [{ itemId: 'nonexistent_item', name: 'nonexistent_item', quantity: 1 }] },
-            });
+            expect(check).to.throw(ItemNotFoundError, /nonexistent_item/);
         });
     });
 

@@ -14,10 +14,18 @@ describe(DefaultInventoryService.name, () => {
     }
 
     function createItemLookup(items: Record<string, ItemState>): ItemLookup {
+        const item = (id: string) => {
+            const state = items[id];
+            return state && { id, ...state };
+        };
         return {
-            item: (id) => {
-                const state = items[id];
-                return state && { id, ...state };
+            item,
+            requireItem: (id) => {
+                const found = item(id);
+                if (!found) {
+                    throw new ItemNotFoundError(id);
+                }
+                return found;
             },
         };
     }

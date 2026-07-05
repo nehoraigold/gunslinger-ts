@@ -7,6 +7,7 @@ import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
 import { GameState } from '../../state';
+import { ItemNotFoundError } from '../../error';
 
 describe(LookAction.name, () => {
     function createDefaultContext(modifyState?: ModifyState): Context {
@@ -63,17 +64,12 @@ describe(LookAction.name, () => {
             });
         });
 
-        it('should fall back to the item id when no item definition exists', () => {
+        it('should throw an ItemNotFoundError when a room item has no definition', () => {
             const ctx = createDefaultContext(withRoomItem('nonexistent_item', 1));
 
-            const outcome = new LookAction().execute(ctx);
+            const look = () => new LookAction().execute(ctx);
 
-            expect(outcome).to.deep.include({ result: 'success' });
-            if (outcome.result === 'success') {
-                expect(outcome.data.items).to.deep.equal([
-                    { itemId: 'nonexistent_item', name: 'nonexistent_item', quantity: 1 },
-                ]);
-            }
+            expect(look).to.throw(ItemNotFoundError, /nonexistent_item/);
         });
 
         it('should report firstVisit true only the first time the room is observed', () => {

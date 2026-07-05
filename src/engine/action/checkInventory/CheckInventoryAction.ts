@@ -30,7 +30,7 @@ export class CheckInventoryAction implements Action<CheckInventoryInput, CheckIn
             .list()
             .map(({ itemId, quantity }) => ({
                 itemId,
-                name: ctx.item(itemId)?.name ?? itemId,
+                name: ctx.requireItem(itemId).name,
                 quantity,
             }));
         return Verdict.succeed({ items });

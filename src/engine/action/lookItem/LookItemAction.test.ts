@@ -7,6 +7,7 @@ import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
 import { GameState } from '../../state';
+import { ItemNotFoundError } from '../../error';
 
 describe(LookItemAction.name, () => {
     function createDefaultContext(modifyState?: ModifyState): Context {
@@ -78,7 +79,7 @@ describe(LookItemAction.name, () => {
             expect(outcome.result === 'success' && outcome.data.quantity).to.equal(1);
         });
 
-        it('should fail with item_not_present when the item is in neither place', () => {
+        it('should fail with item_not_present when a known item is in neither place', () => {
             const ctx = createDefaultContext();
 
             const outcome = new LookItemAction().execute(ctx, { itemId: 'item_1' });
@@ -86,12 +87,20 @@ describe(LookItemAction.name, () => {
             expect(outcome).to.deep.include({ result: 'failure', reason: 'item_not_present' });
         });
 
-        it('should fail with item_not_present for an unknown item id', () => {
-            const ctx = createDefaultContext(withItemCarried('nonexistent_item', 1));
+        it('should fail with item_not_present for an id that is not in reach, even with no definition', () => {
+            const ctx = createDefaultContext();
 
             const outcome = new LookItemAction().execute(ctx, { itemId: 'nonexistent_item' });
 
             expect(outcome).to.deep.include({ result: 'failure', reason: 'item_not_present' });
+        });
+
+        it('should throw an ItemNotFoundError when an in-reach item has no definition', () => {
+            const ctx = createDefaultContext(withItemCarried('nonexistent_item', 1));
+
+            const look = () => new LookItemAction().execute(ctx, { itemId: 'nonexistent_item' });
+
+            expect(look).to.throw(ItemNotFoundError, /nonexistent_item/);
         });
     });
 

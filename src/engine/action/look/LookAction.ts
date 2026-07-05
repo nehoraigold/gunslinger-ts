@@ -4,7 +4,7 @@ import { Verdict } from '../Verdict';
 import { defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
 import { Direction, ExitBlockReason, LightLevel } from '../../state';
-import { Exit } from '../../entity';
+import { Exit, InventoryEntry, Room } from '../../entity';
 import { Schema, ZodSchema } from '../../../utils/schema';
 
 const DirectionSchema = z.enum(['north', 'south', 'east', 'west', 'up', 'down']) satisfies z.ZodType<Direction>;
@@ -48,21 +48,24 @@ export class LookAction implements Action<LookInput, LookOutcome> {
         const firstVisit = !room.visited;
         room.markVisited();
 
-        const items = room
-            .inventory()
-            .list()
-            .map(({ itemId, quantity }) => ({
-                itemId,
-                name: ctx.item(itemId)?.name ?? itemId,
-                quantity,
-            }));
+        const roomProperties = this.describeRoom(room);
+        const exits = this.describeExits(room.exits());
+        const items = this.describeItems(room.inventory().list(), ctx);
 
         return Verdict.succeed({
-            room: { name: room.name, description: room.description, lightLevel: room.lightLevel },
+            room: roomProperties,
             firstVisit,
-            exits: room.exits().map((exit) => this.describeExit(exit)),
+            exits,
             items,
         });
+    }
+
+    private describeRoom(room: Room) {
+        return { name: room.name, description: room.description, lightLevel: room.lightLevel };
+    }
+
+    private describeExits(exits: Exit[]) {
+        return exits.map((exit) => this.describeExit(exit));
     }
 
     private describeExit(exit: Exit): { direction: Direction; isBlocked: boolean; blockReason?: ExitBlockReason } {
@@ -72,5 +75,13 @@ export class LookAction implements Action<LookInput, LookOutcome> {
             isBlocked: exit.isBlocked(),
             ...(blockReason ? { blockReason } : {}),
         };
+    }
+
+    private describeItems(entries: InventoryEntry[], ctx: Context) {
+        return entries.map(({ itemId, quantity }) => ({
+            itemId,
+            name: ctx.requireItem(itemId).name,
+            quantity,
+        }));
     }
 }

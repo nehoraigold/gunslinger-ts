@@ -48,7 +48,14 @@ describe(UnlockAction.name, () => {
         const unused = () => {
             throw new Error('Context member should not be used in this test');
         };
-        return { player: () => fakePlayer, room: unused, item: unused, requireCurrentRoom: () => fakeRoom };
+        return {
+            player: () => fakePlayer,
+            room: unused,
+            requireRoom: unused,
+            item: unused,
+            requireItem: unused,
+            requireCurrentRoom: () => fakeRoom,
+        };
     }
 
     describe('execute', () => {

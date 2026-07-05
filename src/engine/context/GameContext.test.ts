@@ -5,7 +5,7 @@ import * as sinon from 'sinon';
 import { GameContext } from './GameContext';
 import { GameTransaction } from '../transaction';
 import { createGameState } from '../state/GameState.test.utils';
-import { RoomNotFoundError } from '../error';
+import { ItemNotFoundError, RoomNotFoundError } from '../error';
 
 describe(GameContext.name, () => {
     const tx = new GameTransaction(createGameState());
@@ -65,6 +65,27 @@ describe(GameContext.name, () => {
                 expect(firstEntity).not.to.be.undefined;
                 expect(secondEntity).to.equal(firstEntity);
                 expect(factories[entityName].create.calledOnce).to.be.true;
+            });
+        });
+    });
+
+    const requireEntities = [
+        { name: 'room', method: 'requireRoom', error: RoomNotFoundError },
+        { name: 'item', method: 'requireItem', error: ItemNotFoundError },
+    ] as const;
+
+    requireEntities.forEach(({ name, method, error }) => {
+        describe(method, () => {
+            it(`should return the ${name} when it exists`, () => {
+                const entity = repository[method](`${name}_1`);
+
+                expect(entity).to.equal(repository[name](`${name}_1`));
+            });
+
+            it(`should throw ${error.name} when the ${name} does not exist`, () => {
+                const require = () => repository[method](`nonexistent_${name}`);
+
+                expect(require).to.throw(error, /nonexistent_/);
             });
         });
     });

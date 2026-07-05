@@ -29,24 +29,23 @@ export class LookItemAction implements Action<LookItemInput, LookItemOutcome> {
     readonly schema: Schema<LookItemInput> = new ZodSchema(LookItemInputSchema);
     readonly outcomeSchema = LookItemOutcomeSchema;
 
-    execute(ctx: Context, input: LookItemInput): LookItemOutcome {
-        const { itemId } = input;
-        const carried = ctx.player().inventory().quantityOf(itemId);
-        const onGround = ctx.requireCurrentRoom().inventory().quantityOf(itemId);
-        const item = ctx.item(itemId);
+    execute(ctx: Context, { itemId }: LookItemInput): LookItemOutcome {
+        const qtyInInventory = ctx.player().inventory().quantityOf(itemId);
+        const qtyInRoom = ctx.requireCurrentRoom().inventory().quantityOf(itemId);
 
-        if (!item || (carried === 0 && onGround === 0)) {
+        if (qtyInInventory === 0 && qtyInRoom === 0) {
             return Verdict.fail('item_not_present');
         }
 
-        const inInventory = carried > 0;
+        const item = ctx.requireItem(itemId);
+        const inInventory = qtyInInventory > 0;
         return Verdict.succeed({
             itemId,
             name: item.name,
             description: item.description,
             type: item.type,
             location: inInventory ? 'inventory' : 'room',
-            quantity: inInventory ? carried : onGround,
+            quantity: inInventory ? qtyInInventory : qtyInRoom,
         });
     }
 }

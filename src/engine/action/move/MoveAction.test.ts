@@ -15,7 +15,14 @@ describe(MoveAction.name, () => {
         const unused = () => {
             throw new Error('Context should not be used when the movement service is faked');
         };
-        return { player: unused, room: unused, item: unused, requireCurrentRoom: unused };
+        return {
+            player: unused,
+            room: unused,
+            requireRoom: unused,
+            item: unused,
+            requireItem: unused,
+            requireCurrentRoom: unused,
+        };
     }
 
     function createFakeRoom(id: string): Room {

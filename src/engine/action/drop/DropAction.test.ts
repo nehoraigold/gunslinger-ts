@@ -37,7 +37,9 @@ describe(DropAction.name, () => {
         return {
             player: () => fakePlayer,
             room: () => fakeRoom,
+            requireRoom: () => fakeRoom,
             item: unusedItem,
+            requireItem: unusedItem,
             requireCurrentRoom: () => fakeRoom,
         };
     }
