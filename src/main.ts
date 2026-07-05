@@ -8,6 +8,7 @@ import { DropAction } from './engine/action/drop/DropAction';
 import { CheckInventoryAction } from './engine/action/checkInventory/CheckInventoryAction';
 import { UnlockAction } from './engine/action/unlock/UnlockAction';
 import { LookAction } from './engine/action/look/LookAction';
+import { LookItemAction } from './engine/action/lookItem/LookItemAction';
 import { DefaultRoomFactory, DefaultItemFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
 import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
@@ -45,7 +46,9 @@ const SYSTEM_PROMPT = [
     // The tools.
     'Tools: `move` travels through an exit; `pickUp` and `drop` take or leave an item; `checkInventory` lists what',
     'the player carries; `look` surveys the current room, reporting its description, light level, exits, and the',
-    'items present; `unlock` opens a locked exit in a given direction (the engine knows which key it needs, and',
+    'items present; `lookItem` inspects one specific item in the room or inventory (pass the exact id from the',
+    'snapshot), reporting its description, kind, location, and quantity; `unlock` opens a locked exit in a given',
+    'direction (the engine knows which key it needs, and',
     'the player must be carrying it). An exit shown as "(blocked: door_locked)" must be unlocked before you can move',
     'through it.',
 
@@ -95,6 +98,13 @@ const toolCatalog = new ActionToolCatalog({
         description:
             'Call when the player looks at, examines, or surveys their surroundings (e.g. "look around", "look", ' +
             '"examine the room"). Returns the room description, its light level, the exits, and the items present.',
+    },
+    lookItem: {
+        action: new LookItemAction(),
+        description:
+            'Call when the player examines or inspects a specific item they can see in the room or are carrying ' +
+            '(e.g. "examine the key", "look at the sword"). Pass the exact item id from the snapshot. Returns the ' +
+            "item's description, kind, where it is, and how many are present.",
     },
     unlock: {
         action: new UnlockAction(),
