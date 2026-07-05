@@ -10,7 +10,7 @@ import { Schema, ZodSchema } from '../../../utils/schema';
 
 const DropInputSchema = z.object({ itemId: z.string() });
 const DropSuccessDataSchema = z.object({ itemId: z.string() });
-const DropFailReasonSchema = z.enum(['not_in_inventory', 'item_already_here']);
+const DropFailReasonSchema = z.enum(['not_in_inventory', 'not_enough_in_inventory', 'item_already_here']);
 const DropOutcomeSchema = defineActionOutcome(DropSuccessDataSchema, DropFailReasonSchema);
 
 type DropInput = z.infer<typeof DropInputSchema>;
@@ -38,7 +38,9 @@ export class DropAction implements Action<DropInput, DropOutcome> {
                 return Verdict.succeed({ itemId: result.itemId });
             case 'notAvailable':
                 return Verdict.fail('not_in_inventory');
-            case 'alreadyPresent':
+            case 'insufficientQuantity':
+                return Verdict.fail('not_enough_in_inventory');
+            case 'maximumQuantityReached':
                 return Verdict.fail('item_already_here');
             default:
                 return assertNever(result);

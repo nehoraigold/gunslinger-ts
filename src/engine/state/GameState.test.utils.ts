@@ -5,7 +5,7 @@ import { RoomState } from './room';
 
 const player: PlayerState = {
     id: 'player',
-    name: 'Roland',
+    name: 'Player',
     currentRoomId: 'room_1',
     equipment: {
         weapon: undefined,

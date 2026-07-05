@@ -4,44 +4,16 @@ import sinon from 'sinon';
 
 import { PickUpAction } from './PickUpAction';
 import { Context, GameContext } from '../../context';
+import { fakeContext, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory, Inventory, Player, Room } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
 import { GameState } from '../../state';
 import { TransferOutcome } from '../../service/inventory/TransferOutcome';
 
 describe(PickUpAction.name, () => {
     function createFakeContext(): Context {
-        const fakeInventory: Inventory = {
-            quantityOf: () => 0,
-            has: () => false,
-            add: () => {},
-            remove: () => {},
-            list: () => [],
-        };
-        const fakePlayer: Player = { currentRoomId: 'room_1', moveTo: () => {}, inventory: () => fakeInventory };
-        const fakeRoom: Room = {
-            id: 'room_1',
-            name: 'Room 1',
-            description: '',
-            lightLevel: 'bright',
-            visited: false,
-            getExit: () => undefined,
-            exits: () => [],
-            markVisited: () => {},
-            inventory: () => fakeInventory,
-        };
-        const unusedItem = () => {
-            throw new Error('Context.item should not be used when the inventory service is faked');
-        };
-        return {
-            player: () => fakePlayer,
-            room: () => fakeRoom,
-            requireRoom: () => fakeRoom,
-            item: unusedItem,
-            requireItem: unusedItem,
-            requireCurrentRoom: () => fakeRoom,
-        };
+        return fakeContext({ player: () => fakePlayer(), requireCurrentRoom: () => fakeRoom() });
     }
 
     describe('execute', () => {
@@ -89,15 +61,23 @@ describe(PickUpAction.name, () => {
 
                 const outcome = action.execute(createFakeContext(), { itemId: 'item_1' });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'not_in_room', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_in_room' });
             });
 
-            it('should translate an "alreadyPresent" outcome into a "cannot_carry_more" failure', () => {
-                const action = createActionWithFakeInventory({ type: 'alreadyPresent' });
+            it('should translate an "insufficientQuantity" outcome into a "not_enough_in_room" failure', () => {
+                const action = createActionWithFakeInventory({ type: 'insufficientQuantity' });
 
                 const outcome = action.execute(createFakeContext(), { itemId: 'item_1' });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'cannot_carry_more', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_enough_in_room' });
+            });
+
+            it('should translate a "maximumQuantityReached" outcome into an "already_carrying" failure', () => {
+                const action = createActionWithFakeInventory({ type: 'maximumQuantityReached' });
+
+                const outcome = action.execute(createFakeContext(), { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'already_carrying' });
             });
         });
     });

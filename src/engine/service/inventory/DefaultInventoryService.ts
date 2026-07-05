@@ -10,12 +10,16 @@ export class DefaultInventoryService implements InventoryService {
     transfer(itemId: ItemId, from: Inventory, to: Inventory, quantity = 1): TransferOutcome {
         const item = this.items.requireItem(itemId);
 
-        if (!from.has(itemId, quantity)) {
+        if (!from.has(itemId)) {
             return { type: 'notAvailable' };
         }
 
+        if (!from.has(itemId, quantity)) {
+            return { type: 'insufficientQuantity' };
+        }
+
         if (!item.stackable && to.has(itemId)) {
-            return { type: 'alreadyPresent' };
+            return { type: 'maximumQuantityReached' };
         }
 
         from.remove(itemId, quantity);

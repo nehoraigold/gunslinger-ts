@@ -10,7 +10,7 @@ import { Schema, ZodSchema } from '../../../utils/schema';
 
 const PickUpInputSchema = z.object({ itemId: z.string() });
 const PickUpSuccessDataSchema = z.object({ itemId: z.string() });
-const PickUpFailReasonSchema = z.enum(['not_in_room', 'cannot_carry_more']);
+const PickUpFailReasonSchema = z.enum(['not_in_room', 'not_enough_in_room', 'already_carrying']);
 const PickUpOutcomeSchema = defineActionOutcome(PickUpSuccessDataSchema, PickUpFailReasonSchema);
 
 type PickUpInput = z.infer<typeof PickUpInputSchema>;
@@ -38,8 +38,10 @@ export class PickUpAction implements Action<PickUpInput, PickUpOutcome> {
                 return Verdict.succeed({ itemId: result.itemId });
             case 'notAvailable':
                 return Verdict.fail('not_in_room');
-            case 'alreadyPresent':
-                return Verdict.fail('cannot_carry_more');
+            case 'insufficientQuantity':
+                return Verdict.fail('not_enough_in_room');
+            case 'maximumQuantityReached':
+                return Verdict.fail('already_carrying');
             default:
                 return assertNever(result);
         }

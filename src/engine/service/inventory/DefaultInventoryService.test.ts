@@ -71,7 +71,7 @@ describe(DefaultInventoryService.name, () => {
             expect(transfer).to.throw(ItemNotFoundError, /nonexistent_item/);
         });
 
-        it('should return notAvailable when the source inventory does not have enough', () => {
+        it('should return insufficientQuantity when the source has some but fewer than requested', () => {
             const items = createItemLookup({
                 coins: { name: 'Coins', description: '', type: 'misc', stackable: true },
             });
@@ -81,9 +81,24 @@ describe(DefaultInventoryService.name, () => {
 
             const outcome = service.transfer('coins', from, to, 2);
 
-            expect(outcome).to.deep.equal({ type: 'notAvailable' });
+            expect(outcome).to.deep.equal({ type: 'insufficientQuantity' });
             expect(from.quantityOf('coins')).to.equal(1);
             expect(to.quantityOf('coins')).to.equal(0);
+        });
+
+        it('should move a non-stackable item into an empty destination', () => {
+            const items = createItemLookup({
+                iron_key: { name: 'Iron Key', description: '', type: 'key', stackable: false },
+            });
+            const service = new DefaultInventoryService(items);
+            const from = createInventory({ iron_key: 1 });
+            const to = createInventory();
+
+            const outcome = service.transfer('iron_key', from, to);
+
+            expect(outcome).to.deep.equal({ type: 'transferred', itemId: 'iron_key', quantity: 1 });
+            expect(from.quantityOf('iron_key')).to.equal(0);
+            expect(to.quantityOf('iron_key')).to.equal(1);
         });
 
         it('should return notAvailable when the source inventory does not have the item at all', () => {
@@ -99,7 +114,7 @@ describe(DefaultInventoryService.name, () => {
             expect(outcome).to.deep.equal({ type: 'notAvailable' });
         });
 
-        it('should return alreadyPresent when moving a second non-stackable item into a destination that already has one', () => {
+        it('should return maximumQuantityReached when moving a second non-stackable item into a destination that already has one', () => {
             const items = createItemLookup({
                 iron_key: { name: 'Iron Key', description: '', type: 'key', stackable: false },
             });
@@ -109,7 +124,7 @@ describe(DefaultInventoryService.name, () => {
 
             const outcome = service.transfer('iron_key', from, to);
 
-            expect(outcome).to.deep.equal({ type: 'alreadyPresent' });
+            expect(outcome).to.deep.equal({ type: 'maximumQuantityReached' });
             expect(from.quantityOf('iron_key')).to.equal(1);
             expect(to.quantityOf('iron_key')).to.equal(1);
         });
