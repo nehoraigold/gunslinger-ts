@@ -16,7 +16,13 @@ describe(UnlockAction.name, () => {
     }
 
     function createFakeExit(lock: Lock | undefined): Exit {
-        return { destinationRoomId: 'room_2', isBlocked: () => false, blockReason: () => undefined, lock: () => lock };
+        return {
+            direction: 'north',
+            destinationRoomId: 'room_2',
+            isBlocked: () => false,
+            blockReason: () => undefined,
+            lock: () => lock,
+        };
     }
 
     function createFakeContext(exit: Exit | undefined): Context {
@@ -28,7 +34,17 @@ describe(UnlockAction.name, () => {
             list: () => [],
         };
         const fakePlayer: Player = { currentRoomId: 'room_1', moveTo: () => {}, inventory: () => fakeInventory };
-        const fakeRoom: Room = { id: 'room_1', getExit: () => exit, inventory: () => fakeInventory };
+        const fakeRoom: Room = {
+            id: 'room_1',
+            name: 'Room 1',
+            description: '',
+            lightLevel: 'bright',
+            visited: false,
+            getExit: () => exit,
+            exits: () => (exit ? [exit] : []),
+            markVisited: () => {},
+            inventory: () => fakeInventory,
+        };
         const unused = () => {
             throw new Error('Context member should not be used in this test');
         };

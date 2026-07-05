@@ -7,9 +7,11 @@ import { RoomState } from '../../state';
 
 describe(DefaultRoom.name, () => {
     function createDefaultRoom(state?: Partial<RoomState>): DefaultRoom {
-        const roomStore = new RootValueStore({
+        const roomStore = new RootValueStore<RoomState>({
             name: 'room_1',
             description: 'description',
+            lightLevel: 'bright',
+            visited: false,
             exits: [],
             inventory: {},
             ...state,
@@ -40,6 +42,56 @@ describe(DefaultRoom.name, () => {
             const exit = room.getExit('south');
 
             expect(exit).to.be.undefined;
+        });
+    });
+
+    describe('descriptive accessors', () => {
+        it('should expose the name, description, and light level from room state', () => {
+            const room = createDefaultRoom({
+                name: 'The Vault',
+                description: 'A cold stone chamber',
+                lightLevel: 'dim',
+            });
+
+            expect(room.name).to.equal('The Vault');
+            expect(room.description).to.equal('A cold stone chamber');
+            expect(room.lightLevel).to.equal('dim');
+        });
+    });
+
+    describe('visited', () => {
+        it('should reflect the visited flag from room state', () => {
+            expect(createDefaultRoom({ visited: false }).visited).to.be.false;
+            expect(createDefaultRoom({ visited: true }).visited).to.be.true;
+        });
+    });
+
+    describe('markVisited', () => {
+        it('should set the visited flag on room state', () => {
+            const room = createDefaultRoom({ visited: false });
+
+            room.markVisited();
+
+            expect(room.visited).to.be.true;
+        });
+    });
+
+    describe('exits', () => {
+        it('should return an exit for each exit in room state', () => {
+            const room = createDefaultRoom({
+                exits: [
+                    { direction: 'north', destinationRoomId: 'room_2' },
+                    { direction: 'south', destinationRoomId: 'room_3' },
+                ],
+            });
+
+            const directions = room.exits().map((exit) => exit.direction);
+
+            expect(directions).to.deep.equal(['north', 'south']);
+        });
+
+        it('should return an empty list when the room has no exits', () => {
+            expect(createDefaultRoom().exits()).to.deep.equal([]);
         });
     });
 

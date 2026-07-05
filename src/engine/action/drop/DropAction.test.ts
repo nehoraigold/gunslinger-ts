@@ -20,7 +20,17 @@ describe(DropAction.name, () => {
             list: () => [],
         };
         const fakePlayer: Player = { currentRoomId: 'room_1', moveTo: () => {}, inventory: () => fakeInventory };
-        const fakeRoom: Room = { id: 'room_1', getExit: () => undefined, inventory: () => fakeInventory };
+        const fakeRoom: Room = {
+            id: 'room_1',
+            name: 'Room 1',
+            description: '',
+            lightLevel: 'bright',
+            visited: false,
+            getExit: () => undefined,
+            exits: () => [],
+            markVisited: () => {},
+            inventory: () => fakeInventory,
+        };
         const unusedItem = () => {
             throw new Error('Context.item should not be used when the inventory service is faked');
         };

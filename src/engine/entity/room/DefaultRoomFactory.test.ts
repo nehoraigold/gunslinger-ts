@@ -12,6 +12,8 @@ describe(DefaultRoomFactory.name, () => {
             const store = new RootValueStore<RoomState>({
                 name: 'Room 1',
                 description: 'description',
+                lightLevel: 'bright',
+                visited: false,
                 exits: [],
                 inventory: {},
             });

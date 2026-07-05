@@ -37,7 +37,14 @@ describe(DefaultPlayer.name, () => {
         it('should change the current room id', () => {
             const newRoom = new DefaultRoom(
                 'room_1',
-                new RootValueStore({ name: 'Room 1', description: 'description', exits: [], inventory: {} }),
+                new RootValueStore({
+                    name: 'Room 1',
+                    description: 'description',
+                    lightLevel: 'bright',
+                    visited: false,
+                    exits: [],
+                    inventory: {},
+                }),
             );
 
             player.moveTo(newRoom);

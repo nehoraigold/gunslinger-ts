@@ -10,10 +10,21 @@ describe(DefaultExit.name, () => {
         return new RootValueStore<RoomState>({
             name: 'Room 1',
             description: 'description',
+            lightLevel: 'bright',
+            visited: false,
             exits,
             inventory: {},
         });
     }
+
+    describe('direction', () => {
+        it('should expose the direction it was created with', () => {
+            const store = createRoomStoreWithExits([{ direction: 'north', destinationRoomId: 'room_2' }]);
+            const exit = new DefaultExit('north', store);
+
+            expect(exit.direction).to.equal('north');
+        });
+    });
 
     describe('destinationRoomId', () => {
         it('should return the destination room id', () => {

@@ -31,6 +31,8 @@ const item2: ItemState = {
 const room1: RoomState = {
     name: 'Room 1',
     description: 'The first room',
+    lightLevel: 'bright',
+    visited: false,
     exits: [
         {
             direction: 'west',
@@ -43,6 +45,8 @@ const room1: RoomState = {
 const room2: RoomState = {
     name: 'Room 2',
     description: 'The second room',
+    lightLevel: 'bright',
+    visited: false,
     exits: [
         {
             direction: 'east',

@@ -7,6 +7,7 @@ import { PickUpAction } from './engine/action/pickUp/PickUpAction';
 import { DropAction } from './engine/action/drop/DropAction';
 import { CheckInventoryAction } from './engine/action/checkInventory/CheckInventoryAction';
 import { UnlockAction } from './engine/action/unlock/UnlockAction';
+import { LookAction } from './engine/action/look/LookAction';
 import { DefaultRoomFactory, DefaultItemFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
 import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
@@ -41,9 +42,10 @@ const SYSTEM_PROMPT = [
     'without asking for confirmation; interpret direction generously — "go north", "head north", and "n" all mean',
     'move north.',
 
-    // The five tools.
+    // The tools.
     'Tools: `move` travels through an exit; `pickUp` and `drop` take or leave an item; `checkInventory` lists what',
-    'the player carries; `unlock` opens a locked exit in a given direction (the engine knows which key it needs, and',
+    'the player carries; `look` surveys the current room, reporting its description, light level, exits, and the',
+    'items present; `unlock` opens a locked exit in a given direction (the engine knows which key it needs, and',
     'the player must be carrying it). An exit shown as "(blocked: door_locked)" must be unlocked before you can move',
     'through it.',
 
@@ -87,6 +89,12 @@ const toolCatalog = new ActionToolCatalog({
     checkInventory: {
         action: new CheckInventoryAction(),
         description: 'Call when the player asks what they are carrying (e.g. "check my inventory", "what do I have").',
+    },
+    look: {
+        action: new LookAction(),
+        description:
+            'Call when the player looks at, examines, or surveys their surroundings (e.g. "look around", "look", ' +
+            '"examine the room"). Returns the room description, its light level, the exits, and the items present.',
     },
     unlock: {
         action: new UnlockAction(),

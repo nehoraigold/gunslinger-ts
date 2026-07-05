@@ -5,7 +5,7 @@ import { Direction, ExitBlockReason, ExitState, LockState, RoomId } from '../../
 
 export class DefaultExit implements Exit {
     constructor(
-        private readonly direction: Direction,
+        public readonly direction: Direction,
         private readonly roomStore: RoomStore,
     ) {}
 

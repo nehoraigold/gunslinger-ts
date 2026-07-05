@@ -21,7 +21,13 @@ describe(MoveAction.name, () => {
     function createFakeRoom(id: string): Room {
         return {
             id,
+            name: '',
+            description: '',
+            lightLevel: 'bright',
+            visited: false,
             getExit: () => undefined,
+            exits: () => [],
+            markVisited: () => {},
             inventory: () => {
                 throw new Error('inventory should not be used in this test');
             },

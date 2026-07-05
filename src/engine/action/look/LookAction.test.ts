@@ -1,0 +1,96 @@
+import { describe, it } from 'mocha';
+import { expect } from 'chai';
+
+import { LookAction } from './LookAction';
+import { Context, GameContext } from '../../context';
+import { GameTransaction } from '../../transaction';
+import { createGameState, ModifyState } from '../../state/GameState.test.utils';
+import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
+import { GameState } from '../../state';
+
+describe(LookAction.name, () => {
+    function createDefaultContext(modifyState?: ModifyState): Context {
+        const state = createGameState(modifyState);
+        return new GameContext(new GameTransaction(state), {
+            room: new DefaultRoomFactory(),
+            item: new DefaultItemFactory(),
+        });
+    }
+
+    function withRoomItem(itemId: string, quantity: number): (state: GameState) => void {
+        return (state) => {
+            state.rooms.room_1.inventory[itemId] = quantity;
+        };
+    }
+
+    function withLockedWestExit(state: GameState): void {
+        state.rooms.room_1.exits[0].lock = { keyItemId: 'item_1', isLocked: true, consumesKey: false };
+    }
+
+    describe('execute', () => {
+        it('should describe the current room, its light level, exits, and items', () => {
+            const ctx = createDefaultContext((state) => {
+                state.rooms.room_1.lightLevel = 'dim';
+                withRoomItem('item_1', 2)(state);
+            });
+
+            const outcome = new LookAction().execute(ctx);
+
+            expect(outcome).to.deep.equal({
+                result: 'success',
+                data: {
+                    room: { name: 'Room 1', description: 'The first room', lightLevel: 'dim' },
+                    firstVisit: true,
+                    exits: [{ direction: 'west', isBlocked: false }],
+                    items: [{ itemId: 'item_1', name: 'Item 1', quantity: 2 }],
+                },
+            });
+        });
+
+        it('should report a locked exit as blocked with a reason', () => {
+            const ctx = createDefaultContext(withLockedWestExit);
+
+            const outcome = new LookAction().execute(ctx);
+
+            expect(outcome).to.deep.equal({
+                result: 'success',
+                data: {
+                    room: { name: 'Room 1', description: 'The first room', lightLevel: 'bright' },
+                    firstVisit: true,
+                    exits: [{ direction: 'west', isBlocked: true, blockReason: 'door_locked' }],
+                    items: [],
+                },
+            });
+        });
+
+        it('should fall back to the item id when no item definition exists', () => {
+            const ctx = createDefaultContext(withRoomItem('nonexistent_item', 1));
+
+            const outcome = new LookAction().execute(ctx);
+
+            expect(outcome).to.deep.include({ result: 'success' });
+            if (outcome.result === 'success') {
+                expect(outcome.data.items).to.deep.equal([
+                    { itemId: 'nonexistent_item', name: 'nonexistent_item', quantity: 1 },
+                ]);
+            }
+        });
+
+        it('should report firstVisit true only the first time the room is observed', () => {
+            const ctx = createDefaultContext();
+            const action = new LookAction();
+
+            const first = action.execute(ctx);
+            const second = action.execute(ctx);
+
+            expect(first.result === 'success' && first.data.firstVisit).to.be.true;
+            expect(second.result === 'success' && second.data.firstVisit).to.be.false;
+        });
+    });
+
+    describe('schema', () => {
+        it('should accept no input', () => {
+            expect(() => new LookAction().schema.parse(undefined)).to.not.throw();
+        });
+    });
+});
