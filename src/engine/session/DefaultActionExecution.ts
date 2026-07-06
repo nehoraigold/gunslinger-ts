@@ -1,18 +1,12 @@
 import { Action } from '../action';
-import { Context, GameContext, Factories } from '../context';
-import { Transaction } from '../transaction';
+import { Context } from '../context';
 import { ActionExecution } from './ActionExecution';
 
 export class DefaultActionExecution implements ActionExecution {
     private used = false;
-    private succeeded = false;
-
-    constructor(
-        private readonly tx: Transaction,
-        private readonly factories: Factories,
-    ) {}
 
     play<InputT, OutcomeT extends { result: 'success' | 'failure' }>(
+        context: Context,
         action: Action<InputT, OutcomeT>,
         input: InputT,
     ): OutcomeT {
@@ -21,13 +15,6 @@ export class DefaultActionExecution implements ActionExecution {
         }
         this.used = true;
 
-        const ctx: Context = new GameContext(this.tx, this.factories);
-        const outcome = action.execute(ctx, input);
-        this.succeeded = outcome.result === 'success';
-        return outcome;
-    }
-
-    wasSuccessful(): boolean {
-        return this.succeeded;
+        return action.execute(context, input);
     }
 }

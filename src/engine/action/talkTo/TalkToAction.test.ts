@@ -70,14 +70,15 @@ describe(TalkToAction.name, () => {
     });
 
     describe('read-only', () => {
-        it('should not change committed state and should yield the identical outcome when repeated', () => {
+        it('should not change the world and should yield the identical outcome when repeated', () => {
             const session = new GameSession(createGameState(withNpcInRoom('npc_1')), factories);
             const stateBefore = session.getState();
 
             const first = session.playTurn(new TalkToAction(), { npcId: 'npc_1' });
             const second = session.playTurn(new TalkToAction(), { npcId: 'npc_1' });
 
-            expect(session.getState()).to.deep.equal(stateBefore);
+            const stateAfter = session.getState();
+            expect({ ...stateAfter, clock: stateBefore.clock }).to.deep.equal(stateBefore);
             expect(first).to.deep.equal(second);
         });
     });

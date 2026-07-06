@@ -53,6 +53,7 @@ export function fakeContext(overrides: Partial<Context> = {}): Context {
         throw new Error(`Context.${member} should not be used in this test`);
     };
     return {
+        clock: unused('clock'),
         player: unused('player'),
         room: unused('room'),
         requireRoom: unused('requireRoom'),

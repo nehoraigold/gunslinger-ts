@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { DefaultActionExecution } from './DefaultActionExecution';
 import { Action, Verdict, defineActionOutcome } from '../action';
-import { Factories } from '../context';
+import { Factories, GameContext } from '../context';
 import { GameTransaction } from '../transaction';
 import { createGameState } from '../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../entity';
@@ -16,6 +16,8 @@ describe(DefaultActionExecution.name, () => {
         item: new DefaultItemFactory(),
         npc: new DefaultNpcFactory(),
     };
+
+    const createContext = () => new GameContext(new GameTransaction(createGameState()), factories);
 
     const StubInputSchema = z.object({ value: z.string() });
     const StubSuccessDataSchema = z.object({ value: z.string() });
@@ -35,44 +37,27 @@ describe(DefaultActionExecution.name, () => {
     }
 
     describe('play', () => {
-        it('should throw when play is called more than once', () => {
-            const tx = new GameTransaction(createGameState());
-            const execution = new DefaultActionExecution(tx, factories);
-            const action = createStubAction(() => Verdict.succeed({ value: 'ok' }));
-
-            execution.play(action, { value: 'ok' });
-
-            expect(() => execution.play(action, { value: 'ok' })).to.throw(/one action/i);
-        });
-    });
-
-    describe('wasSuccessful', () => {
-        it('should return true when the action succeeded', () => {
-            const tx = new GameTransaction(createGameState());
-            const execution = new DefaultActionExecution(tx, factories);
+        it('should execute the action against the given context and return its outcome', () => {
+            const execution = new DefaultActionExecution();
+            const context = createContext();
             const action = createStubAction((ctx, input) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
                 return Verdict.succeed({ value: input.value });
             });
-            execution.play(action, { value: 'ok' });
 
-            expect(execution.wasSuccessful()).to.equal(true);
+            const outcome = execution.play(context, action, { value: 'ok' });
+
+            expect(outcome).to.deep.equal({ result: 'success', data: { value: 'ok' } });
+            expect(context.player().currentRoomId).to.equal('room_2');
         });
 
-        it('should return false when the action failed', () => {
-            const tx = new GameTransaction(createGameState());
-            const execution = new DefaultActionExecution(tx, factories);
-            const action = createStubAction(() => Verdict.fail('nope'));
-            execution.play(action, { value: 'ok' });
+        it('should throw when play is called more than once', () => {
+            const execution = new DefaultActionExecution();
+            const action = createStubAction(() => Verdict.succeed({ value: 'ok' }));
 
-            expect(execution.wasSuccessful()).to.equal(false);
-        });
+            execution.play(createContext(), action, { value: 'ok' });
 
-        it('should return false when no action was ever played', () => {
-            const tx = new GameTransaction(createGameState());
-            const execution = new DefaultActionExecution(tx, factories);
-
-            expect(execution.wasSuccessful()).to.equal(false);
+            expect(() => execution.play(createContext(), action, { value: 'ok' })).to.throw(/one action/i);
         });
     });
 });

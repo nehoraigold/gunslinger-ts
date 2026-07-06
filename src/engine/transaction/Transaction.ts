@@ -1,8 +1,9 @@
 import { GameState } from '../state';
-import { ItemsStore, NpcsStore, RoomsStore, PlayerStore } from '../store';
+import { ClockStore, ItemsStore, NpcsStore, RoomsStore, PlayerStore } from '../store';
 import { DeepReadonly } from '../../utils/types';
 
 export interface Transaction {
+    clock: ClockStore;
     player: PlayerStore;
     rooms: RoomsStore;
     items: ItemsStore;

@@ -1,3 +1,4 @@
+export * from './clock';
 export * from './item';
 export * from './npc';
 export * from './player';

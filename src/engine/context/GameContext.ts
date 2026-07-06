@@ -1,11 +1,23 @@
 import { Context } from './Context';
 import { Transaction } from '../transaction';
 import { ItemId, NpcId, RoomId } from '../state';
-import { Item, ItemFactory, Npc, NpcFactory, Room, RoomFactory, Player, DefaultPlayer } from '../entity';
+import {
+    Item,
+    ItemFactory,
+    Npc,
+    NpcFactory,
+    Room,
+    RoomFactory,
+    Player,
+    DefaultPlayer,
+    Clock,
+    DefaultClock,
+} from '../entity';
 import { KeyedValueStore, ValueStore } from '../store';
 import { ItemNotFoundError, NpcNotFoundError, RoomNotFoundError } from '../error';
 
 type EntityCache = {
+    clock?: Clock;
     player?: Player;
     rooms: Record<RoomId, Room>;
     items: Record<ItemId, Item>;
@@ -30,6 +42,13 @@ export class GameContext implements Context {
             items: {},
             npcs: {},
         };
+    }
+
+    clock(): Clock {
+        if (!this.cache.clock) {
+            this.cache.clock = new DefaultClock(this.tx.clock);
+        }
+        return this.cache.clock;
     }
 
     player(): Player {
