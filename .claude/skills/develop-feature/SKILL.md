@@ -57,7 +57,16 @@ Classify the feature's **shape**, because that decides how it's built:
 - **A cross-cutting mechanism** (new state advanced by the turn lifecycle, a new service, a rule touching
   every turn — e.g. time passing) → design it here, applying CLAUDE.md's "service vs. action vs. method"
   and "entity vs. state split" frameworks.
-- **Content** (new rooms/items in the sample world) → keep it out of the engine; it's a consumer change.
+- **A new entity/domain type** (a new *kind of thing* in the world — e.g. NPCs, alongside items and rooms)
+  → it threads through *every* engine layer in lockstep: a state type + id, a store pair
+  (`XStore`/`XsStore`), an entity + factory, a `Context` accessor + `Factories` entry, a `Transaction`
+  store + `commit()` line — plus surfacing (`look`, the world snapshot) and each verb that acts on it.
+  Design it here; build each verb by `new-action`'s checklist even though you're not invoking the skill.
+  See CLAUDE.md's "adding a new entity type" note for the exact layer-by-layer checklist.
+- **Content** (new rooms/items/NPCs in the sample world) → keep it out of the engine; it's a consumer change.
+- **Mixed** (most non-trivial features — NPCs were *entity type + two verbs + surfacing*) → decompose into
+  the shapes above and handle each part in its own mode. Don't force-fit a feature into one shape; name its
+  parts and sequence them (entity type first, then its verbs, then surfacing).
 
 Produce a **technical design** that traces every choice back to an approved spec line — no *new* product
 decisions here:
@@ -74,21 +83,42 @@ decisions here:
 Present the design in **plan mode** and wait for approval. If the design surfaces a product question or
 shows a spec choice is infeasible/expensive, **loop back to GATE 1** — don't resolve it yourself.
 
+> Entering plan mode overlays its *own* Explore/Plan sub-workflow. You've usually already done that work
+> in Phase 0 (investigate) and Phase 1 (design) — so when the design is settled, write the plan file and
+> call `ExitPlanMode` directly. Don't re-run fan-out Explore/Plan agents over ground you've already
+> covered; that's the expensive path. Reserve the agents for a feature you genuinely haven't explored yet.
+
 ## Phase 2 — Implement (TDD, autonomous)
 
 Build test-first, in dependency order (state → entity → service → lifecycle/action → fixtures → wiring),
 per CLAUDE.md ("Non-negotiable priorities", "Testing conventions", "Code style"; note **avoid comments**).
-Run `npm run typecheck` right after the state change to enumerate the fixture blast radius. Follow the
-approved design; if reality forces a material deviation, pause and flag it rather than silently diverging.
+Follow the approved design; if reality forces a material deviation, pause and flag it rather than silently
+diverging.
+
+**Required checkpoint — land the state/type change first, then run `npm run typecheck` immediately.** Treat
+the resulting error list as your *authoritative* fixture worklist: a new required field breaks every literal
+that builds that type (fixtures, sample world, entity/action stubs, LLM-layer test factories), and typecheck
+enumerates them exactly. Fix that list before writing any behavior. This is the single highest-leverage step
+in the whole implementation — it converts "the blast radius is somewhere in dozens of files" into a precise
+to-do list — so don't skip or defer it. A mechanical, repeated edit across many fixture files (e.g. adding
+the same field to every call site) is a legitimate place for one careful scripted pass, re-verified with
+typecheck afterward.
 
 ## Phase 3 — Verify & self-review
 
 Run all of, and fix what they surface, before involving the user again:
 - **`/verify`** — observe the feature actually running (the project verify skill has the drive recipes).
-- **`/code-review`** — correctness / simplification / efficiency on the diff.
+- **`/code-review`** — correctness / simplification / efficiency on the diff. For a small diff you authored
+  in this session, its inline fast path is fine — you don't need the full multi-agent fan-out.
 - **`/engine-audit`** — architecture conformance (independence, boundaries, entity/state split, the
-  Turn-vocabulary and DI checks). The lint gate already hard-blocks boundary breaches.
-- The pre-commit gate (`typecheck` + `test` + `lint`) — clean.
+  Turn-vocabulary and DI checks). The lint gate already hard-blocks boundary breaches. Run `/code-review`
+  **before** it and let the audit cite that result — the audit's §4 otherwise re-runs code-review on the
+  same diff, doubling the work.
+- The pre-commit gate (`typecheck` + `test` + `lint`) — clean. This gate is the **single definition of
+  done** that `/verify` and `open-pr` also reference; run it once here, don't re-litigate it downstream.
+
+(Tracking these phases with the task tools is optional — the two gates and this checklist are the real
+checkpoints; ignore the "consider TaskCreate" nudges if you're keeping state in the conversation.)
 
 ## Phase 4 — Open the PR
 

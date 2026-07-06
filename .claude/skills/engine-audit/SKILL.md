@@ -29,10 +29,12 @@ don't enforce stale rules (the exact rot CLAUDE.md warns about for `.agent/` and
 find CLAUDE.md and the code disagree, CLAUDE.md's *settled* rules win, but a *provisional* note losing
 to the code is a signal to update CLAUDE.md — surface it, don't silently pick a side.
 
-**Scope first.** Ask (or infer) whether the target is the **whole engine** or **just a diff**
-(`git diff origin/HEAD... --stat`). A diff audit only reports invariants the diff could have broken;
-a full audit sweeps everything. Most invariants below are about **source** — hold test files (`*.test.ts`,
-`*.test.utils.ts`) to a lighter bar and say so in a finding rather than failing them outright.
+**Scope first — default to the diff, don't ask.** Run `git diff main...HEAD --stat` (or
+`git diff origin/HEAD... --stat`) yourself and audit that diff; only sweep the **whole engine** when the
+user explicitly asks for a full conformance pass or the diff is empty. A diff audit only reports invariants
+the diff could have broken; a full audit sweeps everything. Most invariants below are about **source** —
+hold test files (`*.test.ts`, `*.test.utils.ts`) to a lighter bar and say so in a finding rather than
+failing them outright.
 
 **Known intentional states — do NOT flag these.** A conformance tool that cries wolf gets ignored, and
 CLAUDE.md deliberately leaves some things in a transitional state. Before reporting, filter these out:
@@ -110,8 +112,10 @@ Each names the CLAUDE.md rule it enforces and what a clean result looks like.
 
 ```bash
 # 2a. Genre-agnosticism — the engine must assume no specific story/world/content.
-#     Source hits are findings; a test-fixture hit (e.g. a player name) is a low-sev nit.
-grep -rniE 'gunslinger|dark tower|roland|gilead' src/engine --include='*.ts'
+#     Source hits are findings. Test fixtures legitimately use arbitrary names/ids (a test NPC
+#     'hermit', a player 'Roland'), so filter them out here rather than reporting low-sev noise;
+#     re-scan tests only if you suspect genre lock-in leaked into a shared fixture.
+grep -rniE 'gunslinger|dark tower|roland|gilead' src/engine --include='*.ts' | grep -v '\.test\.'
 
 # 2b. Zod/schema boundary — within the engine, only action/** (+ utils/schema/**) may import zod;
 #     gamemaster SOURCE must reach schemas through Schema/toJsonSchema, never zod directly.
@@ -176,9 +180,12 @@ For each, open the relevant files and decide. Rank a violation by how load-beari
 
 ## 4. Compose the generic pass
 
-Run **`/code-review`** on the same scope for correctness/simplification/efficiency. That covers the
-bug-and-cleanup axis so this audit can stay focused on architecture conformance — don't re-derive it
-here. Note in your report that it ran and fold anything architectural it surfaced into the findings.
+Cover the bug-and-cleanup axis with **`/code-review`** on the same scope so this audit can stay focused on
+architecture conformance — don't re-derive it here. **But don't blindly re-run it:** if `/code-review`
+already ran on this diff this session (e.g. `develop-feature` Phase 3 runs it just before invoking this
+audit), cite that result instead of running it again. Only run it here when it hasn't already covered this
+scope. Either way, note in your report that it ran and fold anything architectural it surfaced into the
+findings.
 
 ## 5. Report
 
