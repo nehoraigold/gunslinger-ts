@@ -13,6 +13,7 @@ const player: PlayerState = {
         armor: undefined,
     },
     inventory: {},
+    money: 0,
 };
 
 const item1: ItemState = {
@@ -33,12 +34,14 @@ const npc1: NpcState = {
     name: 'Npc 1',
     appearance: 'The first npc',
     dialogue: 'Well met.',
+    money: 0,
 };
 
 const npc2: NpcState = {
     name: 'Npc 2',
     appearance: 'The second npc',
     dialogue: 'Move along.',
+    money: 0,
 };
 
 const room1: RoomState = {

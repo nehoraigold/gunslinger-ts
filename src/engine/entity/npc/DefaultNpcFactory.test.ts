@@ -13,6 +13,7 @@ describe(DefaultNpcFactory.name, () => {
                 name: 'Old Marshal',
                 appearance: 'A weathered lawman with a tin star.',
                 dialogue: 'Trouble follows you, stranger.',
+                money: 0,
             });
             const factory = new DefaultNpcFactory();
 

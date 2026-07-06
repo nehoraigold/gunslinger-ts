@@ -1,6 +1,7 @@
 import { Npc } from './Npc';
 import { NpcId } from '../../state';
 import { NpcStore } from '../../store';
+import { Wallet, DefaultWallet } from '../wallet';
 
 export class DefaultNpc implements Npc {
     constructor(
@@ -18,5 +19,15 @@ export class DefaultNpc implements Npc {
 
     get dialogue(): string {
         return this.store.get().dialogue;
+    }
+
+    wallet(): Wallet {
+        return new DefaultWallet(
+            () => this.store.get().money,
+            (money) =>
+                this.store.update((state) => {
+                    state.money = money;
+                }),
+        );
     }
 }
