@@ -21,6 +21,7 @@ describe(GameTransaction.name, () => {
                 visited: false,
                 exits: [],
                 inventory: {},
+                npcIds: [],
             });
             tx.items.remove('item_1');
 
@@ -47,6 +48,7 @@ describe(GameTransaction.name, () => {
                 visited: false,
                 exits: [],
                 inventory: {},
+                npcIds: [],
             };
 
             tx.player.update((player) => (player.name = 'Ori'));
@@ -62,6 +64,7 @@ describe(GameTransaction.name, () => {
                     name: 'Ori',
                 },
                 items: {},
+                npcs: initialState.npcs,
                 rooms: {
                     ...initialState.rooms,
                     room_3: room3,

@@ -9,7 +9,9 @@ import { CheckInventoryAction } from './engine/action/checkInventory/CheckInvent
 import { UnlockAction } from './engine/action/unlock/UnlockAction';
 import { LookAction } from './engine/action/look/LookAction';
 import { LookItemAction } from './engine/action/lookItem/LookItemAction';
-import { DefaultRoomFactory, DefaultItemFactory } from './engine/entity';
+import { LookNpcAction } from './engine/action/lookNpc/LookNpcAction';
+import { TalkToAction } from './engine/action/talkTo/TalkToAction';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
 import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
 import {
@@ -47,16 +49,19 @@ const SYSTEM_PROMPT = [
     'Tools: `move` travels through an exit; `pickUp` and `drop` take or leave an item; `checkInventory` lists what',
     'the player carries; `look` surveys the current room, reporting its description, light level, exits, and the',
     'items present; `lookItem` inspects one specific item in the room or inventory (pass the exact id from the',
-    'snapshot), reporting its description, kind, location, and quantity; `unlock` opens a locked exit in a given',
-    'direction (the engine knows which key it needs, and',
+    'snapshot), reporting its description, kind, location, and quantity; `lookNpc` examines one person present in',
+    'the room (pass the exact id from the snapshot), reporting their name and appearance; `talkTo` speaks to a',
+    'person present in the room (pass the exact id), returning the single line they say; `unlock` opens a locked',
+    'exit in a given direction (the engine knows which key it needs, and',
     'the player must be carrying it). An exit shown as "(blocked: door_locked)" must be unlocked before you can move',
     'through it.',
 
     // The snapshot is the only source of truth for entities and ids.
     'A world-state snapshot is appended to each player message. It is the only authority on the current room, its',
-    'exits, the items present, and what the player carries. Reference only rooms, exits, and items that appear in it.',
-    'Pick up only items listed under "ITEMS HERE", and always pass the exact id shown in "(id: ...)". Never invent or',
-    'guess an id, item, exit, or room — if it is not in the snapshot, it is not here.',
+    'exits, the items present, the people present, and what the player carries. Reference only rooms, exits, items,',
+    'and people that appear in it. Pick up only items listed under "ITEMS HERE", talk to or examine only people',
+    'listed under "PEOPLE HERE", and always pass the exact id shown in "(id: ...)". Never invent or guess an id,',
+    'item, person, exit, or room — if it is not in the snapshot, it is not here.',
 
     // Narration style and failure handling.
     'Write in second person, present tense, and keep it concise — a sentence or two for an action, a little more for',
@@ -73,6 +78,7 @@ configureLogging({
 const session = new GameSession(createSampleWorldState(), {
     room: new DefaultRoomFactory(),
     item: new DefaultItemFactory(),
+    npc: new DefaultNpcFactory(),
 });
 
 const toolCatalog = new ActionToolCatalog({
@@ -111,6 +117,19 @@ const toolCatalog = new ActionToolCatalog({
         description:
             'Call when the player tries to unlock or open a locked exit (e.g. "unlock the door", "use the key on ' +
             'the south door"). Pass the direction of the locked exit.',
+    },
+    lookNpc: {
+        action: new LookNpcAction(),
+        description:
+            'Call when the player examines or looks at a person present in the room (e.g. "look at the hermit", ' +
+            '"examine the guard"). Pass the exact npc id from the snapshot. Returns the npc\'s name and appearance.',
+    },
+    talkTo: {
+        action: new TalkToAction(),
+        description:
+            'Call when the player speaks to, greets, or asks something of a person present in the room (e.g. ' +
+            '"talk to the hermit", "ask the guard about the key"). Pass the exact npc id from the snapshot. ' +
+            "Returns the npc's single line of dialogue.",
     },
 });
 

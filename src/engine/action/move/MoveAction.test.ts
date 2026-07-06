@@ -7,7 +7,7 @@ import { Context, GameContext } from '../../context';
 import { fakeContext, fakeRoom } from '../../context/Context.test.utils';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
 import { ExitState, GameState } from '../../state';
 import { MovementOutcome } from '../../service/movement/MovementOutcome';
 
@@ -19,6 +19,7 @@ describe(MoveAction.name, () => {
                 return new GameContext(new GameTransaction(state), {
                     room: new DefaultRoomFactory(),
                     item: new DefaultItemFactory(),
+                    npc: new DefaultNpcFactory(),
                 });
             }
 

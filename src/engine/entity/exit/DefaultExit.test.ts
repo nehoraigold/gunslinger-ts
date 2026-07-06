@@ -14,6 +14,7 @@ describe(DefaultExit.name, () => {
             visited: false,
             exits,
             inventory: {},
+            npcIds: [],
         });
     }
 

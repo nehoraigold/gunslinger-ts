@@ -7,11 +7,15 @@ import { Action, Verdict, defineActionOutcome } from '../action';
 import { Factories } from '../context';
 import { GameTransaction } from '../transaction';
 import { createGameState } from '../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../entity';
 import { ZodSchema } from '../../utils/schema';
 
 describe(DefaultActionExecution.name, () => {
-    const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };
+    const factories: Factories = {
+        room: new DefaultRoomFactory(),
+        item: new DefaultItemFactory(),
+        npc: new DefaultNpcFactory(),
+    };
 
     const StubInputSchema = z.object({ value: z.string() });
     const StubSuccessDataSchema = z.object({ value: z.string() });

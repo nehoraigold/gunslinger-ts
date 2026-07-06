@@ -32,6 +32,7 @@ export function fakeRoom(overrides: Partial<Room> = {}): Room {
         exits: () => [],
         markVisited: () => {},
         inventory: () => fakeInventory(),
+        npcIds: () => [],
         ...overrides,
     };
 }
@@ -46,6 +47,8 @@ export function fakeContext(overrides: Partial<Context> = {}): Context {
         requireRoom: unused('requireRoom'),
         item: unused('item'),
         requireItem: unused('requireItem'),
+        npc: unused('npc'),
+        requireNpc: unused('requireNpc'),
         requireCurrentRoom: unused('requireCurrentRoom'),
         ...overrides,
     };

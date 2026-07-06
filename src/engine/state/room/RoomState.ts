@@ -1,5 +1,6 @@
 import { ExitState } from '../exit';
 import { InventoryState } from '../inventory';
+import { NpcId } from '../npc';
 import { LightLevel } from './LightLevel';
 
 export type RoomState = {
@@ -10,4 +11,5 @@ export type RoomState = {
     visited: boolean;
     exits: ExitState[];
     inventory: InventoryState;
+    npcIds: NpcId[];
 };

@@ -14,6 +14,7 @@ describe(DefaultRoom.name, () => {
             visited: false,
             exits: [],
             inventory: {},
+            npcIds: [],
             ...state,
         });
         return new DefaultRoom('room_1', roomStore);
@@ -92,6 +93,18 @@ describe(DefaultRoom.name, () => {
 
         it('should return an empty list when the room has no exits', () => {
             expect(createDefaultRoom().exits()).to.deep.equal([]);
+        });
+    });
+
+    describe('npcIds', () => {
+        it('should return the npc ids present in room state', () => {
+            const room = createDefaultRoom({ npcIds: ['hermit', 'guard'] });
+
+            expect(room.npcIds()).to.deep.equal(['hermit', 'guard']);
+        });
+
+        it('should return an empty list when the room has no npcs', () => {
+            expect(createDefaultRoom().npcIds()).to.deep.equal([]);
         });
     });
 

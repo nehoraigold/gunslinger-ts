@@ -23,6 +23,15 @@ export function createSampleWorldState(): GameState {
                 stackable: false,
             },
         },
+        npcs: {
+            hermit: {
+                name: 'Ragged Hermit',
+                appearance:
+                    'A gaunt figure wrapped in mildewed rags sits against the dry fountain, watching you with ' +
+                    'pale, unblinking eyes.',
+                dialogue: 'The key you seek opens more than one door, traveller. Mind which you choose to open.',
+            },
+        },
         rooms: {
             tower: {
                 name: 'Crumbling Tower',
@@ -36,6 +45,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'east', destinationRoomId: 'rampart' },
                 ],
                 inventory: { iron_key: 1 },
+                npcIds: [],
             },
             rampart: {
                 name: 'North Rampart',
@@ -50,6 +60,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'east', destinationRoomId: 'stairwell' },
                 ],
                 inventory: {},
+                npcIds: [],
             },
             stairwell: {
                 name: 'Collapsed Stairwell',
@@ -63,6 +74,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'south', destinationRoomId: 'chapel' },
                 ],
                 inventory: {},
+                npcIds: [],
             },
             armory: {
                 name: 'Armory',
@@ -77,6 +89,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'south', destinationRoomId: 'gatehouse' },
                 ],
                 inventory: { coins: 5 },
+                npcIds: [],
             },
             courtyard: {
                 name: 'Courtyard',
@@ -92,6 +105,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'south', destinationRoomId: 'entrance' },
                 ],
                 inventory: {},
+                npcIds: ['hermit'],
             },
             chapel: {
                 name: 'Ruined Chapel',
@@ -111,6 +125,7 @@ export function createSampleWorldState(): GameState {
                     },
                 ],
                 inventory: {},
+                npcIds: [],
             },
             gatehouse: {
                 name: 'Gatehouse',
@@ -124,6 +139,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'east', destinationRoomId: 'entrance' },
                 ],
                 inventory: {},
+                npcIds: [],
             },
             entrance: {
                 name: 'Entrance Hall',
@@ -137,6 +153,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'west', destinationRoomId: 'gatehouse' },
                 ],
                 inventory: {},
+                npcIds: [],
             },
             wellyard: {
                 name: 'Well Yard',
@@ -148,6 +165,7 @@ export function createSampleWorldState(): GameState {
                     'behind you.',
                 exits: [{ direction: 'north', destinationRoomId: 'chapel' }],
                 inventory: {},
+                npcIds: [],
             },
         },
     };

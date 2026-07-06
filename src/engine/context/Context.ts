@@ -1,5 +1,5 @@
-import { Player, Item, Room } from '../entity';
-import { ItemId, RoomId } from '../state';
+import { Player, Item, Npc, Room } from '../entity';
+import { ItemId, NpcId, RoomId } from '../state';
 
 export interface Context {
     player(): Player;
@@ -7,5 +7,7 @@ export interface Context {
     requireRoom(id: RoomId): Room;
     item(id: ItemId): Item | undefined;
     requireItem(id: ItemId): Item;
+    npc(id: NpcId): Npc | undefined;
+    requireNpc(id: NpcId): Npc;
     requireCurrentRoom(): Room;
 }

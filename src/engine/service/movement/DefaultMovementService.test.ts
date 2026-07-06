@@ -6,7 +6,7 @@ import { Context, GameContext } from '../../context';
 import { ExitState, GameState, RoomId } from '../../state';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
 import { RoomNotFoundError } from '../../error';
 
 describe(DefaultMovementService.name, () => {
@@ -15,6 +15,7 @@ describe(DefaultMovementService.name, () => {
         return new GameContext(new GameTransaction(state), {
             room: new DefaultRoomFactory(),
             item: new DefaultItemFactory(),
+            npc: new DefaultNpcFactory(),
         });
     }
 

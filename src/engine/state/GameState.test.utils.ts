@@ -1,6 +1,7 @@
 import { GameState } from './GameState';
 import { PlayerState } from './player';
 import { ItemState } from './item';
+import { NpcState } from './npc';
 import { RoomState } from './room';
 
 const player: PlayerState = {
@@ -28,6 +29,18 @@ const item2: ItemState = {
     stackable: true,
 };
 
+const npc1: NpcState = {
+    name: 'Npc 1',
+    appearance: 'The first npc',
+    dialogue: 'Well met.',
+};
+
+const npc2: NpcState = {
+    name: 'Npc 2',
+    appearance: 'The second npc',
+    dialogue: 'Move along.',
+};
+
 const room1: RoomState = {
     name: 'Room 1',
     description: 'The first room',
@@ -40,6 +53,7 @@ const room1: RoomState = {
         },
     ],
     inventory: {},
+    npcIds: [],
 };
 
 const room2: RoomState = {
@@ -54,6 +68,7 @@ const room2: RoomState = {
         },
     ],
     inventory: {},
+    npcIds: [],
 };
 
 const initialState: GameState = {
@@ -61,6 +76,10 @@ const initialState: GameState = {
     items: {
         item_1: item1,
         item_2: item2,
+    },
+    npcs: {
+        npc_1: npc1,
+        npc_2: npc2,
     },
     rooms: {
         room_1: room1,

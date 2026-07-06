@@ -5,7 +5,7 @@ import { CheckInventoryAction } from './CheckInventoryAction';
 import { Context, GameContext } from '../../context';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
 import { GameState } from '../../state';
 import { ItemNotFoundError } from '../../error';
 
@@ -15,6 +15,7 @@ describe(CheckInventoryAction.name, () => {
         return new GameContext(new GameTransaction(state), {
             room: new DefaultRoomFactory(),
             item: new DefaultItemFactory(),
+            npc: new DefaultNpcFactory(),
         });
     }
 

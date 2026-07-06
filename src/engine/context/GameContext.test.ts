@@ -5,7 +5,7 @@ import * as sinon from 'sinon';
 import { GameContext } from './GameContext';
 import { GameTransaction } from '../transaction';
 import { createGameState } from '../state/GameState.test.utils';
-import { ItemNotFoundError, RoomNotFoundError } from '../error';
+import { ItemNotFoundError, NpcNotFoundError, RoomNotFoundError } from '../error';
 
 describe(GameContext.name, () => {
     const tx = new GameTransaction(createGameState());
@@ -15,7 +15,10 @@ describe(GameContext.name, () => {
     const roomFactory = {
         create: sinon.stub().callsFake((id) => ({ id })),
     };
-    const factories = { item: itemFactory, room: roomFactory };
+    const npcFactory = {
+        create: sinon.stub().callsFake((id) => ({ id })),
+    };
+    const factories = { item: itemFactory, room: roomFactory, npc: npcFactory };
     let repository: GameContext;
 
     beforeEach(() => {
@@ -34,7 +37,7 @@ describe(GameContext.name, () => {
         });
     });
 
-    const entities = ['room', 'item'] as const;
+    const entities = ['room', 'item', 'npc'] as const;
 
     entities.forEach((entityName) => {
         describe(entityName, () => {
@@ -72,6 +75,7 @@ describe(GameContext.name, () => {
     const requireEntities = [
         { name: 'room', method: 'requireRoom', error: RoomNotFoundError },
         { name: 'item', method: 'requireItem', error: ItemNotFoundError },
+        { name: 'npc', method: 'requireNpc', error: NpcNotFoundError },
     ] as const;
 
     requireEntities.forEach(({ name, method, error }) => {

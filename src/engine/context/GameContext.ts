@@ -1,18 +1,20 @@
 import { Context } from './Context';
 import { Transaction } from '../transaction';
-import { ItemId, RoomId } from '../state';
-import { Item, ItemFactory, Room, RoomFactory, Player, DefaultPlayer } from '../entity';
+import { ItemId, NpcId, RoomId } from '../state';
+import { Item, ItemFactory, Npc, NpcFactory, Room, RoomFactory, Player, DefaultPlayer } from '../entity';
 import { KeyedValueStore, ValueStore } from '../store';
-import { ItemNotFoundError, RoomNotFoundError } from '../error';
+import { ItemNotFoundError, NpcNotFoundError, RoomNotFoundError } from '../error';
 
 type EntityCache = {
     player?: Player;
     rooms: Record<RoomId, Room>;
     items: Record<ItemId, Item>;
+    npcs: Record<NpcId, Npc>;
 };
 
 export type Factories = {
     item: ItemFactory;
+    npc: NpcFactory;
     room: RoomFactory;
 };
 
@@ -26,6 +28,7 @@ export class GameContext implements Context {
         this.cache = {
             rooms: {},
             items: {},
+            npcs: {},
         };
     }
 
@@ -46,6 +49,18 @@ export class GameContext implements Context {
             throw new ItemNotFoundError(id);
         }
         return item;
+    }
+
+    npc(id: NpcId): Npc | undefined {
+        return this.getOrCreateEntity(this.cache.npcs, id, this.tx.npcs, this.factories.npc.create);
+    }
+
+    requireNpc(id: NpcId): Npc {
+        const npc = this.npc(id);
+        if (!npc) {
+            throw new NpcNotFoundError(id);
+        }
+        return npc;
     }
 
     room(id: RoomId): Room | undefined {
