@@ -33,6 +33,13 @@ gh auth status              # must be logged in
 - **`gh` not authenticated?** It's interactive — ask the user to run `! gh auth login` in the session
   (the `!` prefix runs it here so output lands in the conversation). Don't try to script the login.
 - **Nothing to commit and no unpushed branch?** Stop — there's nothing to open.
+- **Separate *this feature's* files from unrelated changes before staging.** `git status --short` often
+  shows files that predate your work or belong to another concern (a stray `.claude/settings.json`, an
+  editor config, a scratch file). **Don't `git add -A`.** Stage the feature's file set explicitly (e.g.
+  `git add src/`, or name the paths), then re-check `git status --short` — anything still listed as
+  untracked/modified is out of scope. If you're unsure whether a file belongs, ask rather than sweep it
+  in. (A `gh pr create` "N uncommitted changes" warning is the expected, harmless signal that you
+  correctly left something out — not a problem to fix.)
 
 ## 2. Branch (never commit to `main`)
 
@@ -59,6 +66,11 @@ gh pr create --base main --title "<subject>" --body "$(cat <<'EOF'
 EOF
 )"
 ```
+
+**Seed the body from the artifacts, not from memory.** If `develop-feature` wrote a scratch spec (Phase 0)
+and a plan file (Phase 1/Gate 2), **read those files back** and lift the Spec and Design sections from them
+verbatim — the PR must reflect what the user *approved*, and reconstructing it from memory lets it drift.
+Same for the `/verify` transcript: paste the actual observed output, don't paraphrase it.
 
 **PR body structure** (this is the reviewer's whole context — make it complete):
 

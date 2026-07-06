@@ -23,11 +23,38 @@ entities, state, transactions.
 
 - Put the script at repo root or in `src/` (so `./engine/...` imports and tsconfig resolve like
   `main.ts` does — a script under a scratch dir outside the repo will fail module resolution).
-- Import the actions + `DefaultRoomFactory`/`DefaultItemFactory` + `createSampleWorldState`
-  (`src/cli/sampleWorld.ts`), build a `GameSession`, and play a sequence of turns.
+  **This overrides the general "put scratch files in a temp/job dir" convention** — the driver *must*
+  live inside the repo tree or its relative imports won't resolve. Name it distinctively (e.g.
+  `src/verifyXyz.ts`) and delete it when done.
+- Build the `GameSession` with **all** entity factories it requires — `Factories` is
+  `{ room, item, npc }` today, so import `DefaultRoomFactory` + `DefaultItemFactory` +
+  `DefaultNpcFactory` (a missing one is a typecheck error, not a silent skip). Also import the actions
+  you're driving + `createSampleWorldState` (`src/cli/sampleWorld.ts`). If a new entity type is added
+  later, this factory set grows — mirror `main.ts`'s composition root, which is the source of truth.
 - Assert against `session.getState()` between turns — it returns the **committed** state, so it
-  proves transactions commit/roll back correctly across turns.
+  proves transactions commit/roll back correctly across turns. For a **read-only** action, snapshot
+  `JSON.stringify(getState())` before and after and assert equality to prove it mutated nothing.
 - Run: `LOG_LEVEL=warn npx tsx src/<script>.ts`. **Delete the script afterward.**
+
+**Reusable skeleton** (copy, swap the turn sequence, delete after):
+
+```ts
+import { GameSession } from './engine/session';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
+import { createSampleWorldState } from './cli/sampleWorld';
+// import the action classes you're driving, e.g.:
+// import { LookAction } from './engine/action/look/LookAction';
+
+const session = new GameSession(createSampleWorldState(), {
+    room: new DefaultRoomFactory(),
+    item: new DefaultItemFactory(),
+    npc: new DefaultNpcFactory(),
+});
+const show = (label: string, v: unknown) => console.log(`\n### ${label}\n${JSON.stringify(v, null, 2)}`);
+
+// show('look', session.playTurn(new LookAction(), undefined));
+// console.log('room:', session.getState().player.currentRoomId);
+```
 
 A good sample-world scenario that exercises movement, pickup, inventory, the failure/rollback
 seam, and unlocking (the sample world's puzzle: the `iron_key` in `tower` opens the locked
