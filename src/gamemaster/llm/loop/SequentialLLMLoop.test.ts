@@ -11,10 +11,14 @@ import { TurnDraft, TurnResult } from '../turn';
 import { GameSession } from '../../../engine/session';
 import { Factories } from '../../../engine/context';
 import { createGameState } from '../../../engine/state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../../engine/entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../../engine/entity';
 
 describe(SequentialLLMLoop.name, () => {
-    const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };
+    const factories: Factories = {
+        room: new DefaultRoomFactory(),
+        item: new DefaultItemFactory(),
+        npc: new DefaultNpcFactory(),
+    };
 
     function createSession(): GameSession {
         return new GameSession(createGameState(), factories);

@@ -16,6 +16,7 @@ describe(DefaultRoomFactory.name, () => {
                 visited: false,
                 exits: [],
                 inventory: {},
+                npcIds: [],
             });
             const factory = new DefaultRoomFactory();
 

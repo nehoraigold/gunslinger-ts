@@ -44,6 +44,7 @@ describe(DefaultPlayer.name, () => {
                     visited: false,
                     exits: [],
                     inventory: {},
+                    npcIds: [],
                 }),
             );
 

@@ -7,7 +7,7 @@ import { Context, GameContext } from '../../context';
 import { fakeContext, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory, Exit, Lock } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory, Exit, Lock } from '../../entity';
 import { GameState } from '../../state';
 import { UnlockOutcome } from '../../service/lock/UnlockOutcome';
 
@@ -40,6 +40,7 @@ describe(UnlockAction.name, () => {
                 return new GameContext(new GameTransaction(state), {
                     room: new DefaultRoomFactory(),
                     item: new DefaultItemFactory(),
+                    npc: new DefaultNpcFactory(),
                 });
             }
 

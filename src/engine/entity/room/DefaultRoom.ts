@@ -1,5 +1,5 @@
 import { Room } from './Room';
-import { Direction, InventoryState, LightLevel, RoomId } from '../../state';
+import { Direction, InventoryState, LightLevel, NpcId, RoomId } from '../../state';
 import { DerivedValueStore, RoomStore } from '../../store';
 import { DefaultExit, Exit } from '../exit';
 import { Inventory, DefaultInventory } from '../inventory';
@@ -40,6 +40,10 @@ export class DefaultRoom implements Room {
         this.store.update((state) => {
             state.visited = true;
         });
+    }
+
+    npcIds(): NpcId[] {
+        return [...this.store.get().npcIds];
     }
 
     inventory(): Inventory {

@@ -5,7 +5,7 @@ import { LookAction } from './LookAction';
 import { Context, GameContext } from '../../context';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
 import { GameState } from '../../state';
 import { ItemNotFoundError } from '../../error';
 
@@ -15,12 +15,19 @@ describe(LookAction.name, () => {
         return new GameContext(new GameTransaction(state), {
             room: new DefaultRoomFactory(),
             item: new DefaultItemFactory(),
+            npc: new DefaultNpcFactory(),
         });
     }
 
     function withRoomItem(itemId: string, quantity: number): (state: GameState) => void {
         return (state) => {
             state.rooms.room_1.inventory[itemId] = quantity;
+        };
+    }
+
+    function withNpcInRoom(npcId: string): (state: GameState) => void {
+        return (state) => {
+            state.rooms.room_1.npcIds.push(npcId);
         };
     }
 
@@ -44,8 +51,23 @@ describe(LookAction.name, () => {
                     firstVisit: true,
                     exits: [{ direction: 'west', isBlocked: false }],
                     items: [{ itemId: 'item_1', name: 'Item 1', quantity: 2 }],
+                    npcs: [],
                 },
             });
+        });
+
+        it('should list the npcs present in the room', () => {
+            const ctx = createDefaultContext((state) => {
+                withNpcInRoom('npc_1')(state);
+                withNpcInRoom('npc_2')(state);
+            });
+
+            const outcome = new LookAction().execute(ctx);
+
+            expect(outcome.result === 'success' && outcome.data.npcs).to.deep.equal([
+                { npcId: 'npc_1', name: 'Npc 1' },
+                { npcId: 'npc_2', name: 'Npc 2' },
+            ]);
         });
 
         it('should report a locked exit as blocked with a reason', () => {
@@ -60,6 +82,7 @@ describe(LookAction.name, () => {
                     firstVisit: true,
                     exits: [{ direction: 'west', isBlocked: true, blockReason: 'door_locked' }],
                     items: [],
+                    npcs: [],
                 },
             });
         });

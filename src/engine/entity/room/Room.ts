@@ -1,4 +1,4 @@
-import { Direction, LightLevel, RoomId } from '../../state';
+import { Direction, LightLevel, NpcId, RoomId } from '../../state';
 import { Exit } from '../exit';
 import { Inventory } from '../inventory';
 
@@ -12,4 +12,5 @@ export interface Room {
     exits(): Exit[];
     markVisited(): void;
     inventory(): Inventory;
+    npcIds(): NpcId[];
 }

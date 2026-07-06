@@ -3,7 +3,7 @@ import { Action } from '../Action';
 import { Verdict } from '../Verdict';
 import { defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
-import { Direction, ExitBlockReason, LightLevel } from '../../state';
+import { Direction, ExitBlockReason, LightLevel, NpcId } from '../../state';
 import { Exit, InventoryEntry, Room } from '../../entity';
 import { Schema, ZodSchema } from '../../../utils/schema';
 
@@ -31,6 +31,7 @@ const LookSuccessDataSchema = z.object({
     items: z
         .array(z.object({ itemId: z.string(), name: z.string(), quantity: z.number() }))
         .describe('The items present in the room'),
+    npcs: z.array(z.object({ npcId: z.string(), name: z.string() })).describe('The npcs present in the room'),
 });
 const LookFailReasonSchema = z.never();
 const LookOutcomeSchema = defineActionOutcome(LookSuccessDataSchema, LookFailReasonSchema);
@@ -51,12 +52,14 @@ export class LookAction implements Action<LookInput, LookOutcome> {
         const roomProperties = this.describeRoom(room);
         const exits = this.describeExits(room.exits());
         const items = this.describeItems(room.inventory().list(), ctx);
+        const npcs = this.describeNpcs(room.npcIds(), ctx);
 
         return Verdict.succeed({
             room: roomProperties,
             firstVisit,
             exits,
             items,
+            npcs,
         });
     }
 
@@ -82,6 +85,13 @@ export class LookAction implements Action<LookInput, LookOutcome> {
             itemId,
             name: ctx.requireItem(itemId).name,
             quantity,
+        }));
+    }
+
+    private describeNpcs(npcIds: NpcId[], ctx: Context) {
+        return npcIds.map((npcId) => ({
+            npcId,
+            name: ctx.requireNpc(npcId).name,
         }));
     }
 }

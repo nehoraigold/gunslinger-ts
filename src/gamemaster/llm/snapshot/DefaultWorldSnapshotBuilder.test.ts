@@ -88,6 +88,24 @@ describe(DefaultWorldSnapshotBuilder.name, () => {
             expect(snapshot).to.match(/ITEMS HERE:\s*Item 1 x2 \(id: item_1\)/);
         });
 
+        it('should report no people when the current room holds no npcs', () => {
+            const state = createGameState();
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.match(/PEOPLE HERE:\s*none/);
+        });
+
+        it('should list an npc present in the current room by name and id', () => {
+            const state = createGameState((s) => {
+                s.rooms.room_1.npcIds = ['npc_1'];
+            });
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.match(/PEOPLE HERE:\s*Npc 1 \(id: npc_1\)/);
+        });
+
         it('should report nothing carried when the player holds no items', () => {
             const state = createGameState();
 

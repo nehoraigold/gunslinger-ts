@@ -8,11 +8,15 @@ import { Action, Verdict, defineActionOutcome } from '../../../engine/action';
 import { GameSession } from '../../../engine/session';
 import { Factories } from '../../../engine/context';
 import { createGameState } from '../../../engine/state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../../engine/entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../../engine/entity';
 import { ZodSchema } from '../../../utils/schema';
 
 describe(DefaultToolCallDispatcher.name, () => {
-    const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };
+    const factories: Factories = {
+        room: new DefaultRoomFactory(),
+        item: new DefaultItemFactory(),
+        npc: new DefaultNpcFactory(),
+    };
 
     const StubInputSchema = z.object({ value: z.string() });
     const StubSuccessSchema = z.object({ value: z.string() });

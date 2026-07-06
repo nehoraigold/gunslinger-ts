@@ -9,10 +9,14 @@ import { TurnDraft, TurnResult } from './turn';
 import { GameSession } from '../../engine/session';
 import { Factories } from '../../engine/context';
 import { createGameState } from '../../engine/state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory } from '../../engine/entity';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../engine/entity';
 
 describe(LLMGameMaster.name, () => {
-    const factories: Factories = { room: new DefaultRoomFactory(), item: new DefaultItemFactory() };
+    const factories: Factories = {
+        room: new DefaultRoomFactory(),
+        item: new DefaultItemFactory(),
+        npc: new DefaultNpcFactory(),
+    };
 
     async function readAll(stream: ReadableStream<string>): Promise<string[]> {
         const chunks: string[] = [];

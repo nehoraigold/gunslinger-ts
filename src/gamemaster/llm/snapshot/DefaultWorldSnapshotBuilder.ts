@@ -1,5 +1,5 @@
 import { WorldSnapshotBuilder } from './WorldSnapshotBuilder';
-import { GameState, InventoryState, ItemId, ExitState, RoomState } from '../../../engine/state';
+import { GameState, InventoryState, ItemId, NpcId, ExitState, RoomState } from '../../../engine/state';
 import { DeepReadonly } from '../../../utils/types';
 
 export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
@@ -15,6 +15,8 @@ export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
             ...this.describeExits(room.exits),
             'ITEMS HERE:',
             ...this.describeInventoryEntries(state, room.inventory),
+            'PEOPLE HERE:',
+            ...this.describeNpcs(state, room.npcIds),
         ];
     }
 
@@ -63,5 +65,12 @@ export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
             return 'none';
         }
         return state.items[itemId]?.name ?? 'none';
+    }
+
+    private describeNpcs(state: DeepReadonly<GameState>, npcIds: DeepReadonly<NpcId[]>): string[] {
+        if (npcIds.length === 0) {
+            return ['  none'];
+        }
+        return npcIds.map((npcId) => `  ${state.npcs[npcId]?.name ?? 'someone'} (id: ${npcId})`);
     }
 }
