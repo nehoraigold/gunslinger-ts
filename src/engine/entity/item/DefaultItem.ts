@@ -23,4 +23,20 @@ export class DefaultItem implements Item {
     get stackable(): boolean {
         return this.store.get().stackable;
     }
+
+    get value(): number {
+        return this.store.get().value;
+    }
+
+    get weight(): number {
+        return this.store.get().weight;
+    }
+
+    get takeable(): boolean {
+        return this.store.get().takeable;
+    }
+
+    get droppable(): boolean {
+        return this.store.get().droppable;
+    }
 }

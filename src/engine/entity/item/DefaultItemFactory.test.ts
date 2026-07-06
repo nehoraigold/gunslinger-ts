@@ -14,6 +14,10 @@ describe(DefaultItemFactory.name, () => {
                 description: 'A handful of tarnished coins.',
                 type: 'misc',
                 stackable: true,
+                value: 0,
+                weight: 0,
+                takeable: true,
+                droppable: true,
             });
             const factory = new DefaultItemFactory();
 

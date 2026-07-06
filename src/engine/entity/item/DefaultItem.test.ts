@@ -12,6 +12,10 @@ describe(DefaultItem.name, () => {
             description: 'A small iron key, cold to the touch.',
             type: 'key',
             stackable: false,
+            value: 0,
+            weight: 0,
+            takeable: true,
+            droppable: true,
             ...state,
         });
         return new DefaultItem('iron_key', store);
@@ -60,6 +64,50 @@ describe(DefaultItem.name, () => {
             const item = createDefaultItem({ stackable: false });
 
             expect(item.stackable).to.be.false;
+        });
+    });
+
+    describe('value', () => {
+        it('should return the gold value from the item state', () => {
+            const item = createDefaultItem({ value: 42 });
+
+            expect(item.value).to.equal(42);
+        });
+    });
+
+    describe('weight', () => {
+        it('should return the weight from the item state', () => {
+            const item = createDefaultItem({ weight: 7 });
+
+            expect(item.weight).to.equal(7);
+        });
+    });
+
+    describe('takeable', () => {
+        it('should return true if the item state is takeable', () => {
+            const item = createDefaultItem({ takeable: true });
+
+            expect(item.takeable).to.be.true;
+        });
+
+        it('should return false if the item state is not takeable', () => {
+            const item = createDefaultItem({ takeable: false });
+
+            expect(item.takeable).to.be.false;
+        });
+    });
+
+    describe('droppable', () => {
+        it('should return true if the item state is droppable', () => {
+            const item = createDefaultItem({ droppable: true });
+
+            expect(item.droppable).to.be.true;
+        });
+
+        it('should return false if the item state is not droppable', () => {
+            const item = createDefaultItem({ droppable: false });
+
+            expect(item.droppable).to.be.false;
         });
     });
 });

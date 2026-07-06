@@ -33,7 +33,16 @@ describe(DefaultInventoryService.name, () => {
     describe('transfer', () => {
         it('should move the default quantity of 1 from one inventory to another', () => {
             const items = createItemLookup({
-                coins: { name: 'Coins', description: '', type: 'misc', stackable: true },
+                coins: {
+                    name: 'Coins',
+                    description: '',
+                    type: 'misc',
+                    stackable: true,
+                    value: 0,
+                    weight: 0,
+                    takeable: true,
+                    droppable: true,
+                },
             });
             const service = new DefaultInventoryService(items);
             const from = createInventory({ coins: 3 });
@@ -48,7 +57,16 @@ describe(DefaultInventoryService.name, () => {
 
         it('should move a given quantity from one inventory to another', () => {
             const items = createItemLookup({
-                coins: { name: 'Coins', description: '', type: 'misc', stackable: true },
+                coins: {
+                    name: 'Coins',
+                    description: '',
+                    type: 'misc',
+                    stackable: true,
+                    value: 0,
+                    weight: 0,
+                    takeable: true,
+                    droppable: true,
+                },
             });
             const service = new DefaultInventoryService(items);
             const from = createInventory({ coins: 5 });
@@ -73,7 +91,16 @@ describe(DefaultInventoryService.name, () => {
 
         it('should return insufficientQuantity when the source has some but fewer than requested', () => {
             const items = createItemLookup({
-                coins: { name: 'Coins', description: '', type: 'misc', stackable: true },
+                coins: {
+                    name: 'Coins',
+                    description: '',
+                    type: 'misc',
+                    stackable: true,
+                    value: 0,
+                    weight: 0,
+                    takeable: true,
+                    droppable: true,
+                },
             });
             const service = new DefaultInventoryService(items);
             const from = createInventory({ coins: 1 });
@@ -88,7 +115,16 @@ describe(DefaultInventoryService.name, () => {
 
         it('should move a non-stackable item into an empty destination', () => {
             const items = createItemLookup({
-                iron_key: { name: 'Iron Key', description: '', type: 'key', stackable: false },
+                iron_key: {
+                    name: 'Iron Key',
+                    description: '',
+                    type: 'key',
+                    stackable: false,
+                    value: 0,
+                    weight: 0,
+                    takeable: true,
+                    droppable: true,
+                },
             });
             const service = new DefaultInventoryService(items);
             const from = createInventory({ iron_key: 1 });
@@ -103,7 +139,16 @@ describe(DefaultInventoryService.name, () => {
 
         it('should return notAvailable when the source inventory does not have the item at all', () => {
             const items = createItemLookup({
-                coins: { name: 'Coins', description: '', type: 'misc', stackable: true },
+                coins: {
+                    name: 'Coins',
+                    description: '',
+                    type: 'misc',
+                    stackable: true,
+                    value: 0,
+                    weight: 0,
+                    takeable: true,
+                    droppable: true,
+                },
             });
             const service = new DefaultInventoryService(items);
             const from = createInventory();
@@ -116,7 +161,16 @@ describe(DefaultInventoryService.name, () => {
 
         it('should return maximumQuantityReached when moving a second non-stackable item into a destination that already has one', () => {
             const items = createItemLookup({
-                iron_key: { name: 'Iron Key', description: '', type: 'key', stackable: false },
+                iron_key: {
+                    name: 'Iron Key',
+                    description: '',
+                    type: 'key',
+                    stackable: false,
+                    value: 0,
+                    weight: 0,
+                    takeable: true,
+                    droppable: true,
+                },
             });
             const service = new DefaultInventoryService(items);
             const from = createInventory({ iron_key: 1 });
@@ -131,7 +185,16 @@ describe(DefaultInventoryService.name, () => {
 
         it('should allow moving a stackable item into a destination that already has some', () => {
             const items = createItemLookup({
-                coins: { name: 'Coins', description: '', type: 'misc', stackable: true },
+                coins: {
+                    name: 'Coins',
+                    description: '',
+                    type: 'misc',
+                    stackable: true,
+                    value: 0,
+                    weight: 0,
+                    takeable: true,
+                    droppable: true,
+                },
             });
             const service = new DefaultInventoryService(items);
             const from = createInventory({ coins: 1 });

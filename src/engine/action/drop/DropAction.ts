@@ -10,7 +10,12 @@ import { Schema, ZodSchema } from '../../../utils/schema';
 
 const DropInputSchema = z.object({ itemId: z.string() });
 const DropSuccessDataSchema = z.object({ itemId: z.string() });
-const DropFailReasonSchema = z.enum(['not_in_inventory', 'not_enough_in_inventory', 'item_already_here']);
+const DropFailReasonSchema = z.enum([
+    'not_droppable',
+    'not_in_inventory',
+    'not_enough_in_inventory',
+    'item_already_here',
+]);
 const DropOutcomeSchema = defineActionOutcome(DropSuccessDataSchema, DropFailReasonSchema);
 
 type DropInput = z.infer<typeof DropInputSchema>;
@@ -27,6 +32,9 @@ export class DropAction implements Action<DropInput, DropOutcome> {
     ) {}
 
     execute(ctx: Context, input: DropInput): DropOutcome {
+        if (!ctx.requireItem(input.itemId).droppable) {
+            return Verdict.fail('not_droppable');
+        }
         const room = ctx.requireCurrentRoom();
         const result = this.createInventoryService(ctx).transfer(
             input.itemId,
