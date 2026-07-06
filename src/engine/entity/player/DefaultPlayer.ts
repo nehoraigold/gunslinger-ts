@@ -1,5 +1,6 @@
 import { Room } from '../room';
 import { Inventory, DefaultInventory } from '../inventory';
+import { Wallet, DefaultWallet } from '../wallet';
 import { DerivedValueStore, PlayerStore } from '../../store';
 import { InventoryState, RoomId } from '../../state';
 import { Player } from './Player';
@@ -26,6 +27,16 @@ export class DefaultPlayer implements Player {
                         state.inventory = inventory;
                     }),
             ),
+        );
+    }
+
+    wallet(): Wallet {
+        return new DefaultWallet(
+            () => this.store.get().money,
+            (money) =>
+                this.store.update((state) => {
+                    state.money = money;
+                }),
         );
     }
 }

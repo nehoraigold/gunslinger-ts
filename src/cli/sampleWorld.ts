@@ -8,6 +8,7 @@ export function createSampleWorldState(): GameState {
             currentRoomId: 'entrance',
             equipment: { weapon: undefined, armor: undefined },
             inventory: {},
+            money: 20,
         },
         items: {
             coins: {
@@ -30,6 +31,7 @@ export function createSampleWorldState(): GameState {
                     'A gaunt figure wrapped in mildewed rags sits against the dry fountain, watching you with ' +
                     'pale, unblinking eyes.',
                 dialogue: 'The key you seek opens more than one door, traveller. Mind which you choose to open.',
+                money: 5,
             },
         },
         rooms: {

@@ -8,4 +8,5 @@ export type PlayerState = {
     currentRoomId: RoomId;
     equipment: EquipmentState;
     inventory: InventoryState;
+    money: number;
 };

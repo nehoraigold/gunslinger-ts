@@ -1,5 +1,5 @@
 import { Context } from './Context';
-import { Inventory, Player, Room } from '../entity';
+import { Inventory, Player, Room, Wallet } from '../entity';
 
 export function fakeInventory(overrides: Partial<Inventory> = {}): Inventory {
     return {
@@ -12,11 +12,22 @@ export function fakeInventory(overrides: Partial<Inventory> = {}): Inventory {
     };
 }
 
+export function fakeWallet(overrides: Partial<Wallet> = {}): Wallet {
+    return {
+        balance: () => 0,
+        canAfford: () => false,
+        credit: () => {},
+        debit: () => {},
+        ...overrides,
+    };
+}
+
 export function fakePlayer(overrides: Partial<Player> = {}): Player {
     return {
         currentRoomId: 'room_1',
         moveTo: () => {},
         inventory: () => fakeInventory(),
+        wallet: () => fakeWallet(),
         ...overrides,
     };
 }

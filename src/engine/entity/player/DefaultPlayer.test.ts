@@ -19,6 +19,7 @@ describe(DefaultPlayer.name, () => {
                 armor: undefined,
             },
             inventory: {},
+            money: 0,
         };
 
         const store = new RootValueStore(state);
@@ -62,6 +63,7 @@ describe(DefaultPlayer.name, () => {
                 currentRoomId: 'room_1',
                 equipment: { weapon: undefined, armor: undefined },
                 inventory: { coins: 3 },
+                money: 0,
             };
             player = new DefaultPlayer(new RootValueStore(state));
 
@@ -72,6 +74,28 @@ describe(DefaultPlayer.name, () => {
             player.inventory().add('iron_key');
 
             expect(player.inventory().quantityOf('iron_key')).to.equal(1);
+        });
+    });
+
+    describe('wallet', () => {
+        it('should reflect the money held in player state', () => {
+            const state: PlayerState = {
+                id: 'player',
+                name: 'Player',
+                currentRoomId: 'room_1',
+                equipment: { weapon: undefined, armor: undefined },
+                inventory: {},
+                money: 42,
+            };
+            player = new DefaultPlayer(new RootValueStore(state));
+
+            expect(player.wallet().balance()).to.equal(42);
+        });
+
+        it('should persist changes made through the returned wallet back into player state', () => {
+            player.wallet().credit(10);
+
+            expect(player.wallet().balance()).to.equal(10);
         });
     });
 });
