@@ -2,7 +2,7 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import { DefaultWallet } from './DefaultWallet';
-import { InsufficientWalletBalanceError, NegativeWalletBalanceError } from '../../error';
+import { InsufficientWalletBalanceError, NegativeWalletAmountError } from '../../error';
 
 describe(DefaultWallet.name, () => {
     function createWallet(initialBalance = 0): DefaultWallet {
@@ -45,7 +45,7 @@ describe(DefaultWallet.name, () => {
         it('should throw when the amount is negative', () => {
             const wallet = createWallet(10);
 
-            expect(() => wallet.canAfford(-1)).to.throw(NegativeWalletBalanceError);
+            expect(() => wallet.canAfford(-1)).to.throw(NegativeWalletAmountError);
         });
     });
 
@@ -61,7 +61,7 @@ describe(DefaultWallet.name, () => {
         it('should throw when the amount is negative', () => {
             const wallet = createWallet(5);
 
-            expect(() => wallet.credit(-1)).to.throw(NegativeWalletBalanceError);
+            expect(() => wallet.credit(-1)).to.throw(NegativeWalletAmountError);
             expect(wallet.balance()).to.equal(5);
         });
     });
@@ -93,7 +93,7 @@ describe(DefaultWallet.name, () => {
         it('should throw when the amount is negative', () => {
             const wallet = createWallet(10);
 
-            expect(() => wallet.debit(-1)).to.throw(NegativeWalletBalanceError);
+            expect(() => wallet.debit(-1)).to.throw(NegativeWalletAmountError);
             expect(wallet.balance()).to.equal(10);
         });
     });

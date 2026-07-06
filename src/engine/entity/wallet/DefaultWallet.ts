@@ -1,5 +1,5 @@
 import { Wallet } from './Wallet';
-import { InsufficientWalletBalanceError, NegativeWalletBalanceError } from '../../error';
+import { InsufficientWalletBalanceError, NegativeWalletAmountError } from '../../error';
 
 export class DefaultWallet implements Wallet {
     constructor(
@@ -29,7 +29,7 @@ export class DefaultWallet implements Wallet {
 
     private requireNonNegative(amount: number): number {
         if (amount < 0) {
-            throw new NegativeWalletBalanceError(amount);
+            throw new NegativeWalletAmountError(amount);
         }
         return amount;
     }
