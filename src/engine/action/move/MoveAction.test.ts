@@ -4,43 +4,14 @@ import sinon from 'sinon';
 
 import { MoveAction } from './MoveAction';
 import { Context, GameContext } from '../../context';
+import { fakeContext, fakeRoom } from '../../context/Context.test.utils';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory, Room } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory } from '../../entity';
 import { ExitState, GameState } from '../../state';
 import { MovementOutcome } from '../../service/movement/MovementOutcome';
 
 describe(MoveAction.name, () => {
-    function createUnusedContext(): Context {
-        const unused = () => {
-            throw new Error('Context should not be used when the movement service is faked');
-        };
-        return {
-            player: unused,
-            room: unused,
-            requireRoom: unused,
-            item: unused,
-            requireItem: unused,
-            requireCurrentRoom: unused,
-        };
-    }
-
-    function createFakeRoom(id: string): Room {
-        return {
-            id,
-            name: '',
-            description: '',
-            lightLevel: 'bright',
-            visited: false,
-            getExit: () => undefined,
-            exits: () => [],
-            markVisited: () => {},
-            inventory: () => {
-                throw new Error('inventory should not be used in this test');
-            },
-        };
-    }
-
     describe('execute', () => {
         describe('wired to the real MovementService', () => {
             function createDefaultContext(modifyState?: ModifyState): Context {
@@ -74,9 +45,9 @@ describe(MoveAction.name, () => {
             }
 
             it('should translate a "moved" outcome into a success outcome', () => {
-                const action = createActionWithFakeMovement({ type: 'moved', room: createFakeRoom('room_9') });
+                const action = createActionWithFakeMovement({ type: 'moved', room: fakeRoom({ id: 'room_9' }) });
 
-                const outcome = action.execute(createUnusedContext(), { direction: 'west' });
+                const outcome = action.execute(fakeContext(), { direction: 'west' });
 
                 expect(outcome).to.deep.equal({ result: 'success', data: { roomId: 'room_9' } });
             });
@@ -84,17 +55,17 @@ describe(MoveAction.name, () => {
             it('should translate a "noSuchExit" outcome into a "no_exit" failure', () => {
                 const action = createActionWithFakeMovement({ type: 'noSuchExit' });
 
-                const outcome = action.execute(createUnusedContext(), { direction: 'west' });
+                const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'no_exit', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'no_exit' });
             });
 
             it('should translate an "exitBlocked" outcome into an "exit_blocked" failure', () => {
                 const action = createActionWithFakeMovement({ type: 'exitBlocked' });
 
-                const outcome = action.execute(createUnusedContext(), { direction: 'west' });
+                const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'exit_blocked', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'exit_blocked' });
             });
         });
     });

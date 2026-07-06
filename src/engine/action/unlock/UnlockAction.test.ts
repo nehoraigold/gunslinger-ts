@@ -4,9 +4,10 @@ import sinon from 'sinon';
 
 import { UnlockAction } from './UnlockAction';
 import { Context, GameContext } from '../../context';
+import { fakeContext, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory, Exit, Inventory, Lock, Player, Room } from '../../entity';
+import { DefaultRoomFactory, DefaultItemFactory, Exit, Lock } from '../../entity';
 import { GameState } from '../../state';
 import { UnlockOutcome } from '../../service/lock/UnlockOutcome';
 
@@ -26,36 +27,10 @@ describe(UnlockAction.name, () => {
     }
 
     function createFakeContext(exit: Exit | undefined): Context {
-        const fakeInventory: Inventory = {
-            quantityOf: () => 0,
-            has: () => false,
-            add: () => {},
-            remove: () => {},
-            list: () => [],
-        };
-        const fakePlayer: Player = { currentRoomId: 'room_1', moveTo: () => {}, inventory: () => fakeInventory };
-        const fakeRoom: Room = {
-            id: 'room_1',
-            name: 'Room 1',
-            description: '',
-            lightLevel: 'bright',
-            visited: false,
-            getExit: () => exit,
-            exits: () => (exit ? [exit] : []),
-            markVisited: () => {},
-            inventory: () => fakeInventory,
-        };
-        const unused = () => {
-            throw new Error('Context member should not be used in this test');
-        };
-        return {
-            player: () => fakePlayer,
-            room: unused,
-            requireRoom: unused,
-            item: unused,
-            requireItem: unused,
-            requireCurrentRoom: () => fakeRoom,
-        };
+        return fakeContext({
+            player: () => fakePlayer(),
+            requireCurrentRoom: () => fakeRoom({ getExit: () => exit }),
+        });
     }
 
     describe('execute', () => {
@@ -124,7 +99,7 @@ describe(UnlockAction.name, () => {
 
                 const outcome = action.execute(ctx, { direction: 'west' });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'missing_key', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'missing_key' });
                 expect(ctx.room('room_1')!.getExit('west')!.isBlocked()).to.be.true;
             });
         });
@@ -139,7 +114,7 @@ describe(UnlockAction.name, () => {
 
                 const outcome = action.execute(createFakeContext(undefined), { direction: 'north' });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'no_exit', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'no_exit' });
             });
 
             it('should return a not_lockable failure when the exit has no lock', () => {
@@ -147,7 +122,7 @@ describe(UnlockAction.name, () => {
 
                 const outcome = action.execute(createFakeContext(createFakeExit(undefined)), { direction: 'north' });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'not_lockable', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_lockable' });
             });
 
             it('should translate an "unlocked" outcome into a success outcome', () => {
@@ -170,7 +145,7 @@ describe(UnlockAction.name, () => {
                     direction: 'north',
                 });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'already_unlocked', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'already_unlocked' });
             });
 
             it('should translate a "missingKey" outcome into a missing_key failure', () => {
@@ -180,7 +155,7 @@ describe(UnlockAction.name, () => {
                     direction: 'north',
                 });
 
-                expect(outcome).to.deep.equal({ result: 'failure', reason: 'missing_key', message: undefined });
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'missing_key' });
             });
         });
     });

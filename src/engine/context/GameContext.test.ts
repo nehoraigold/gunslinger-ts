@@ -39,7 +39,7 @@ describe(GameContext.name, () => {
     entities.forEach((entityName) => {
         describe(entityName, () => {
             it(`should return undefined if the ${entityName} does not exist`, () => {
-                const undefinedEntity = repository.room(`nonexistent_${entityName}`);
+                const undefinedEntity = repository[entityName](`nonexistent_${entityName}`);
 
                 expect(undefinedEntity).to.be.undefined;
             });
