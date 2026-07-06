@@ -1,3 +1,3 @@
 export interface TickSource {
-    currentTurn(): number;
+    currentTick(): number;
 }

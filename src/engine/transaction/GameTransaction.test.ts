@@ -59,7 +59,7 @@ describe(GameTransaction.name, () => {
             const state = tx.commit();
 
             const expectedState = {
-                clock: initialState.clock,
+                turnCounter: initialState.turnCounter,
                 player: {
                     ...initialState.player,
                     name: 'Ori',

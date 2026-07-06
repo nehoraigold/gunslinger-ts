@@ -10,14 +10,14 @@ import {
     RoomFactory,
     Player,
     DefaultPlayer,
-    Clock,
-    DefaultClock,
+    TurnCounter,
+    DefaultTurnCounter,
 } from '../entity';
 import { KeyedValueStore, ValueStore } from '../store';
 import { ItemNotFoundError, NpcNotFoundError, RoomNotFoundError } from '../error';
 
 type EntityCache = {
-    clock?: Clock;
+    turnCounter?: TurnCounter;
     player?: Player;
     rooms: Record<RoomId, Room>;
     items: Record<ItemId, Item>;
@@ -44,11 +44,11 @@ export class GameContext implements Context {
         };
     }
 
-    clock(): Clock {
-        if (!this.cache.clock) {
-            this.cache.clock = new DefaultClock(this.tx.clock);
+    turnCounter(): TurnCounter {
+        if (!this.cache.turnCounter) {
+            this.cache.turnCounter = new DefaultTurnCounter(this.tx.turnCounter);
         }
-        return this.cache.clock;
+        return this.cache.turnCounter;
     }
 
     player(): Player {

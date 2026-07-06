@@ -1,11 +1,10 @@
 import { Action } from '../action';
 import { Context, Factories, GameContext } from '../context';
-import { StateManager } from '../transaction';
+import { StateManager, Transaction } from '../transaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
 import { PlayableSession } from './PlayableSession';
-import { DefaultActionExecution } from './DefaultActionExecution';
-import { TurnSystem } from './TurnSystem';
+import { OnTickEffect } from './OnTickEffect';
 
 export class GameSession implements PlayableSession {
     private readonly stateManager: StateManager;
@@ -13,7 +12,7 @@ export class GameSession implements PlayableSession {
     constructor(
         initialState: GameState,
         private readonly factories: Factories,
-        private readonly turnSystems: readonly TurnSystem[] = [],
+        private readonly onTickEffects: readonly OnTickEffect[] = [],
     ) {
         this.stateManager = new StateManager(initialState);
     }
@@ -30,28 +29,29 @@ export class GameSession implements PlayableSession {
 
         const tx = this.stateManager.beginTransaction();
         const context = new GameContext(tx, this.factories);
-        const execution = new DefaultActionExecution();
-        let shouldCommit = false;
+        let succeeded = false;
         try {
-            const outcome = execution.play(context, action, input);
+            const outcome = action.execute(context, input);
             if (outcome.result === 'success') {
-                this.concludeTurn(context);
-                shouldCommit = true;
+                this.tick(context);
+                succeeded = true;
             }
             return outcome;
         } finally {
-            if (shouldCommit) {
-                this.stateManager.commit(tx);
-            } else {
-                this.stateManager.rollback(tx);
-            }
+            this.settle(tx, succeeded);
         }
     }
 
-    private concludeTurn(context: Context): void {
-        context.clock().advance();
-        for (const system of this.turnSystems) {
-            system.run(context);
+    private tick(context: Context): void {
+        context.turnCounter().advance();
+        this.onTickEffects.forEach((effect) => effect.apply(context));
+    }
+
+    private settle(tx: Transaction, succeeded: boolean): void {
+        if (succeeded) {
+            this.stateManager.commit(tx);
+        } else {
+            this.stateManager.rollback(tx);
         }
     }
 }

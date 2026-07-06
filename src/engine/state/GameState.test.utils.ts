@@ -75,8 +75,8 @@ const room2: RoomState = {
 };
 
 const initialState: GameState = {
-    clock: {
-        turn: 0,
+    turnCounter: {
+        count: 0,
     },
     player,
     items: {

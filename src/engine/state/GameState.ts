@@ -2,10 +2,10 @@ import { PlayerState } from './player';
 import { ItemId, ItemState } from './item';
 import { NpcId, NpcState } from './npc';
 import { RoomId, RoomState } from './room';
-import { ClockState } from './clock';
+import { TurnCounterState } from './tick';
 
 export type GameState = {
-    clock: ClockState;
+    turnCounter: TurnCounterState;
     player: PlayerState;
     items: Record<ItemId, ItemState>;
     npcs: Record<NpcId, NpcState>;

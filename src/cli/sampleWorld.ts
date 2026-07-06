@@ -2,7 +2,7 @@ import { GameState } from '../engine/state';
 
 export function createSampleWorldState(): GameState {
     return {
-        clock: { turn: 0 },
+        turnCounter: { count: 0 },
         player: {
             id: 'player',
             name: 'Adventurer',
