@@ -27,15 +27,15 @@ export class PickUpAction implements Action<PickUpInput, PickUpOutcome> {
     ) {}
 
     execute(ctx: Context, input: PickUpInput): PickUpOutcome {
-        if (!ctx.requireItem(input.itemId).takeable) {
+        const item = ctx.requireItem(input.itemId);
+        const roomInventory = ctx.requireCurrentRoom().inventory();
+        if (!roomInventory.has(input.itemId)) {
+            return Verdict.fail('not_in_room');
+        }
+        if (!item.takeable) {
             return Verdict.fail('not_takeable');
         }
-        const room = ctx.requireCurrentRoom();
-        const result = this.createInventoryService(ctx).transfer(
-            input.itemId,
-            room.inventory(),
-            ctx.player().inventory(),
-        );
+        const result = this.createInventoryService(ctx).transfer(input.itemId, roomInventory, ctx.player().inventory());
         switch (result.type) {
             case 'transferred':
                 return Verdict.succeed({ itemId: result.itemId });

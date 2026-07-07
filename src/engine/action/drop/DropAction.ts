@@ -32,14 +32,18 @@ export class DropAction implements Action<DropInput, DropOutcome> {
     ) {}
 
     execute(ctx: Context, input: DropInput): DropOutcome {
-        if (!ctx.requireItem(input.itemId).droppable) {
+        const item = ctx.requireItem(input.itemId);
+        const playerInventory = ctx.player().inventory();
+        if (!playerInventory.has(input.itemId)) {
+            return Verdict.fail('not_in_inventory');
+        }
+        if (!item.droppable) {
             return Verdict.fail('not_droppable');
         }
-        const room = ctx.requireCurrentRoom();
         const result = this.createInventoryService(ctx).transfer(
             input.itemId,
-            ctx.player().inventory(),
-            room.inventory(),
+            playerInventory,
+            ctx.requireCurrentRoom().inventory(),
         );
         switch (result.type) {
             case 'transferred':
