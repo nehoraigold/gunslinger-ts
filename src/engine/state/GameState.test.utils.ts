@@ -21,6 +21,10 @@ const item1: ItemState = {
     description: 'The first item',
     type: 'weapon',
     stackable: false,
+    value: 0,
+    weight: 0,
+    takeable: true,
+    droppable: true,
 };
 
 const item2: ItemState = {
@@ -28,6 +32,10 @@ const item2: ItemState = {
     description: 'The second item',
     type: 'consumable',
     stackable: true,
+    value: 0,
+    weight: 0,
+    takeable: true,
+    droppable: true,
 };
 
 const npc1: NpcState = {

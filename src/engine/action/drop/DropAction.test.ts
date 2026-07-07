@@ -4,16 +4,22 @@ import sinon from 'sinon';
 
 import { DropAction } from './DropAction';
 import { Context, GameContext } from '../../context';
-import { fakeContext, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
+import { fakeContext, fakeInventory, fakeItem, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
+import { Item } from '../../entity';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
 import { GameState } from '../../state';
 import { TransferOutcome } from '../../service/inventory/TransferOutcome';
+import { ItemNotFoundError } from '../../error';
 
 describe(DropAction.name, () => {
-    function createFakeContext(): Context {
-        return fakeContext({ player: () => fakePlayer(), requireCurrentRoom: () => fakeRoom() });
+    function createFakeContext(item: Item = fakeItem()): Context {
+        return fakeContext({
+            player: () => fakePlayer({ inventory: () => fakeInventory({ has: () => true }) }),
+            requireCurrentRoom: () => fakeRoom(),
+            requireItem: () => item,
+        });
     }
 
     describe('execute', () => {
@@ -42,6 +48,38 @@ describe(DropAction.name, () => {
                 expect(outcome).to.deep.equal({ result: 'success', data: { itemId: 'item_1' } });
                 expect(ctx.player().inventory().quantityOf('item_1')).to.equal(0);
             });
+
+            it('should fail with not_droppable and keep the item in inventory when the item is not droppable', () => {
+                const ctx = createDefaultContext((state) => {
+                    state.items.item_1.droppable = false;
+                    state.player.inventory.item_1 = 1;
+                });
+                const action = new DropAction();
+
+                const outcome = action.execute(ctx, { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_droppable' });
+                expect(ctx.player().inventory().quantityOf('item_1')).to.equal(1);
+                expect(ctx.requireCurrentRoom().inventory().quantityOf('item_1')).to.equal(0);
+            });
+
+            it('should throw ItemNotFoundError for an unknown item id before reporting not_in_inventory', () => {
+                const ctx = createDefaultContext();
+                const action = new DropAction();
+
+                expect(() => action.execute(ctx, { itemId: 'unknown' })).to.throw(ItemNotFoundError);
+            });
+
+            it('should fail with not_in_inventory, not not_droppable, when a non-droppable item is not carried', () => {
+                const ctx = createDefaultContext((state) => {
+                    state.items.item_1.droppable = false;
+                });
+                const action = new DropAction();
+
+                const outcome = action.execute(ctx, { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_in_inventory' });
+            });
         });
 
         describe('with a fake InventoryService', () => {
@@ -55,6 +93,31 @@ describe(DropAction.name, () => {
                 const outcome = action.execute(createFakeContext(), { itemId: 'item_1' });
 
                 expect(outcome).to.deep.equal({ result: 'success', data: { itemId: 'item_1' } });
+            });
+
+            it('should fail with not_droppable without consulting the inventory service when the item is not droppable', () => {
+                const transfer = sinon.stub();
+                const action = new DropAction(() => ({ transfer }));
+
+                const outcome = action.execute(createFakeContext(fakeItem({ droppable: false })), { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_droppable' });
+                expect(transfer.called).to.be.false;
+            });
+
+            it('should fail with not_in_inventory without consulting the inventory service when a non-droppable item is absent', () => {
+                const transfer = sinon.stub();
+                const ctx = fakeContext({
+                    player: () => fakePlayer(),
+                    requireCurrentRoom: () => fakeRoom(),
+                    requireItem: () => fakeItem({ droppable: false }),
+                });
+                const action = new DropAction(() => ({ transfer }));
+
+                const outcome = action.execute(ctx, { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_in_inventory' });
+                expect(transfer.called).to.be.false;
             });
 
             it('should translate a "notAvailable" outcome into a "not_in_inventory" failure', () => {

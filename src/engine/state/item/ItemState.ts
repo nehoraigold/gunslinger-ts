@@ -5,4 +5,8 @@ export type ItemState = {
     description: string;
     type: ItemType;
     stackable: boolean;
+    value: number;
+    weight: number;
+    takeable: boolean;
+    droppable: boolean;
 };

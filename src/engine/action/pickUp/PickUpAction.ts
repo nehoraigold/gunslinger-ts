@@ -10,7 +10,7 @@ import { Schema, ZodSchema } from '../../../utils/schema';
 
 const PickUpInputSchema = z.object({ itemId: z.string() });
 const PickUpSuccessDataSchema = z.object({ itemId: z.string() });
-const PickUpFailReasonSchema = z.enum(['not_in_room', 'not_enough_in_room', 'already_carrying']);
+const PickUpFailReasonSchema = z.enum(['not_takeable', 'not_in_room', 'not_enough_in_room', 'already_carrying']);
 const PickUpOutcomeSchema = defineActionOutcome(PickUpSuccessDataSchema, PickUpFailReasonSchema);
 
 type PickUpInput = z.infer<typeof PickUpInputSchema>;
@@ -27,12 +27,15 @@ export class PickUpAction implements Action<PickUpInput, PickUpOutcome> {
     ) {}
 
     execute(ctx: Context, input: PickUpInput): PickUpOutcome {
-        const room = ctx.requireCurrentRoom();
-        const result = this.createInventoryService(ctx).transfer(
-            input.itemId,
-            room.inventory(),
-            ctx.player().inventory(),
-        );
+        const item = ctx.requireItem(input.itemId);
+        const roomInventory = ctx.requireCurrentRoom().inventory();
+        if (!roomInventory.has(input.itemId)) {
+            return Verdict.fail('not_in_room');
+        }
+        if (!item.takeable) {
+            return Verdict.fail('not_takeable');
+        }
+        const result = this.createInventoryService(ctx).transfer(input.itemId, roomInventory, ctx.player().inventory());
         switch (result.type) {
             case 'transferred':
                 return Verdict.succeed({ itemId: result.itemId });

@@ -4,16 +4,22 @@ import sinon from 'sinon';
 
 import { PickUpAction } from './PickUpAction';
 import { Context, GameContext } from '../../context';
-import { fakeContext, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
+import { fakeContext, fakeInventory, fakeItem, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
+import { Item } from '../../entity';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
 import { GameState } from '../../state';
 import { TransferOutcome } from '../../service/inventory/TransferOutcome';
+import { ItemNotFoundError } from '../../error';
 
 describe(PickUpAction.name, () => {
-    function createFakeContext(): Context {
-        return fakeContext({ player: () => fakePlayer(), requireCurrentRoom: () => fakeRoom() });
+    function createFakeContext(item: Item = fakeItem()): Context {
+        return fakeContext({
+            player: () => fakePlayer(),
+            requireCurrentRoom: () => fakeRoom({ inventory: () => fakeInventory({ has: () => true }) }),
+            requireItem: () => item,
+        });
     }
 
     describe('execute', () => {
@@ -42,6 +48,38 @@ describe(PickUpAction.name, () => {
                 expect(outcome).to.deep.equal({ result: 'success', data: { itemId: 'item_1' } });
                 expect(ctx.player().inventory().quantityOf('item_1')).to.equal(1);
             });
+
+            it('should fail with not_takeable and leave the item in the room when the item is not takeable', () => {
+                const ctx = createDefaultContext((state) => {
+                    state.items.item_1.takeable = false;
+                    state.rooms[state.player.currentRoomId].inventory.item_1 = 1;
+                });
+                const action = new PickUpAction();
+
+                const outcome = action.execute(ctx, { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_takeable' });
+                expect(ctx.player().inventory().quantityOf('item_1')).to.equal(0);
+                expect(ctx.requireCurrentRoom().inventory().quantityOf('item_1')).to.equal(1);
+            });
+
+            it('should throw ItemNotFoundError for an unknown item id before reporting not_in_room', () => {
+                const ctx = createDefaultContext();
+                const action = new PickUpAction();
+
+                expect(() => action.execute(ctx, { itemId: 'unknown' })).to.throw(ItemNotFoundError);
+            });
+
+            it('should fail with not_in_room, not not_takeable, when a non-takeable item is not in the room', () => {
+                const ctx = createDefaultContext((state) => {
+                    state.items.item_1.takeable = false;
+                });
+                const action = new PickUpAction();
+
+                const outcome = action.execute(ctx, { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_in_room' });
+            });
         });
 
         describe('with a fake InventoryService', () => {
@@ -55,6 +93,31 @@ describe(PickUpAction.name, () => {
                 const outcome = action.execute(createFakeContext(), { itemId: 'item_1' });
 
                 expect(outcome).to.deep.equal({ result: 'success', data: { itemId: 'item_1' } });
+            });
+
+            it('should fail with not_takeable without consulting the inventory service when the item is not takeable', () => {
+                const transfer = sinon.stub();
+                const action = new PickUpAction(() => ({ transfer }));
+
+                const outcome = action.execute(createFakeContext(fakeItem({ takeable: false })), { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_takeable' });
+                expect(transfer.called).to.be.false;
+            });
+
+            it('should fail with not_in_room without consulting the inventory service when a non-takeable item is absent', () => {
+                const transfer = sinon.stub();
+                const ctx = fakeContext({
+                    player: () => fakePlayer(),
+                    requireCurrentRoom: () => fakeRoom(),
+                    requireItem: () => fakeItem({ takeable: false }),
+                });
+                const action = new PickUpAction(() => ({ transfer }));
+
+                const outcome = action.execute(ctx, { itemId: 'item_1' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'not_in_room' });
+                expect(transfer.called).to.be.false;
             });
 
             it('should translate a "notAvailable" outcome into a "not_in_room" failure', () => {

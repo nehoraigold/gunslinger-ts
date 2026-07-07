@@ -10,7 +10,12 @@ import { Schema, ZodSchema } from '../../../utils/schema';
 
 const DropInputSchema = z.object({ itemId: z.string() });
 const DropSuccessDataSchema = z.object({ itemId: z.string() });
-const DropFailReasonSchema = z.enum(['not_in_inventory', 'not_enough_in_inventory', 'item_already_here']);
+const DropFailReasonSchema = z.enum([
+    'not_droppable',
+    'not_in_inventory',
+    'not_enough_in_inventory',
+    'item_already_here',
+]);
 const DropOutcomeSchema = defineActionOutcome(DropSuccessDataSchema, DropFailReasonSchema);
 
 type DropInput = z.infer<typeof DropInputSchema>;
@@ -27,11 +32,18 @@ export class DropAction implements Action<DropInput, DropOutcome> {
     ) {}
 
     execute(ctx: Context, input: DropInput): DropOutcome {
-        const room = ctx.requireCurrentRoom();
+        const item = ctx.requireItem(input.itemId);
+        const playerInventory = ctx.player().inventory();
+        if (!playerInventory.has(input.itemId)) {
+            return Verdict.fail('not_in_inventory');
+        }
+        if (!item.droppable) {
+            return Verdict.fail('not_droppable');
+        }
         const result = this.createInventoryService(ctx).transfer(
             input.itemId,
-            ctx.player().inventory(),
-            room.inventory(),
+            playerInventory,
+            ctx.requireCurrentRoom().inventory(),
         );
         switch (result.type) {
             case 'transferred':
