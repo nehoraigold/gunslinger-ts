@@ -1,11 +1,23 @@
 import { Context } from './Context';
 import { Transaction } from '../transaction';
 import { ItemId, NpcId, RoomId } from '../state';
-import { Item, ItemFactory, Npc, NpcFactory, Room, RoomFactory, Player, DefaultPlayer } from '../entity';
+import {
+    Item,
+    ItemFactory,
+    Npc,
+    NpcFactory,
+    Room,
+    RoomFactory,
+    Player,
+    DefaultPlayer,
+    TurnCounter,
+    DefaultTurnCounter,
+} from '../entity';
 import { KeyedValueStore, ValueStore } from '../store';
 import { ItemNotFoundError, NpcNotFoundError, RoomNotFoundError } from '../error';
 
 type EntityCache = {
+    turnCounter?: TurnCounter;
     player?: Player;
     rooms: Record<RoomId, Room>;
     items: Record<ItemId, Item>;
@@ -30,6 +42,13 @@ export class GameContext implements Context {
             items: {},
             npcs: {},
         };
+    }
+
+    turnCounter(): TurnCounter {
+        if (!this.cache.turnCounter) {
+            this.cache.turnCounter = new DefaultTurnCounter(this.tx.turnCounter);
+        }
+        return this.cache.turnCounter;
     }
 
     player(): Player {

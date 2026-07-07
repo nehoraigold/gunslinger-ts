@@ -3,8 +3,9 @@ import { expect } from 'chai';
 import { z } from 'zod';
 
 import { GameSession } from './GameSession';
+import { OnTurnEffect } from './OnTurnEffect';
 import { Action, Verdict, defineActionOutcome } from '../action';
-import { Factories } from '../context';
+import { Context, Factories } from '../context';
 import { createGameState } from '../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../entity';
 import { ZodSchema, ParseError } from '../../utils/schema';
@@ -118,6 +119,109 @@ describe(GameSession.name, () => {
 
             expect(outcome).to.deep.equal({ result: 'success', data: { value: 'ok' } });
             expect(session.getState().player.currentRoomId).to.equal('room_2');
+        });
+    });
+
+    describe('turn counter', () => {
+        const succeed = createStubAction(() => Verdict.succeed({ value: 'ok' }));
+        const fail = createStubAction(() => Verdict.fail('nope'));
+
+        it('should advance the count by one when an action succeeds', () => {
+            const session = new GameSession(createGameState(), factories);
+
+            session.playTurn(succeed, { value: 'ok' });
+
+            expect(session.getState().turnCounter.count).to.equal(1);
+        });
+
+        it('should advance once per successful turn across multiple turns', () => {
+            const session = new GameSession(createGameState(), factories);
+
+            session.playTurn(succeed, { value: 'ok' });
+            session.playTurn(succeed, { value: 'ok' });
+            session.playTurn(succeed, { value: 'ok' });
+
+            expect(session.getState().turnCounter.count).to.equal(3);
+        });
+
+        it('should not advance the count when an action fails', () => {
+            const session = new GameSession(createGameState(), factories);
+
+            session.playTurn(fail, { value: 'ok' });
+
+            expect(session.getState().turnCounter.count).to.equal(0);
+        });
+
+        it('should not advance the count when the raw input fails to parse', () => {
+            const session = new GameSession(createGameState(), factories);
+
+            expect(() => session.playTurn(succeed, { value: 42 })).to.throw(ParseError);
+            expect(session.getState().turnCounter.count).to.equal(0);
+        });
+
+        it('should not advance the count when an action throws', () => {
+            const session = new GameSession(createGameState(), factories);
+            const throwing = createStubAction(() => {
+                throw new Error('boom');
+            });
+
+            expect(() => session.playTurn(throwing, { value: 'ok' })).to.throw('boom');
+            expect(session.getState().turnCounter.count).to.equal(0);
+        });
+    });
+
+    describe('on-turn effects', () => {
+        const succeed = createStubAction(() => Verdict.succeed({ value: 'ok' }));
+        const fail = createStubAction(() => Verdict.fail('nope'));
+
+        const recordingEffect = (log: number[]): OnTurnEffect => ({
+            apply: (ctx: Context) => log.push(ctx.turnCounter().current()),
+        });
+
+        it('should apply registered effects after a successful action, observing the advanced turn count', () => {
+            const seen: number[] = [];
+            const session = new GameSession(createGameState(), factories, [recordingEffect(seen)]);
+
+            session.playTurn(succeed, { value: 'ok' });
+
+            expect(seen).to.deep.equal([1]);
+        });
+
+        it('should apply registered effects in order', () => {
+            const order: string[] = [];
+            const first: OnTurnEffect = { apply: () => order.push('first') };
+            const second: OnTurnEffect = { apply: () => order.push('second') };
+            const session = new GameSession(createGameState(), factories, [first, second]);
+
+            session.playTurn(succeed, { value: 'ok' });
+
+            expect(order).to.deep.equal(['first', 'second']);
+        });
+
+        it('should not apply effects when the action fails', () => {
+            const seen: number[] = [];
+            const session = new GameSession(createGameState(), factories, [recordingEffect(seen)]);
+
+            session.playTurn(fail, { value: 'ok' });
+
+            expect(seen).to.deep.equal([]);
+        });
+
+        it('should roll back the whole turn, including the turn advance, when an effect throws', () => {
+            const explodingEffect: OnTurnEffect = {
+                apply: () => {
+                    throw new Error('effect boom');
+                },
+            };
+            const moveAndSucceed = createStubAction((ctx) => {
+                ctx.player().moveTo(ctx.room('room_2')!);
+                return Verdict.succeed({ value: 'ok' });
+            });
+            const session = new GameSession(createGameState(), factories, [explodingEffect]);
+
+            expect(() => session.playTurn(moveAndSucceed, { value: 'ok' })).to.throw('effect boom');
+            expect(session.getState().turnCounter.count).to.equal(0);
+            expect(session.getState().player.currentRoomId).to.equal('room_1');
         });
     });
 });

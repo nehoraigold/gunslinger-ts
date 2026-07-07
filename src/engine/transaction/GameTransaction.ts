@@ -1,9 +1,18 @@
 import { GameState } from '../state';
-import { DefaultKeyedValueStore, ItemsStore, NpcsStore, PlayerStore, RoomsStore, RootValueStore } from '../store';
+import {
+    TurnCounterStore,
+    DefaultKeyedValueStore,
+    ItemsStore,
+    NpcsStore,
+    PlayerStore,
+    RoomsStore,
+    RootValueStore,
+} from '../store';
 import { Transaction } from './Transaction';
 import { DeepReadonly, cloneMutable } from '../../utils/types';
 
 export class GameTransaction implements Transaction {
+    private readonly turnCounterStore: TurnCounterStore;
     private readonly playerStore: PlayerStore;
     private readonly roomStore: RoomsStore;
     private readonly itemStore: ItemsStore;
@@ -11,10 +20,15 @@ export class GameTransaction implements Transaction {
 
     constructor(state: DeepReadonly<GameState>) {
         const initial = cloneMutable<GameState>(state);
+        this.turnCounterStore = new RootValueStore(initial.turnCounter);
         this.playerStore = new RootValueStore(initial.player);
         this.itemStore = new DefaultKeyedValueStore(initial.items);
         this.npcStore = new DefaultKeyedValueStore(initial.npcs);
         this.roomStore = new DefaultKeyedValueStore(initial.rooms);
+    }
+
+    get turnCounter(): TurnCounterStore {
+        return this.turnCounterStore;
     }
 
     get player(): PlayerStore {
@@ -35,6 +49,7 @@ export class GameTransaction implements Transaction {
 
     commit(): DeepReadonly<GameState> {
         return {
+            turnCounter: this.turnCounterStore.get(),
             player: this.playerStore.get(),
             items: this.itemStore.getAll(),
             npcs: this.npcStore.getAll(),
