@@ -1,4 +1,4 @@
-export * from './tick';
+export * from './turn';
 export * from './item';
 export * from './npc';
 export * from './player';

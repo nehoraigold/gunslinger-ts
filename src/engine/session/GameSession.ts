@@ -43,7 +43,7 @@ export class GameSession implements PlayableSession {
     }
 
     private advanceTurn(context: Context): void {
-        context.turnCounter().advance();
+        context.turnCounter().increment();
         this.onTurnEffects.forEach((effect) => effect.apply(context));
     }
 

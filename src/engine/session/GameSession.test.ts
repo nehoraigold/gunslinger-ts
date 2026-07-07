@@ -175,7 +175,7 @@ describe(GameSession.name, () => {
         const fail = createStubAction(() => Verdict.fail('nope'));
 
         const recordingEffect = (log: number[]): OnTurnEffect => ({
-            apply: (ctx: Context) => log.push(ctx.turnCounter().currentTick()),
+            apply: (ctx: Context) => log.push(ctx.turnCounter().current()),
         });
 
         it('should apply registered effects after a successful action, observing the advanced turn count', () => {
