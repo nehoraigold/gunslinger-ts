@@ -12,12 +12,15 @@ import {
     DefaultPlayer,
     TurnCounter,
     DefaultTurnCounter,
+    Flags,
+    DefaultFlags,
 } from '../entity';
 import { KeyedValueStore, ValueStore } from '../store';
 import { ItemNotFoundError, NpcNotFoundError, RoomNotFoundError } from '../error';
 
 type EntityCache = {
     turnCounter?: TurnCounter;
+    flags?: Flags;
     player?: Player;
     rooms: Record<RoomId, Room>;
     items: Record<ItemId, Item>;
@@ -49,6 +52,13 @@ export class GameContext implements Context {
             this.cache.turnCounter = new DefaultTurnCounter(this.tx.turnCounter);
         }
         return this.cache.turnCounter;
+    }
+
+    flags(): Flags {
+        if (!this.cache.flags) {
+            this.cache.flags = new DefaultFlags(this.tx.flags);
+        }
+        return this.cache.flags;
     }
 
     player(): Player {

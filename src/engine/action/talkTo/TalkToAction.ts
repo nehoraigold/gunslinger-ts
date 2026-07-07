@@ -28,6 +28,7 @@ export class TalkToAction implements Action<TalkToInput, TalkToOutcome> {
         }
 
         const npc = ctx.requireNpc(npcId);
+        ctx.flags().set(`talked_to_${npcId}`, true);
         return Verdict.succeed({
             npcId,
             name: npc.name,

@@ -60,6 +60,7 @@ describe(GameTransaction.name, () => {
 
             const expectedState = {
                 turnCounter: initialState.turnCounter,
+                flags: initialState.flags,
                 player: {
                     ...initialState.player,
                     name: 'Ori',
@@ -72,6 +73,14 @@ describe(GameTransaction.name, () => {
                 },
             };
             expect(state).to.deep.equal(expectedState);
+        });
+
+        it('should reflect flag writes made during the transaction', () => {
+            const tx = new GameTransaction(initialState);
+
+            tx.flags.update((flags) => (flags.gate_open = true));
+
+            expect(tx.commit().flags).to.deep.equal({ gate_open: true });
         });
     });
 });

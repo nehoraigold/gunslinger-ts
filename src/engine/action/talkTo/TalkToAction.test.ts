@@ -44,12 +44,28 @@ describe(TalkToAction.name, () => {
             });
         });
 
+        it('should record a talked_to_<npcId> flag on success', () => {
+            const ctx = createDefaultContext(withNpcInRoom('npc_1'));
+
+            new TalkToAction().execute(ctx, { npcId: 'npc_1' });
+
+            expect(ctx.flags().get('talked_to_npc_1')).to.equal(true);
+        });
+
         it('should fail with npc_not_present when the npc exists but is in another room', () => {
             const ctx = createDefaultContext();
 
             const outcome = new TalkToAction().execute(ctx, { npcId: 'npc_1' });
 
             expect(outcome).to.deep.include({ result: 'failure', reason: 'npc_not_present' });
+        });
+
+        it('should not record any flag when the talk fails', () => {
+            const ctx = createDefaultContext();
+
+            new TalkToAction().execute(ctx, { npcId: 'npc_1' });
+
+            expect(ctx.flags().has('talked_to_npc_1')).to.be.false;
         });
 
         it('should fail with npc_not_present for an id that is not present', () => {
@@ -69,16 +85,17 @@ describe(TalkToAction.name, () => {
         });
     });
 
-    describe('read-only', () => {
-        it('should not change the world and should yield the identical outcome when repeated', () => {
+    describe('idempotency', () => {
+        it('should yield the identical outcome and settle to the same world when repeated', () => {
             const session = new GameSession(createGameState(withNpcInRoom('npc_1')), factories);
-            const stateBefore = session.getState();
 
             const first = session.playTurn(new TalkToAction(), { npcId: 'npc_1' });
+            const stateAfterFirst = session.getState();
             const second = session.playTurn(new TalkToAction(), { npcId: 'npc_1' });
+            const stateAfterSecond = session.getState();
 
-            const stateAfter = session.getState();
-            expect({ ...stateAfter, turnCounter: stateBefore.turnCounter }).to.deep.equal(stateBefore);
+            expect(stateAfterFirst.flags.talked_to_npc_1).to.equal(true);
+            expect({ ...stateAfterSecond, turnCounter: stateAfterFirst.turnCounter }).to.deep.equal(stateAfterFirst);
             expect(first).to.deep.equal(second);
         });
     });

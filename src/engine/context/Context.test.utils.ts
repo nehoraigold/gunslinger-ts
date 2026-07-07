@@ -69,6 +69,7 @@ export function fakeContext(overrides: Partial<Context> = {}): Context {
     };
     return {
         turnCounter: unused('turnCounter'),
+        flags: unused('flags'),
         player: unused('player'),
         room: unused('room'),
         requireRoom: unused('requireRoom'),
