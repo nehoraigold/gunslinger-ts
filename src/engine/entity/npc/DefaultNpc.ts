@@ -1,5 +1,5 @@
 import { Npc } from './Npc';
-import { NpcId } from '../../state';
+import { NpcId, NpcMood } from '../../state';
 import { NpcStore } from '../../store';
 import { Wallet, DefaultWallet } from '../wallet';
 
@@ -19,6 +19,14 @@ export class DefaultNpc implements Npc {
 
     get dialogue(): string {
         return this.store.get().dialogue;
+    }
+
+    get mood(): NpcMood {
+        return this.store.get().mood;
+    }
+
+    isAlive(): boolean {
+        return this.store.get().health > 0;
     }
 
     wallet(): Wallet {

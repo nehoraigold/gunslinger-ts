@@ -1,5 +1,6 @@
 import { Direction } from '../../state';
 import { Context } from '../../context';
+import { evalConditionOpt } from '../../condition';
 import { MovementOutcome } from './MovementOutcome';
 import { MovementService } from './MovementService';
 
@@ -17,6 +18,9 @@ export class DefaultMovementService implements MovementService {
             return { type: 'exitBlocked' };
         }
         const destination = this.ctx.requireRoom(exit.destinationRoomId);
+        if (!evalConditionOpt(this.ctx, destination.entryCondition())) {
+            return { type: 'entryBarred' };
+        }
         player.moveTo(destination);
         return { type: 'moved', room: destination };
     }

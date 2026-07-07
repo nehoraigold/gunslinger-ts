@@ -43,6 +43,8 @@ const npc1: NpcState = {
     appearance: 'The first npc',
     dialogue: 'Well met.',
     money: 0,
+    mood: 'neutral',
+    health: 10,
 };
 
 const npc2: NpcState = {
@@ -50,6 +52,8 @@ const npc2: NpcState = {
     appearance: 'The second npc',
     dialogue: 'Move along.',
     money: 0,
+    mood: 'neutral',
+    health: 10,
 };
 
 const room1: RoomState = {

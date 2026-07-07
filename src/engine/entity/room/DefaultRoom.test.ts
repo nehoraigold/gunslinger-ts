@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { DefaultRoom } from './DefaultRoom';
 import { RootValueStore } from '../../store';
 import { RoomState } from '../../state';
+import { Condition } from '../../condition/Condition';
 
 describe(DefaultRoom.name, () => {
     function createDefaultRoom(state?: Partial<RoomState>): DefaultRoom {
@@ -25,6 +26,18 @@ describe(DefaultRoom.name, () => {
             const room = createDefaultRoom();
 
             expect(room.id).to.equal('room_1');
+        });
+    });
+
+    describe('entryCondition', () => {
+        it('should return undefined when the room has no entry condition', () => {
+            expect(createDefaultRoom().entryCondition()).to.be.undefined;
+        });
+
+        it('should return the entry condition the room was built with', () => {
+            const entryCondition: Condition = { type: 'flag_eq', key: 'gate_open', value: true };
+
+            expect(createDefaultRoom({ entryCondition }).entryCondition()).to.deep.equal(entryCondition);
         });
     });
 

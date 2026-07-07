@@ -1,8 +1,10 @@
 import { Room } from './Room';
 import { Direction, InventoryState, LightLevel, NpcId, RoomId } from '../../state';
+import { Condition } from '../../condition/Condition';
 import { DerivedValueStore, RoomStore } from '../../store';
 import { DefaultExit, Exit } from '../exit';
 import { Inventory, DefaultInventory } from '../inventory';
+import { cloneMutable } from '../../../utils/types';
 
 export class DefaultRoom implements Room {
     constructor(
@@ -44,6 +46,11 @@ export class DefaultRoom implements Room {
 
     npcIds(): NpcId[] {
         return [...this.store.get().npcIds];
+    }
+
+    entryCondition(): Condition | undefined {
+        const condition = this.store.get().entryCondition;
+        return condition ? cloneMutable<Condition>(condition) : undefined;
     }
 
     inventory(): Inventory {

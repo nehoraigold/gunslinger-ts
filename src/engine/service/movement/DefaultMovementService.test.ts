@@ -85,5 +85,50 @@ describe(DefaultMovementService.name, () => {
             expect(ctx.player().currentRoomId).to.equal('room_1');
             expect(outcome).to.deep.equal({ type: 'exitBlocked' });
         });
+
+        it('should bar entry when the destination has an unmet entry condition', () => {
+            const ctx = createDefaultContext((state) => {
+                state.rooms.room_1.exits = [{ direction: 'west', destinationRoomId: 'room_2' }];
+                state.rooms.room_2.entryCondition = { type: 'false' };
+            });
+            const movement = new DefaultMovementService(ctx);
+
+            const outcome = movement.move('west');
+
+            expect(ctx.player().currentRoomId).to.equal('room_1');
+            expect(outcome).to.deep.equal({ type: 'entryBarred' });
+        });
+
+        it('should allow entry when the destination entry condition is met', () => {
+            const ctx = createDefaultContext((state) => {
+                state.rooms.room_1.exits = [{ direction: 'west', destinationRoomId: 'room_2' }];
+                state.rooms.room_2.entryCondition = { type: 'true' };
+            });
+            const movement = new DefaultMovementService(ctx);
+
+            const outcome = movement.move('west');
+
+            expect(ctx.player().currentRoomId).to.equal('room_2');
+            expect(outcome).to.deep.equal({ type: 'moved', room: ctx.room('room_2') });
+        });
+
+        it('should report a locked exit as blocked before checking the destination entry condition', () => {
+            const ctx = createDefaultContext((state) => {
+                state.rooms.room_1.exits = [
+                    {
+                        direction: 'west',
+                        destinationRoomId: 'room_2',
+                        lock: { keyItemId: 'iron_key', isLocked: true, consumesKey: false },
+                    },
+                ];
+                state.rooms.room_2.entryCondition = { type: 'false' };
+            });
+            const movement = new DefaultMovementService(ctx);
+
+            const outcome = movement.move('west');
+
+            expect(ctx.player().currentRoomId).to.equal('room_1');
+            expect(outcome).to.deep.equal({ type: 'exitBlocked' });
+        });
     });
 });

@@ -59,6 +59,7 @@ export function fakeRoom(overrides: Partial<Room> = {}): Room {
         markVisited: () => {},
         inventory: () => fakeInventory(),
         npcIds: () => [],
+        entryCondition: () => undefined,
         ...overrides,
     };
 }
