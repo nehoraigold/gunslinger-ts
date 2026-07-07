@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { z } from 'zod';
 
 import { GameSession } from './GameSession';
-import { OnTickEffect } from './OnTickEffect';
+import { OnTurnEffect } from './OnTurnEffect';
 import { Action, Verdict, defineActionOutcome } from '../action';
 import { Context, Factories } from '../context';
 import { createGameState } from '../state/GameState.test.utils';
@@ -170,15 +170,15 @@ describe(GameSession.name, () => {
         });
     });
 
-    describe('on-tick effects', () => {
+    describe('on-turn effects', () => {
         const succeed = createStubAction(() => Verdict.succeed({ value: 'ok' }));
         const fail = createStubAction(() => Verdict.fail('nope'));
 
-        const recordingEffect = (log: number[]): OnTickEffect => ({
+        const recordingEffect = (log: number[]): OnTurnEffect => ({
             apply: (ctx: Context) => log.push(ctx.turnCounter().currentTick()),
         });
 
-        it('should apply registered effects after a successful action, observing the advanced tick', () => {
+        it('should apply registered effects after a successful action, observing the advanced turn count', () => {
             const seen: number[] = [];
             const session = new GameSession(createGameState(), factories, [recordingEffect(seen)]);
 
@@ -189,8 +189,8 @@ describe(GameSession.name, () => {
 
         it('should apply registered effects in order', () => {
             const order: string[] = [];
-            const first: OnTickEffect = { apply: () => order.push('first') };
-            const second: OnTickEffect = { apply: () => order.push('second') };
+            const first: OnTurnEffect = { apply: () => order.push('first') };
+            const second: OnTurnEffect = { apply: () => order.push('second') };
             const session = new GameSession(createGameState(), factories, [first, second]);
 
             session.playTurn(succeed, { value: 'ok' });
@@ -207,8 +207,8 @@ describe(GameSession.name, () => {
             expect(seen).to.deep.equal([]);
         });
 
-        it('should roll back the whole turn, including the tick, when an effect throws', () => {
-            const explodingEffect: OnTickEffect = {
+        it('should roll back the whole turn, including the turn advance, when an effect throws', () => {
+            const explodingEffect: OnTurnEffect = {
                 apply: () => {
                     throw new Error('effect boom');
                 },

@@ -1,5 +1,5 @@
 import { Context } from '../context';
 
-export interface OnTickEffect {
+export interface OnTurnEffect {
     apply(context: Context): void;
 }

@@ -4,7 +4,7 @@ import { StateManager, Transaction } from '../transaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
 import { PlayableSession } from './PlayableSession';
-import { OnTickEffect } from './OnTickEffect';
+import { OnTurnEffect } from './OnTurnEffect';
 
 export class GameSession implements PlayableSession {
     private readonly stateManager: StateManager;
@@ -12,7 +12,7 @@ export class GameSession implements PlayableSession {
     constructor(
         initialState: GameState,
         private readonly factories: Factories,
-        private readonly onTickEffects: readonly OnTickEffect[] = [],
+        private readonly onTurnEffects: readonly OnTurnEffect[] = [],
     ) {
         this.stateManager = new StateManager(initialState);
     }
@@ -33,7 +33,7 @@ export class GameSession implements PlayableSession {
         try {
             const outcome = action.execute(context, input);
             if (outcome.result === 'success') {
-                this.tick(context);
+                this.advanceTurn(context);
                 succeeded = true;
             }
             return outcome;
@@ -42,9 +42,9 @@ export class GameSession implements PlayableSession {
         }
     }
 
-    private tick(context: Context): void {
+    private advanceTurn(context: Context): void {
         context.turnCounter().advance();
-        this.onTickEffects.forEach((effect) => effect.apply(context));
+        this.onTurnEffects.forEach((effect) => effect.apply(context));
     }
 
     private settle(tx: Transaction, succeeded: boolean): void {

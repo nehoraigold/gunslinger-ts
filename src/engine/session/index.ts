@@ -1,3 +1,3 @@
 export * from './GameSession';
 export * from './PlayableSession';
-export * from './OnTickEffect';
+export * from './OnTurnEffect';
