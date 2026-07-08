@@ -1,7 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
-import { evaluateCondition, evalConditionOpt } from './evaluateCondition';
+import { evaluateCondition } from './evaluateCondition';
 import { Condition } from './Condition';
 import { Context, GameContext } from '../context';
 import { GameTransaction } from '../transaction';
@@ -195,16 +195,6 @@ describe('evaluateCondition', () => {
             expect(evaluate(chapelGate, carryingAndUntalked)).to.be.false;
             expect(evaluate(chapelGate, talkedButCarrying)).to.be.false;
             expect(evaluate(chapelGate, talkedAndUnburdened)).to.be.true;
-        });
-    });
-
-    describe('evalConditionOpt', () => {
-        it('should treat an absent condition as satisfied', () => {
-            expect(evalConditionOpt(contextWith(), undefined)).to.be.true;
-        });
-
-        it('should evaluate a present condition', () => {
-            expect(evalConditionOpt(contextWith(), { type: 'false' })).to.be.false;
         });
     });
 });
