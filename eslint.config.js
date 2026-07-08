@@ -8,7 +8,8 @@ export default [
     ignores: [
       "node_modules/**/*",
       "lib/**/*",
-      "src_old/**/*"
+      "src_old/**/*",
+      ".claude/**/*"
     ]
   },
   {
