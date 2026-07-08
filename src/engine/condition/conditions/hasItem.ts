@@ -1,4 +1,5 @@
 import { Evaluator } from '../Evaluator';
+import { satisfied, unmetBy } from '../ConditionOutcome';
 import { Comparison, compare } from '../comparison';
 import { ItemLocation, quantityInLocation } from './itemQuantity';
 
@@ -11,5 +12,8 @@ export type HasItemCondition = {
     quantity: number;
 };
 
-export const evalHasItem: Evaluator<HasItemCondition> = (ctx, { itemId, location, roomId, comparison, quantity }) =>
-    compare(quantityInLocation(ctx, itemId, location, roomId), comparison, quantity);
+export const evalHasItem: Evaluator<HasItemCondition> = (ctx, condition) => {
+    const { itemId, location, roomId, comparison, quantity } = condition;
+    const met = compare(quantityInLocation(ctx, itemId, location, roomId), comparison, quantity);
+    return met ? satisfied : unmetBy(condition);
+};

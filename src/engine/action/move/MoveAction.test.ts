@@ -10,6 +10,7 @@ import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
 import { ExitState, GameState } from '../../state';
 import { MovementOutcome } from '../../service/movement/MovementOutcome';
+import { Condition } from '../../condition';
 
 describe(MoveAction.name, () => {
     describe('execute', () => {
@@ -58,7 +59,7 @@ describe(MoveAction.name, () => {
 
                 const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.include({ result: 'failure', reason: 'no_exit' });
+                expect(outcome).to.deep.include({ result: 'failure', reason: { kind: 'no_exit' } });
             });
 
             it('should translate an "exitBlocked" outcome into an "exit_blocked" failure', () => {
@@ -66,15 +67,16 @@ describe(MoveAction.name, () => {
 
                 const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.include({ result: 'failure', reason: 'exit_blocked' });
+                expect(outcome).to.deep.include({ result: 'failure', reason: { kind: 'exit_blocked' } });
             });
 
-            it('should translate an "entryBarred" outcome into an "entry_barred" failure', () => {
-                const action = createActionWithFakeMovement({ type: 'entryBarred' });
+            it('should carry the unmet conditions through an "entryBarred" outcome so the GM can explain why', () => {
+                const unmet: Condition[] = [{ type: 'lacks_item', itemId: 'cursed_amulet', location: 'player' }];
+                const action = createActionWithFakeMovement({ type: 'entryBarred', unmet });
 
                 const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.include({ result: 'failure', reason: 'entry_barred' });
+                expect(outcome).to.deep.include({ result: 'failure', reason: { kind: 'entry_barred', unmet } });
             });
         });
     });

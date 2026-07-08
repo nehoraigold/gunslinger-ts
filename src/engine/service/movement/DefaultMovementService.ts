@@ -19,8 +19,11 @@ export class DefaultMovementService implements MovementService {
         }
         const destination = this.ctx.requireRoom(exit.destinationRoomId);
         const entryCondition = destination.entryCondition();
-        if (entryCondition && !evaluateCondition(this.ctx, entryCondition)) {
-            return { type: 'entryBarred' };
+        if (entryCondition) {
+            const outcome = evaluateCondition(this.ctx, entryCondition);
+            if (!outcome.satisfied) {
+                return { type: 'entryBarred', unmet: outcome.unmet };
+            }
         }
         player.moveTo(destination);
         return { type: 'moved', room: destination };

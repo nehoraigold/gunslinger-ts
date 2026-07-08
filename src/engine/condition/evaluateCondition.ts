@@ -1,6 +1,7 @@
 import { Context } from '../context';
 import { Condition } from './Condition';
 import { Evaluator } from './Evaluator';
+import { ConditionOutcome } from './ConditionOutcome';
 import { evalTrue } from './conditions/true';
 import { evalFalse } from './conditions/false';
 import { evalFlagValue } from './conditions/flagValue';
@@ -15,7 +16,7 @@ import { makeEvalNot } from './conditions/not';
 
 type EvaluatorMap = { [K in Condition['type']]: Evaluator<Extract<Condition, { type: K }>> };
 
-export function evaluateCondition(ctx: Context, condition: Condition): boolean {
+export function evaluateCondition(ctx: Context, condition: Condition): ConditionOutcome {
     return (evaluators[condition.type] as Evaluator)(ctx, condition);
 }
 
