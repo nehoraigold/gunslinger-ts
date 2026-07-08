@@ -13,11 +13,9 @@ export class DefaultFlags implements Flags {
         return this.get(key) !== undefined;
     }
 
-    set(key: string, value: FlagValue): FlagValue | undefined {
-        const previous = this.get(key);
+    set(key: string, value: FlagValue): void {
         this.store.update((flags) => {
             flags[key] = value;
         });
-        return previous;
     }
 }

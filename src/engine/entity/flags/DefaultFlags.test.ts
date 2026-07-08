@@ -36,16 +36,6 @@ describe(DefaultFlags.name, () => {
     });
 
     describe('set', () => {
-        it('should return undefined as the previous value when the flag was unset', () => {
-            expect(createFlags().set('gate_open', true)).to.be.undefined;
-        });
-
-        it('should return the replaced value as the previous value when overwriting', () => {
-            const flags = createFlags({ gold: 5 });
-
-            expect(flags.set('gold', 10)).to.equal(5);
-        });
-
         it('should persist the new value into the store', () => {
             const store = new RootValueStore<FlagsState>({});
             const flags = new DefaultFlags(store);
