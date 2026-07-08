@@ -1,6 +1,6 @@
 import { FlagValue } from '../../state/flags';
 import { Evaluator } from '../Evaluator';
-import { satisfied, unmetBy } from '../ConditionOutcome';
+import { ConditionOutcome } from '../ConditionOutcome';
 import { compare } from '../comparison';
 import { flagAsNumber } from './flagAsNumber';
 
@@ -13,7 +13,7 @@ export const evalFlagValue: Evaluator<FlagValueCondition> = (ctx, condition) => 
         condition.comparison === 'at_least' || condition.comparison === 'at_most'
             ? compare(flagAsNumber(ctx, condition.key), condition.comparison, condition.value)
             : flagEquals(ctx.flags().get(condition.key), condition.value);
-    return met ? satisfied : unmetBy(condition);
+    return met ? ConditionOutcome.satisfied() : ConditionOutcome.unmetBy(condition);
 };
 
 const flagEquals = (actual: FlagValue | undefined, value: FlagValue): boolean =>

@@ -14,8 +14,9 @@ export class DefaultMovementService implements MovementService {
         if (!exit) {
             return { type: 'noSuchExit' };
         }
-        if (exit.isBlocked()) {
-            return { type: 'exitBlocked' };
+        const blockReason = exit.blockReason();
+        if (blockReason) {
+            return { type: 'exitBlocked', blockReason };
         }
         const destination = this.ctx.requireRoom(exit.destinationRoomId);
         const entryCondition = destination.entryCondition();

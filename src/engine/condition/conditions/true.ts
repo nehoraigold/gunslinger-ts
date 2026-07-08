@@ -1,6 +1,6 @@
 import { Evaluator } from '../Evaluator';
-import { satisfied } from '../ConditionOutcome';
+import { ConditionOutcome } from '../ConditionOutcome';
 
 export type TrueCondition = { type: 'true' };
 
-export const evalTrue: Evaluator<TrueCondition> = () => satisfied;
+export const evalTrue: Evaluator<TrueCondition> = () => ConditionOutcome.satisfied();

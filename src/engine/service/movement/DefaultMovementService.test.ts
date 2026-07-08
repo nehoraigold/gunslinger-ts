@@ -83,7 +83,7 @@ describe(DefaultMovementService.name, () => {
             const outcome = movement.move('south');
 
             expect(ctx.player().currentRoomId).to.equal('room_1');
-            expect(outcome).to.deep.equal({ type: 'exitBlocked' });
+            expect(outcome).to.deep.equal({ type: 'exitBlocked', blockReason: 'door_locked' });
         });
 
         it('should bar entry when the destination has an unmet entry condition', () => {
@@ -128,7 +128,7 @@ describe(DefaultMovementService.name, () => {
             const outcome = movement.move('west');
 
             expect(ctx.player().currentRoomId).to.equal('room_1');
-            expect(outcome).to.deep.equal({ type: 'exitBlocked' });
+            expect(outcome).to.deep.equal({ type: 'exitBlocked', blockReason: 'door_locked' });
         });
     });
 });

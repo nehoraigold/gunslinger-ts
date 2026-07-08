@@ -1,6 +1,6 @@
 import { Evaluator } from '../Evaluator';
-import { unmetBy } from '../ConditionOutcome';
+import { ConditionOutcome } from '../ConditionOutcome';
 
 export type FalseCondition = { type: 'false' };
 
-export const evalFalse: Evaluator<FalseCondition> = (_ctx, condition) => unmetBy(condition);
+export const evalFalse: Evaluator<FalseCondition> = (_ctx, condition) => ConditionOutcome.unmetBy(condition);

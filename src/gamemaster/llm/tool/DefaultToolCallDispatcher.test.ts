@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { DefaultToolCallDispatcher } from './DefaultToolCallDispatcher';
 import { ToolCatalog, ToolCatalogEntry } from './ToolCatalog';
-import { Action, Verdict, defineActionOutcome } from '../../../engine/action';
+import { Action, ActionOutcome, defineActionOutcome } from '../../../engine/action';
 import { GameSession } from '../../../engine/session';
 import { Factories } from '../../../engine/context';
 import { createGameState } from '../../../engine/state/GameState.test.utils';
@@ -47,7 +47,7 @@ describe(DefaultToolCallDispatcher.name, () => {
             const session = new GameSession(createGameState(), factories);
             const action = createStubAction((ctx, input) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.succeed({ value: input.value });
+                return ActionOutcome.succeed({ value: input.value });
             });
             const dispatcher = new DefaultToolCallDispatcher(createCatalog({ stub: { action, description: 'Stub.' } }));
 
@@ -65,7 +65,7 @@ describe(DefaultToolCallDispatcher.name, () => {
             const session = new GameSession(createGameState(), factories);
             const action = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.fail('nope');
+                return ActionOutcome.fail('nope');
             });
             const dispatcher = new DefaultToolCallDispatcher(createCatalog({ stub: { action, description: 'Stub.' } }));
 
@@ -131,7 +131,7 @@ describe(DefaultToolCallDispatcher.name, () => {
             });
             const movingAction = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.succeed({ value: 'ok' });
+                return ActionOutcome.succeed({ value: 'ok' });
             });
             const dispatcher = new DefaultToolCallDispatcher(
                 createCatalog({

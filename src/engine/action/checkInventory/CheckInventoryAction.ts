@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Action } from '../Action';
-import { Verdict } from '../Verdict';
-import { defineActionOutcome } from '../ActionOutcome';
+import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
 import { Schema, ZodSchema } from '../../../utils/schema';
 
@@ -33,6 +32,6 @@ export class CheckInventoryAction implements Action<CheckInventoryInput, CheckIn
                 name: ctx.requireItem(itemId).name,
                 quantity,
             }));
-        return Verdict.succeed({ items });
+        return ActionOutcome.succeed({ items });
     }
 }

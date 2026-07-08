@@ -59,15 +59,18 @@ describe(MoveAction.name, () => {
 
                 const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.include({ result: 'failure', reason: { kind: 'no_exit' } });
+                expect(outcome).to.deep.include({ result: 'failure', reason: { type: 'no_exit' } });
             });
 
-            it('should translate an "exitBlocked" outcome into an "exit_blocked" failure', () => {
-                const action = createActionWithFakeMovement({ type: 'exitBlocked' });
+            it('should surface the block reason through an "exitBlocked" outcome so the GM can explain why', () => {
+                const action = createActionWithFakeMovement({ type: 'exitBlocked', blockReason: 'door_locked' });
 
                 const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.include({ result: 'failure', reason: { kind: 'exit_blocked' } });
+                expect(outcome).to.deep.include({
+                    result: 'failure',
+                    reason: { type: 'exit_blocked', reasons: [{ type: 'door_locked' }] },
+                });
             });
 
             it('should carry the unmet conditions through an "entryBarred" outcome so the GM can explain why', () => {
@@ -76,7 +79,10 @@ describe(MoveAction.name, () => {
 
                 const outcome = action.execute(fakeContext(), { direction: 'west' });
 
-                expect(outcome).to.deep.include({ result: 'failure', reason: { kind: 'entry_barred', unmet } });
+                expect(outcome).to.deep.include({
+                    result: 'failure',
+                    reason: { type: 'entry_barred', reasons: unmet },
+                });
             });
         });
     });
