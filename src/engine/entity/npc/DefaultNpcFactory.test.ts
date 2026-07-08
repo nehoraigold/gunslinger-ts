@@ -14,6 +14,8 @@ describe(DefaultNpcFactory.name, () => {
                 appearance: 'A weathered lawman with a tin star.',
                 dialogue: 'Trouble follows you, stranger.',
                 money: 0,
+                mood: 'neutral',
+                health: 10,
             });
             const factory = new DefaultNpcFactory();
 

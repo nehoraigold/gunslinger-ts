@@ -12,7 +12,7 @@ import { Schema, ZodSchema } from '../../../utils/schema';
 const DirectionSchema = z.enum(['north', 'south', 'east', 'west', 'up', 'down']) satisfies z.ZodType<Direction>;
 const MoveInputSchema = z.object({ direction: DirectionSchema });
 const MoveSuccessDataSchema = z.object({ roomId: z.string() });
-const MoveFailReasonSchema = z.enum(['no_exit', 'exit_blocked']);
+const MoveFailReasonSchema = z.enum(['no_exit', 'exit_blocked', 'entry_barred']);
 const MoveOutcomeSchema = defineActionOutcome(MoveSuccessDataSchema, MoveFailReasonSchema);
 
 type MoveInput = z.infer<typeof MoveInputSchema>;
@@ -37,6 +37,8 @@ export class MoveAction implements Action<MoveInput, MoveOutcome> {
                 return Verdict.fail('no_exit');
             case 'exitBlocked':
                 return Verdict.fail('exit_blocked');
+            case 'entryBarred':
+                return Verdict.fail('entry_barred');
             default:
                 return assertNever(result);
         }

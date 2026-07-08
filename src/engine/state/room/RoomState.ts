@@ -2,14 +2,15 @@ import { ExitState } from '../exit';
 import { InventoryState } from '../inventory';
 import { NpcId } from '../npc';
 import { LightLevel } from './LightLevel';
+import { Condition } from '../../condition/Condition';
 
 export type RoomState = {
     name: string;
     description: string;
     lightLevel: LightLevel;
-    // Whether the player has observed this room before; flipped by the look action, not by movement.
     visited: boolean;
     exits: ExitState[];
     inventory: InventoryState;
     npcIds: NpcId[];
+    entryCondition?: Condition;
 };

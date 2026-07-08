@@ -12,6 +12,8 @@ describe(DefaultNpc.name, () => {
             appearance: 'A weathered lawman with a tin star and a limp.',
             dialogue: 'Trouble follows you, stranger.',
             money: 0,
+            mood: 'neutral',
+            health: 10,
             ...state,
         });
         return new DefaultNpc('marshal', store);
@@ -46,6 +48,24 @@ describe(DefaultNpc.name, () => {
             const npc = createDefaultNpc({ dialogue: 'Trouble follows you, stranger.' });
 
             expect(npc.dialogue).to.equal('Trouble follows you, stranger.');
+        });
+    });
+
+    describe('mood', () => {
+        it('should return the mood from the npc state', () => {
+            const npc = createDefaultNpc({ mood: 'hostile' });
+
+            expect(npc.mood).to.equal('hostile');
+        });
+    });
+
+    describe('isAlive', () => {
+        it('should be alive when health is above zero', () => {
+            expect(createDefaultNpc({ health: 3 }).isAlive()).to.be.true;
+        });
+
+        it('should not be alive when health is zero', () => {
+            expect(createDefaultNpc({ health: 0 }).isAlive()).to.be.false;
         });
     });
 

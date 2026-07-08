@@ -9,7 +9,7 @@ export function createSampleWorldState(): GameState {
             name: 'Adventurer',
             currentRoomId: 'entrance',
             equipment: { weapon: undefined, armor: undefined },
-            inventory: {},
+            inventory: { cursed_amulet: 1 },
             money: 20,
         },
         items: {
@@ -43,6 +43,18 @@ export function createSampleWorldState(): GameState {
                 takeable: false,
                 droppable: true,
             },
+            cursed_amulet: {
+                name: 'Cursed Amulet',
+                description:
+                    'A tarnished amulet that hangs heavy and cold against the chest. Hallowed ground will not ' +
+                    'suffer its presence.',
+                type: 'misc',
+                stackable: false,
+                value: 0,
+                weight: 1,
+                takeable: true,
+                droppable: true,
+            },
         },
         npcs: {
             hermit: {
@@ -52,6 +64,8 @@ export function createSampleWorldState(): GameState {
                     'pale, unblinking eyes.',
                 dialogue: 'The key you seek opens more than one door, traveller. Mind which you choose to open.',
                 money: 5,
+                mood: 'guarded',
+                health: 10,
             },
         },
         rooms: {
@@ -146,6 +160,15 @@ export function createSampleWorldState(): GameState {
                         lock: { keyItemId: 'iron_key', isLocked: true, consumesKey: false },
                     },
                 ],
+                // Hallowed ground: enterable only once the player has parted with the cursed amulet
+                // and has spoken with the hermit.
+                entryCondition: {
+                    type: 'and',
+                    conditions: [
+                        { type: 'lacks_item', itemId: 'cursed_amulet', location: 'player' },
+                        { type: 'flag_value', key: 'talked_to_hermit', value: true },
+                    ],
+                },
                 inventory: {},
                 npcIds: [],
             },

@@ -1,4 +1,4 @@
-import { NpcId } from '../../state';
+import { NpcId, NpcMood } from '../../state';
 import { Wallet } from '../wallet';
 
 export interface Npc {
@@ -6,5 +6,7 @@ export interface Npc {
     readonly name: string;
     readonly appearance: string;
     readonly dialogue: string;
+    readonly mood: NpcMood;
+    isAlive(): boolean;
     wallet(): Wallet;
 }

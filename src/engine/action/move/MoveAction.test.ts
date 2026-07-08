@@ -68,6 +68,14 @@ describe(MoveAction.name, () => {
 
                 expect(outcome).to.deep.include({ result: 'failure', reason: 'exit_blocked' });
             });
+
+            it('should translate an "entryBarred" outcome into an "entry_barred" failure', () => {
+                const action = createActionWithFakeMovement({ type: 'entryBarred' });
+
+                const outcome = action.execute(fakeContext(), { direction: 'west' });
+
+                expect(outcome).to.deep.include({ result: 'failure', reason: 'entry_barred' });
+            });
         });
     });
 
