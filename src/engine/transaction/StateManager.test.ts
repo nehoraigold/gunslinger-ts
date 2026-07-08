@@ -15,6 +15,39 @@ describe(StateManager.name, () => {
         });
     });
 
+    describe('restore', () => {
+        it('should replace the state returned by getState', () => {
+            const manager = new StateManager(createGameState());
+            const restored = createGameState((s) => {
+                s.player.currentRoomId = 'room_2';
+            });
+
+            manager.restore(restored);
+
+            expect(manager.getState()).to.deep.equal(restored);
+        });
+
+        it('should throw when a transaction is open', () => {
+            const manager = new StateManager(createGameState());
+            manager.beginTransaction();
+
+            expect(() => manager.restore(createGameState())).to.throw(/transaction is open/i);
+        });
+
+        it('should allow beginning a transaction from the restored state', () => {
+            const manager = new StateManager(createGameState());
+            manager.restore(
+                createGameState((s) => {
+                    s.player.currentRoomId = 'room_2';
+                }),
+            );
+
+            const tx = manager.beginTransaction();
+
+            expect(tx.player.get().currentRoomId).to.equal('room_2');
+        });
+    });
+
     describe('beginTransaction', () => {
         it('should return a transaction reflecting the current state', () => {
             const manager = new StateManager(createGameState());

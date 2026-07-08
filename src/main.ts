@@ -13,6 +13,8 @@ import { LookNpcAction } from './engine/action/lookNpc/LookNpcAction';
 import { TalkToAction } from './engine/action/talkTo/TalkToAction';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
+import { SaveController } from './cli/save';
+import { FileSessionRepository } from './persistence';
 import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
 import {
     GameMaster,
@@ -81,6 +83,8 @@ const session = new GameSession(createSampleWorldState(), {
     npc: new DefaultNpcFactory(),
 });
 
+const saveController = new SaveController(new FileSessionRepository(process.env.SAVE_DIR ?? './saves'), session);
+
 const toolCatalog = new ActionToolCatalog({
     move: {
         action: new MoveAction(),
@@ -141,6 +145,8 @@ const requestAssembler = new DefaultLLMRequestAssembler(
     toolCatalog.listDefinitions(),
 );
 
+const conversationManager = new UnboundedConversationManager();
+
 const gameMaster: GameMaster = new LLMGameMaster(
     session,
     new SequentialLLMLoop(
@@ -148,12 +154,13 @@ const gameMaster: GameMaster = new LLMGameMaster(
         requestAssembler,
         new DefaultToolCallDispatcher(toolCatalog),
     ),
-    new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), new UnboundedConversationManager()),
+    new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), conversationManager),
 );
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
 
 console.log(`Current room: ${session.getState().player.currentRoomId}`);
+console.log('Commands: "save [name]", "load <name>", "saves", "quit".');
 rl.prompt();
 
 // readline can emit several buffered `line` events synchronously in one tick (e.g. piped input,
@@ -162,6 +169,69 @@ let queue: Promise<void> = Promise.resolve();
 // Piped stdin hits EOF (and closes the interface) as soon as all input is read, well before a
 // pending turn's LLM round-trip finishes — this flag stops us from prompting on a closed interface.
 let closed = false;
+let autoSaveWarned = false;
+
+const INVALID_NAME_MESSAGE = "Invalid save name — use letters, digits, '-' or '_'.";
+
+async function autoSave(): Promise<void> {
+    try {
+        await saveController.autosave();
+        autoSaveWarned = false;
+    } catch (error) {
+        if (!autoSaveWarned) {
+            console.error('Auto-save failed:', error instanceof Error ? error.message : error);
+            autoSaveWarned = true;
+        }
+    }
+}
+
+// Save/load are session-lifecycle meta-commands handled at the CLI boundary — never sent to the
+// LLM and never a game turn. Returns true when the input was consumed as a meta-command.
+async function handleMetaCommand(input: string): Promise<boolean> {
+    const [command, ...rest] = input.split(/\s+/);
+    const argument = rest.join(' ');
+    switch (command.toLowerCase()) {
+        case 'save': {
+            const result = await saveController.save(argument || undefined);
+            console.log(result.status === 'saved' ? `Saved to "${result.name}".` : INVALID_NAME_MESSAGE);
+            return true;
+        }
+        case 'load': {
+            if (!argument) {
+                console.log('Load which save? Try "saves" to list them.');
+                return true;
+            }
+            const result = await saveController.load(argument);
+            switch (result.status) {
+                case 'loaded':
+                    conversationManager.clear();
+                    console.log(`Loaded "${argument}". Current room: ${result.roomId}`);
+                    break;
+                case 'not_found':
+                    console.log(`No save named "${argument}".`);
+                    break;
+                case 'invalid_name':
+                    console.log(INVALID_NAME_MESSAGE);
+                    break;
+                case 'corrupt':
+                    console.log(`Could not load "${argument}": ${result.reason}`);
+                    break;
+            }
+            return true;
+        }
+        case 'saves': {
+            const { names, current } = await saveController.list();
+            console.log(
+                names.length === 0
+                    ? 'No saves yet.'
+                    : `Saves: ${names.map((name) => (name === current ? `${name} (current)` : name)).join(', ')}`,
+            );
+            return true;
+        }
+        default:
+            return false;
+    }
+}
 
 rl.on('line', (line) => {
     const input = line.trim();
@@ -178,11 +248,15 @@ rl.on('line', (line) => {
 
     queue = queue.then(async () => {
         try {
+            if (await handleMetaCommand(input)) {
+                return;
+            }
             const stream = gameMaster.handleInput(input);
             for await (const chunk of stream) {
                 process.stdout.write(chunk);
             }
             process.stdout.write('\n');
+            await autoSave();
         } catch (error) {
             console.error('Something went wrong:', error instanceof Error ? error.message : error);
         } finally {

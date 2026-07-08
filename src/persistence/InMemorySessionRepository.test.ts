@@ -6,53 +6,77 @@ import { createGameState } from '../engine/state/GameState.test.utils';
 
 describe(InMemorySessionRepository.name, () => {
     describe('load', () => {
-        it('should return undefined for a session id that was never saved', () => {
+        it('should return undefined for a session id that was never saved', async () => {
             const repository = new InMemorySessionRepository();
 
-            expect(repository.load('unknown_session')).to.equal(undefined);
+            expect(await repository.load('unknown_session')).to.equal(undefined);
         });
 
-        it('should return the state previously saved under that session id', () => {
+        it('should return the state previously saved under that session id', async () => {
             const repository = new InMemorySessionRepository();
             const state = createGameState();
 
-            repository.save('session_1', state);
+            await repository.save('session_1', state);
 
-            expect(repository.load('session_1')).to.deep.equal(state);
+            expect(await repository.load('session_1')).to.deep.equal(state);
         });
 
-        it('should return a value that can be mutated without affecting the stored state', () => {
+        it('should return a value that can be mutated without affecting the stored state', async () => {
             const repository = new InMemorySessionRepository();
-            repository.save('session_1', createGameState());
+            await repository.save('session_1', createGameState());
 
-            const loaded = repository.load('session_1')!;
+            const loaded = (await repository.load('session_1'))!;
             loaded.player.name = 'Mutated';
 
-            expect(repository.load('session_1')!.player.name).to.not.equal('Mutated');
+            expect((await repository.load('session_1'))!.player.name).to.not.equal('Mutated');
         });
     });
 
     describe('save', () => {
-        it('should not be affected by later mutation of the state object passed in', () => {
+        it('should not be affected by later mutation of the state object passed in', async () => {
             const repository = new InMemorySessionRepository();
             const state = createGameState();
 
-            repository.save('session_1', state);
+            await repository.save('session_1', state);
             state.player.name = 'Mutated after save';
 
-            expect(repository.load('session_1')!.player.name).to.not.equal('Mutated after save');
+            expect((await repository.load('session_1'))!.player.name).to.not.equal('Mutated after save');
         });
 
-        it('should overwrite a previously saved state for the same session id', () => {
+        it('should overwrite a previously saved state for the same session id', async () => {
             const repository = new InMemorySessionRepository();
-            repository.save('session_1', createGameState());
+            await repository.save('session_1', createGameState());
 
             const updated = createGameState((s) => {
                 s.player.name = 'Updated';
             });
-            repository.save('session_1', updated);
+            await repository.save('session_1', updated);
 
-            expect(repository.load('session_1')!.player.name).to.equal('Updated');
+            expect((await repository.load('session_1'))!.player.name).to.equal('Updated');
+        });
+    });
+
+    describe('list', () => {
+        it('should return an empty array when nothing has been saved', async () => {
+            const repository = new InMemorySessionRepository();
+
+            expect(await repository.list()).to.deep.equal([]);
+        });
+
+        it('should return the ids of all saved sessions', async () => {
+            const repository = new InMemorySessionRepository();
+            await repository.save('alpha', createGameState());
+            await repository.save('beta', createGameState());
+
+            expect((await repository.list()).sort()).to.deep.equal(['alpha', 'beta']);
+        });
+
+        it('should not list an id more than once after it is overwritten', async () => {
+            const repository = new InMemorySessionRepository();
+            await repository.save('alpha', createGameState());
+            await repository.save('alpha', createGameState());
+
+            expect(await repository.list()).to.deep.equal(['alpha']);
         });
     });
 });

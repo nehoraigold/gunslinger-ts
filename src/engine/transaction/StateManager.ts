@@ -15,6 +15,13 @@ export class StateManager {
         return this.state;
     }
 
+    restore(state: GameState): void {
+        if (this.openTx) {
+            throw new Error('restore() called while a transaction is open');
+        }
+        this.state = state;
+    }
+
     beginTransaction(): Transaction {
         if (this.openTx) {
             throw new Error('beginTransaction() called while a transaction is already open');

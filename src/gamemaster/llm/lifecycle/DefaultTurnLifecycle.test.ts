@@ -12,6 +12,7 @@ describe(DefaultTurnLifecycle.name, () => {
         return {
             appendTurn: sinon.stub(),
             getMessagesForNextRequest: () => priorMessages,
+            clear: sinon.stub(),
         };
     }
 
