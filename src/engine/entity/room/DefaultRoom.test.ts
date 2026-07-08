@@ -35,7 +35,7 @@ describe(DefaultRoom.name, () => {
         });
 
         it('should return the entry condition the room was built with', () => {
-            const entryCondition: Condition = { type: 'flag_eq', key: 'gate_open', value: true };
+            const entryCondition: Condition = { type: 'flag_value', key: 'gate_open', value: true };
 
             expect(createDefaultRoom({ entryCondition }).entryCondition()).to.deep.equal(entryCondition);
         });

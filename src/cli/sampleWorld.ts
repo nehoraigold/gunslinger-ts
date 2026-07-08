@@ -166,7 +166,7 @@ export function createSampleWorldState(): GameState {
                     type: 'and',
                     conditions: [
                         { type: 'lacks_item', itemId: 'cursed_amulet', location: 'player' },
-                        { type: 'flag_eq', key: 'talked_to_hermit', value: true },
+                        { type: 'flag_value', key: 'talked_to_hermit', value: true },
                     ],
                 },
                 inventory: {},

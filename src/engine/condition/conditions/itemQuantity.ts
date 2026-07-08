@@ -1,7 +1,6 @@
 import { Context } from '../../context';
 
 export type ItemLocation = 'player' | 'room';
-export type QuantityComparison = 'at_least' | 'exactly' | 'at_most';
 
 export const quantityInLocation = (ctx: Context, itemId: string, location: ItemLocation, roomId?: string): number => {
     if (location === 'player') {

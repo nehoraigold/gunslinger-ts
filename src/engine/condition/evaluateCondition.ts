@@ -3,9 +3,7 @@ import { Condition } from './Condition';
 import { Evaluator } from './Evaluator';
 import { evalTrue } from './conditions/true';
 import { evalFalse } from './conditions/false';
-import { evalFlagEq } from './conditions/flagEq';
-import { evalFlagGte } from './conditions/flagGte';
-import { evalFlagLte } from './conditions/flagLte';
+import { evalFlagValue } from './conditions/flagValue';
 import { evalHasItem } from './conditions/hasItem';
 import { evalLacksItem } from './conditions/lacksItem';
 import { evalRoomVisited } from './conditions/roomVisited';
@@ -24,9 +22,7 @@ export function evaluateCondition(ctx: Context, condition: Condition): boolean {
 const evaluators: EvaluatorMap = {
     true: evalTrue,
     false: evalFalse,
-    flag_eq: evalFlagEq,
-    flag_gte: evalFlagGte,
-    flag_lte: evalFlagLte,
+    flag_value: evalFlagValue,
     has_item: evalHasItem,
     lacks_item: evalLacksItem,
     room_visited: evalRoomVisited,

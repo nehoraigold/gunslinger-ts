@@ -1,8 +1,6 @@
 import { TrueCondition } from './conditions/true';
 import { FalseCondition } from './conditions/false';
-import { FlagEqCondition } from './conditions/flagEq';
-import { FlagGteCondition } from './conditions/flagGte';
-import { FlagLteCondition } from './conditions/flagLte';
+import { FlagValueCondition } from './conditions/flagValue';
 import { HasItemCondition } from './conditions/hasItem';
 import { LacksItemCondition } from './conditions/lacksItem';
 import { RoomVisitedCondition } from './conditions/roomVisited';
@@ -15,9 +13,7 @@ import { NotCondition } from './conditions/not';
 export type Condition =
     | TrueCondition
     | FalseCondition
-    | FlagEqCondition
-    | FlagGteCondition
-    | FlagLteCondition
+    | FlagValueCondition
     | HasItemCondition
     | LacksItemCondition
     | RoomVisitedCondition

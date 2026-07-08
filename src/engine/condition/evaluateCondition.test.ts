@@ -28,47 +28,66 @@ describe('evaluateCondition', () => {
         });
     });
 
-    describe('flag_eq', () => {
-        it('should be true when the flag equals the value', () => {
-            const condition: Condition = { type: 'flag_eq', key: 'gate', value: 'open' };
+    describe('flag_value', () => {
+        describe('exactly (the default comparison)', () => {
+            it('should be true when the flag equals the value', () => {
+                const condition: Condition = { type: 'flag_value', key: 'gate', value: 'open' };
 
-            expect(evaluate(condition, (s) => void (s.flags.gate = 'open'))).to.be.true;
+                expect(evaluate(condition, (s) => void (s.flags.gate = 'open'))).to.be.true;
+            });
+
+            it('should be false when the flag differs from the value', () => {
+                const condition: Condition = { type: 'flag_value', key: 'gate', value: 'open' };
+
+                expect(evaluate(condition, (s) => void (s.flags.gate = 'shut'))).to.be.false;
+            });
+
+            it('should treat a missing flag as satisfied when comparing against a falsy value', () => {
+                expect(evaluate({ type: 'flag_value', key: 'missing', value: false })).to.be.true;
+            });
+
+            it('should treat a missing flag as unsatisfied when comparing against a truthy value', () => {
+                expect(evaluate({ type: 'flag_value', key: 'missing', value: true })).to.be.false;
+            });
+
+            it('should behave identically whether exactly is explicit or omitted', () => {
+                const setGold: ModifyState = (s) => void (s.flags.gold = 5);
+
+                expect(evaluate({ type: 'flag_value', key: 'gold', value: 5, comparison: 'exactly' }, setGold)).to.be
+                    .true;
+                expect(evaluate({ type: 'flag_value', key: 'gold', value: 4, comparison: 'exactly' }, setGold)).to.be
+                    .false;
+            });
         });
 
-        it('should be false when the flag differs from the value', () => {
-            const condition: Condition = { type: 'flag_eq', key: 'gate', value: 'open' };
+        describe('at_least / at_most', () => {
+            const setGold: ModifyState = (s) => void (s.flags.gold = 5);
 
-            expect(evaluate(condition, (s) => void (s.flags.gate = 'shut'))).to.be.false;
-        });
+            it('should compare a numeric flag', () => {
+                expect(evaluate({ type: 'flag_value', key: 'gold', value: 5, comparison: 'at_least' }, setGold)).to.be
+                    .true;
+                expect(evaluate({ type: 'flag_value', key: 'gold', value: 6, comparison: 'at_least' }, setGold)).to.be
+                    .false;
+                expect(evaluate({ type: 'flag_value', key: 'gold', value: 5, comparison: 'at_most' }, setGold)).to.be
+                    .true;
+                expect(evaluate({ type: 'flag_value', key: 'gold', value: 4, comparison: 'at_most' }, setGold)).to.be
+                    .false;
+            });
 
-        it('should treat a missing flag as satisfied when comparing against a falsy value', () => {
-            expect(evaluate({ type: 'flag_eq', key: 'missing', value: false })).to.be.true;
-        });
+            it('should treat a missing flag as 0', () => {
+                expect(evaluate({ type: 'flag_value', key: 'missing', value: 0, comparison: 'at_least' })).to.be.true;
+                expect(evaluate({ type: 'flag_value', key: 'missing', value: 1, comparison: 'at_least' })).to.be.false;
+                expect(evaluate({ type: 'flag_value', key: 'missing', value: 0, comparison: 'at_most' })).to.be.true;
+            });
 
-        it('should treat a missing flag as unsatisfied when comparing against a truthy value', () => {
-            expect(evaluate({ type: 'flag_eq', key: 'missing', value: true })).to.be.false;
-        });
-    });
-
-    describe('flag_gte / flag_lte', () => {
-        const setGold: ModifyState = (s) => void (s.flags.gold = 5);
-
-        it('should compare a numeric flag', () => {
-            expect(evaluate({ type: 'flag_gte', key: 'gold', value: 5 }, setGold)).to.be.true;
-            expect(evaluate({ type: 'flag_gte', key: 'gold', value: 6 }, setGold)).to.be.false;
-            expect(evaluate({ type: 'flag_lte', key: 'gold', value: 5 }, setGold)).to.be.true;
-            expect(evaluate({ type: 'flag_lte', key: 'gold', value: 4 }, setGold)).to.be.false;
-        });
-
-        it('should treat a missing flag as 0', () => {
-            expect(evaluate({ type: 'flag_gte', key: 'missing', value: 0 })).to.be.true;
-            expect(evaluate({ type: 'flag_gte', key: 'missing', value: 1 })).to.be.false;
-            expect(evaluate({ type: 'flag_lte', key: 'missing', value: 0 })).to.be.true;
-        });
-
-        it('should treat a non-numeric flag as 0', () => {
-            expect(evaluate({ type: 'flag_gte', key: 'gate', value: 1 }, (s) => void (s.flags.gate = 'open'))).to.be
-                .false;
+            it('should treat a non-numeric flag as 0', () => {
+                expect(
+                    evaluate(
+                        { type: 'flag_value', key: 'gate', value: 1, comparison: 'at_least' },
+                        (s) => void (s.flags.gate = 'open'),
+                    ),
+                ).to.be.false;
+            });
         });
     });
 
@@ -180,7 +199,7 @@ describe('evaluateCondition', () => {
             type: 'and',
             conditions: [
                 { type: 'lacks_item', itemId: 'cursed_amulet', location: 'player' },
-                { type: 'flag_eq', key: 'talked_to_hermit', value: true },
+                { type: 'flag_value', key: 'talked_to_hermit', value: true },
             ],
         };
 
