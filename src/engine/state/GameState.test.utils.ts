@@ -86,6 +86,7 @@ const initialState: GameState = {
     turnCounter: {
         count: 0,
     },
+    flags: {},
     player,
     items: {
         item_1: item1,

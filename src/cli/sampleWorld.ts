@@ -3,6 +3,7 @@ import { GameState } from '../engine/state';
 export function createSampleWorldState(): GameState {
     return {
         turnCounter: { count: 0 },
+        flags: {},
         player: {
             id: 'player',
             name: 'Adventurer',

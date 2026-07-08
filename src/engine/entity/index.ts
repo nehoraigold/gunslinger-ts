@@ -1,5 +1,6 @@
 export * from './player';
 export * from './turn';
+export * from './flags';
 export * from './item';
 export * from './npc';
 export * from './room';

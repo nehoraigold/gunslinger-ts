@@ -37,6 +37,22 @@ describe(GameContext.name, () => {
         });
     });
 
+    describe('flags', () => {
+        it('should return an identical flags instance when called multiple times', () => {
+            expect(repository.flags()).to.equal(repository.flags());
+        });
+
+        it('should read and write flags through the underlying transaction', () => {
+            const freshTx = new GameTransaction(createGameState());
+            const context = new GameContext(freshTx, factories);
+
+            context.flags().set('gate_open', true);
+
+            expect(context.flags().get('gate_open')).to.equal(true);
+            expect(freshTx.commit().flags).to.deep.equal({ gate_open: true });
+        });
+    });
+
     const entities = ['room', 'item', 'npc'] as const;
 
     entities.forEach((entityName) => {
