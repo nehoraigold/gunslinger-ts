@@ -1,8 +1,9 @@
 import { Room } from '../room';
 import { Inventory, DefaultInventory } from '../inventory';
+import { Equipment, DefaultEquipment } from '../equipment';
 import { Wallet, DefaultWallet } from '../wallet';
 import { DerivedValueStore, PlayerStore } from '../../store';
-import { InventoryState, RoomId } from '../../state';
+import { EquipmentState, InventoryState, RoomId } from '../../state';
 import { Player } from './Player';
 
 export class DefaultPlayer implements Player {
@@ -25,6 +26,18 @@ export class DefaultPlayer implements Player {
                 (inventory) =>
                     this.store.update((state) => {
                         state.inventory = inventory;
+                    }),
+            ),
+        );
+    }
+
+    equipment(): Equipment {
+        return new DefaultEquipment(
+            new DerivedValueStore<EquipmentState>(
+                () => this.store.get().equipment,
+                (equipment) =>
+                    this.store.update((state) => {
+                        state.equipment = equipment;
                     }),
             ),
         );

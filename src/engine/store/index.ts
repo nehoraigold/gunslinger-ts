@@ -10,4 +10,5 @@ export * from './RoomStore';
 export * from './ItemStore';
 export * from './NpcStore';
 export * from './InventoryStore';
+export * from './EquipmentStore';
 export * from './LockStore';

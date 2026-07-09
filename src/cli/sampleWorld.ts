@@ -55,6 +55,26 @@ export function createSampleWorldState(): GameState {
                 takeable: true,
                 droppable: true,
             },
+            rusty_revolver: {
+                name: 'Rusty Revolver',
+                description: 'A six-shooter gone orange with rust, though its cylinder still turns true.',
+                type: 'weapon',
+                stackable: false,
+                value: 15,
+                weight: 3,
+                takeable: true,
+                droppable: true,
+            },
+            leather_duster: {
+                name: 'Leather Duster',
+                description: 'A long, weather-cracked coat of oiled leather, heavy enough to turn a glancing blow.',
+                type: 'armor',
+                stackable: false,
+                value: 12,
+                weight: 4,
+                takeable: true,
+                droppable: true,
+            },
         },
         npcs: {
             hermit: {
@@ -197,7 +217,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'north', destinationRoomId: 'courtyard' },
                     { direction: 'west', destinationRoomId: 'gatehouse' },
                 ],
-                inventory: {},
+                inventory: { rusty_revolver: 1, leather_duster: 1 },
                 npcIds: [],
             },
             wellyard: {

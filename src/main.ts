@@ -5,6 +5,8 @@ import { GameSession } from './engine/session';
 import { MoveAction } from './engine/action/move/MoveAction';
 import { PickUpAction } from './engine/action/pickUp/PickUpAction';
 import { DropAction } from './engine/action/drop/DropAction';
+import { EquipAction } from './engine/action/equip/EquipAction';
+import { UnequipAction } from './engine/action/unequip/UnequipAction';
 import { CheckInventoryAction } from './engine/action/checkInventory/CheckInventoryAction';
 import { UnlockAction } from './engine/action/unlock/UnlockAction';
 import { LookAction } from './engine/action/look/LookAction';
@@ -99,6 +101,20 @@ const toolCatalog = new ActionToolCatalog({
     drop: {
         action: new DropAction(),
         description: 'Call when the player expresses intent to drop or leave behind a carried item.',
+    },
+    equip: {
+        action: new EquipAction(),
+        description:
+            'Call when the player expresses intent to wield, wear, or put on a carried weapon or piece of armor ' +
+            '(e.g. "equip the revolver", "put on the duster"). Pass the exact item id from the snapshot. If the ' +
+            'matching slot is already filled, the previously-equipped item returns to the inventory automatically.',
+    },
+    unequip: {
+        action: new UnequipAction(),
+        description:
+            'Call when the player expresses intent to take off, remove, or stow what they have equipped (e.g. ' +
+            '"holster the revolver", "take off my armor"). Pass the slot to clear ("weapon" or "armor"); the item ' +
+            'returns to the inventory.',
     },
     checkInventory: {
         action: new CheckInventoryAction(),
