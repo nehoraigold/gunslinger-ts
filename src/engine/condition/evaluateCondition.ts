@@ -16,8 +16,11 @@ import { makeEvalNot } from './conditions/not';
 
 type EvaluatorMap = { [K in Condition['type']]: Evaluator<Extract<Condition, { type: K }>> };
 
-export function evaluateCondition(ctx: Context, condition: Condition): ConditionOutcome {
-    return (evaluators[condition.type] as Evaluator)(ctx, condition);
+export function evaluateCondition<K extends Condition['type']>(
+    ctx: Context,
+    condition: Extract<Condition, { type: K }>,
+): ConditionOutcome {
+    return evaluators[condition.type](ctx, condition);
 }
 
 const evaluators: EvaluatorMap = {
