@@ -1,8 +1,9 @@
 import { Evaluator } from '../Evaluator';
+import { ConditionOutcome } from '../ConditionOutcome';
 
 export type NpcAliveCondition = { type: 'npc_alive'; npcId: string };
 
-export const evalNpcAlive: Evaluator<NpcAliveCondition> = (ctx, { npcId }) => {
-    const npc = ctx.npc(npcId);
-    return npc ? npc.isAlive() : false;
+export const evalNpcAlive: Evaluator<NpcAliveCondition> = (ctx, condition) => {
+    const npc = ctx.npc(condition.npcId);
+    return npc && npc.isAlive() ? ConditionOutcome.satisfied() : ConditionOutcome.unmetBy(condition);
 };

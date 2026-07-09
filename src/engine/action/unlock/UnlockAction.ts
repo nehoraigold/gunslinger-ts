@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Action } from '../Action';
-import { Verdict } from '../Verdict';
-import { defineActionOutcome } from '../ActionOutcome';
+import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
 import { Direction } from '../../state';
 import { LockService } from '../../service/lock/LockService';
@@ -28,23 +27,23 @@ export class UnlockAction implements Action<UnlockInput, UnlockOutcome> {
     execute(ctx: Context, input: UnlockInput): UnlockOutcome {
         const exit = ctx.requireCurrentRoom().getExit(input.direction);
         if (!exit) {
-            return Verdict.fail('no_exit');
+            return ActionOutcome.fail('no_exit');
         }
 
         const lock = exit.lock();
         if (!lock) {
-            return Verdict.fail('not_lockable');
+            return ActionOutcome.fail('not_lockable');
         }
 
         const keyItemId = lock.keyItemId;
         const result = this.lockService.unlock(lock, ctx.player().inventory());
         switch (result.type) {
             case 'unlocked':
-                return Verdict.succeed({ direction: input.direction, keyItemId });
+                return ActionOutcome.succeed({ direction: input.direction, keyItemId });
             case 'alreadyUnlocked':
-                return Verdict.fail('already_unlocked');
+                return ActionOutcome.fail('already_unlocked');
             case 'missingKey':
-                return Verdict.fail('missing_key');
+                return ActionOutcome.fail('missing_key');
             default:
                 return assertNever(result);
         }

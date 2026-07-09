@@ -4,7 +4,7 @@ import { z } from 'zod';
 
 import { GameSession } from './GameSession';
 import { OnTurnEffect } from './OnTurnEffect';
-import { Action, Verdict, defineActionOutcome } from '../action';
+import { Action, ActionOutcome, defineActionOutcome } from '../action';
 import { Context, Factories } from '../context';
 import { createGameState } from '../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../entity';
@@ -40,7 +40,7 @@ describe(GameSession.name, () => {
             const session = new GameSession(createGameState(), factories);
             const action = createStubAction((ctx, input) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.succeed({ value: input.value });
+                return ActionOutcome.succeed({ value: input.value });
             });
 
             const outcome = session.playTurn(action, { value: 'ok' });
@@ -53,7 +53,7 @@ describe(GameSession.name, () => {
             const session = new GameSession(createGameState(), factories);
             const action = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.fail('nope');
+                return ActionOutcome.fail('nope');
             });
 
             const outcome = session.playTurn(action, { value: 'ok' });
@@ -78,7 +78,7 @@ describe(GameSession.name, () => {
             });
             const validAction = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.succeed({ value: 'ok' });
+                return ActionOutcome.succeed({ value: 'ok' });
             });
 
             expect(() => session.playTurn(invalidAction, { value: 42 })).to.throw(ParseError);
@@ -92,11 +92,11 @@ describe(GameSession.name, () => {
             const session = new GameSession(createGameState(), factories);
             const moveToRoom2 = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.succeed({ value: 'ok' });
+                return ActionOutcome.succeed({ value: 'ok' });
             });
             const moveToRoom1 = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_1')!);
-                return Verdict.succeed({ value: 'ok' });
+                return ActionOutcome.succeed({ value: 'ok' });
             });
 
             session.playTurn(moveToRoom2, { value: 'ok' });
@@ -112,7 +112,7 @@ describe(GameSession.name, () => {
             });
             const moveToRoom2 = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.succeed({ value: 'ok' });
+                return ActionOutcome.succeed({ value: 'ok' });
             });
 
             expect(() => session.playTurn(throwingAction, { value: 'ok' })).to.throw('boom');
@@ -191,8 +191,8 @@ describe(GameSession.name, () => {
     });
 
     describe('turn counter', () => {
-        const succeed = createStubAction(() => Verdict.succeed({ value: 'ok' }));
-        const fail = createStubAction(() => Verdict.fail('nope'));
+        const succeed = createStubAction(() => ActionOutcome.succeed({ value: 'ok' }));
+        const fail = createStubAction(() => ActionOutcome.fail('nope'));
 
         it('should advance the count by one when an action succeeds', () => {
             const session = new GameSession(createGameState(), factories);
@@ -239,8 +239,8 @@ describe(GameSession.name, () => {
     });
 
     describe('on-turn effects', () => {
-        const succeed = createStubAction(() => Verdict.succeed({ value: 'ok' }));
-        const fail = createStubAction(() => Verdict.fail('nope'));
+        const succeed = createStubAction(() => ActionOutcome.succeed({ value: 'ok' }));
+        const fail = createStubAction(() => ActionOutcome.fail('nope'));
 
         const recordingEffect = (log: number[]): OnTurnEffect => ({
             apply: (ctx: Context) => log.push(ctx.turnCounter().current()),
@@ -283,7 +283,7 @@ describe(GameSession.name, () => {
             };
             const moveAndSucceed = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_2')!);
-                return Verdict.succeed({ value: 'ok' });
+                return ActionOutcome.succeed({ value: 'ok' });
             });
             const session = new GameSession(createGameState(), factories, [explodingEffect]);
 

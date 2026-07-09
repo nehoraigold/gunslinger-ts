@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Action } from '../Action';
-import { Verdict } from '../Verdict';
-import { defineActionOutcome } from '../ActionOutcome';
+import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
 import { Direction, ExitBlockReason, LightLevel, NpcId } from '../../state';
 import { Exit, InventoryEntry, Room } from '../../entity';
@@ -54,7 +53,7 @@ export class LookAction implements Action<LookInput, LookOutcome> {
         const items = this.describeItems(room.inventory().list(), ctx);
         const npcs = this.describeNpcs(room.npcIds(), ctx);
 
-        return Verdict.succeed({
+        return ActionOutcome.succeed({
             room: roomProperties,
             firstVisit,
             exits,

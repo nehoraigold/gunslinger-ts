@@ -1,18 +1,22 @@
 import { z } from 'zod';
 import { Action } from '../Action';
-import { Verdict } from '../Verdict';
-import { defineActionOutcome } from '../ActionOutcome';
+import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
-import { Direction } from '../../state';
+import { Direction, ExitBlockReason } from '../../state';
 import { MovementService } from '../../service/movement/MovementService';
 import { DefaultMovementService } from '../../service/movement/DefaultMovementService';
+import { Condition } from '../../condition';
 import { assertNever } from '../../../utils/assertNever';
 import { Schema, ZodSchema } from '../../../utils/schema';
 
 const DirectionSchema = z.enum(['north', 'south', 'east', 'west', 'up', 'down']) satisfies z.ZodType<Direction>;
 const MoveInputSchema = z.object({ direction: DirectionSchema });
 const MoveSuccessDataSchema = z.object({ roomId: z.string() });
-const MoveFailReasonSchema = z.enum(['no_exit', 'exit_blocked', 'entry_barred']);
+const MoveFailReasonSchema = z.discriminatedUnion('type', [
+    z.object({ type: z.literal('no_exit') }),
+    z.object({ type: z.literal('exit_blocked'), reasons: z.array(z.object({ type: z.custom<ExitBlockReason>() })) }),
+    z.object({ type: z.literal('entry_barred'), reasons: z.array(z.custom<Condition>()) }),
+]);
 const MoveOutcomeSchema = defineActionOutcome(MoveSuccessDataSchema, MoveFailReasonSchema);
 
 type MoveInput = z.infer<typeof MoveInputSchema>;
@@ -32,13 +36,13 @@ export class MoveAction implements Action<MoveInput, MoveOutcome> {
         const result = this.createMovementService(ctx).move(input.direction);
         switch (result.type) {
             case 'moved':
-                return Verdict.succeed({ roomId: result.room.id });
+                return ActionOutcome.succeed({ roomId: result.room.id });
             case 'noSuchExit':
-                return Verdict.fail('no_exit');
+                return ActionOutcome.fail({ type: 'no_exit' });
             case 'exitBlocked':
-                return Verdict.fail('exit_blocked');
+                return ActionOutcome.fail({ type: 'exit_blocked', reasons: [{ type: result.blockReason }] });
             case 'entryBarred':
-                return Verdict.fail('entry_barred');
+                return ActionOutcome.fail({ type: 'entry_barred', reasons: result.unmet });
             default:
                 return assertNever(result);
         }

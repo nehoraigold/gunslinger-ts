@@ -3,6 +3,7 @@ import { expect } from 'chai';
 
 import { evaluateCondition } from './evaluateCondition';
 import { Condition } from './Condition';
+import { ConditionOutcome } from './ConditionOutcome';
 import { Context, GameContext } from '../context';
 import { GameTransaction } from '../transaction';
 import { createGameState, ModifyState } from '../state/GameState.test.utils';
@@ -18,8 +19,11 @@ describe('evaluateCondition', () => {
     const contextWith = (modifyState?: ModifyState): Context =>
         new GameContext(new GameTransaction(createGameState(modifyState)), factories);
 
-    const evaluate = (condition: Condition, modifyState?: ModifyState): boolean =>
+    const outcomeOf = (condition: Condition, modifyState?: ModifyState): ConditionOutcome =>
         evaluateCondition(contextWith(modifyState), condition);
+
+    const evaluate = (condition: Condition, modifyState?: ModifyState): boolean =>
+        outcomeOf(condition, modifyState).satisfied;
 
     describe('sentinels', () => {
         it('should evaluate true to true and false to false', () => {
@@ -214,6 +218,60 @@ describe('evaluateCondition', () => {
             expect(evaluate(chapelGate, carryingAndUntalked)).to.be.false;
             expect(evaluate(chapelGate, talkedButCarrying)).to.be.false;
             expect(evaluate(chapelGate, talkedAndUnburdened)).to.be.true;
+        });
+    });
+
+    describe('unmet reporting', () => {
+        const lacksAmulet: Condition = { type: 'lacks_item', itemId: 'cursed_amulet', location: 'player' };
+        const talkedToHermit: Condition = { type: 'flag_value', key: 'talked_to_hermit', value: true };
+
+        it('should carry no unmet conditions when satisfied', () => {
+            expect(outcomeOf({ type: 'true' })).to.deep.equal({ satisfied: true });
+        });
+
+        it('should report a failing leaf as the sole unmet condition', () => {
+            expect(outcomeOf(talkedToHermit)).to.deep.equal({ satisfied: false, unmet: [talkedToHermit] });
+        });
+
+        it('should report every failed child of an and, so the player learns all remaining requirements', () => {
+            const gate: Condition = { type: 'and', conditions: [lacksAmulet, talkedToHermit] };
+
+            const outcome = outcomeOf(gate, (s) => void (s.player.inventory.cursed_amulet = 1));
+
+            expect(outcome).to.deep.equal({ satisfied: false, unmet: [lacksAmulet, talkedToHermit] });
+        });
+
+        it('should omit already-satisfied children from an and', () => {
+            const gate: Condition = { type: 'and', conditions: [lacksAmulet, talkedToHermit] };
+
+            const outcome = outcomeOf(gate, (s) => {
+                s.player.inventory.cursed_amulet = 1;
+                s.flags.talked_to_hermit = true;
+            });
+
+            expect(outcome).to.deep.equal({ satisfied: false, unmet: [lacksAmulet] });
+        });
+
+        it('should report an unmet or as a single disjunction, not its children', () => {
+            const either: Condition = { type: 'or', conditions: [{ type: 'false' }, talkedToHermit] };
+
+            expect(outcomeOf(either)).to.deep.equal({ satisfied: false, unmet: [either] });
+        });
+
+        it('should report an unmet not as itself', () => {
+            const negated: Condition = { type: 'not', condition: { type: 'true' } };
+
+            expect(outcomeOf(negated)).to.deep.equal({ satisfied: false, unmet: [negated] });
+        });
+
+        it('should flatten nested ands down to the failing leaf', () => {
+            const failing: Condition = { type: 'false' };
+            const nested: Condition = {
+                type: 'and',
+                conditions: [{ type: 'true' }, { type: 'and', conditions: [failing] }],
+            };
+
+            expect(outcomeOf(nested)).to.deep.equal({ satisfied: false, unmet: [failing] });
         });
     });
 });

@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Action } from '../Action';
-import { Verdict } from '../Verdict';
-import { defineActionOutcome } from '../ActionOutcome';
+import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
 import { Schema, ZodSchema } from '../../../utils/schema';
 
@@ -24,12 +23,12 @@ export class TalkToAction implements Action<TalkToInput, TalkToOutcome> {
 
     execute(ctx: Context, { npcId }: TalkToInput): TalkToOutcome {
         if (!ctx.requireCurrentRoom().npcIds().includes(npcId)) {
-            return Verdict.fail('npc_not_present');
+            return ActionOutcome.fail('npc_not_present');
         }
 
         const npc = ctx.requireNpc(npcId);
         ctx.flags().set(`talked_to_${npcId}`, true);
-        return Verdict.succeed({
+        return ActionOutcome.succeed({
             npcId,
             name: npc.name,
             dialogue: npc.dialogue,

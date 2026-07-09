@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Action } from '../Action';
-import { Verdict } from '../Verdict';
-import { defineActionOutcome } from '../ActionOutcome';
+import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
 import { InventoryService } from '../../service/inventory/InventoryService';
 import { DefaultInventoryService } from '../../service/inventory/DefaultInventoryService';
@@ -30,21 +29,21 @@ export class PickUpAction implements Action<PickUpInput, PickUpOutcome> {
         const item = ctx.requireItem(input.itemId);
         const roomInventory = ctx.requireCurrentRoom().inventory();
         if (!roomInventory.has(input.itemId)) {
-            return Verdict.fail('not_in_room');
+            return ActionOutcome.fail('not_in_room');
         }
         if (!item.takeable) {
-            return Verdict.fail('not_takeable');
+            return ActionOutcome.fail('not_takeable');
         }
         const result = this.createInventoryService(ctx).transfer(input.itemId, roomInventory, ctx.player().inventory());
         switch (result.type) {
             case 'transferred':
-                return Verdict.succeed({ itemId: result.itemId });
+                return ActionOutcome.succeed({ itemId: result.itemId });
             case 'notAvailable':
-                return Verdict.fail('not_in_room');
+                return ActionOutcome.fail('not_in_room');
             case 'insufficientQuantity':
-                return Verdict.fail('not_enough_in_room');
+                return ActionOutcome.fail('not_enough_in_room');
             case 'maximumQuantityReached':
-                return Verdict.fail('already_carrying');
+                return ActionOutcome.fail('already_carrying');
             default:
                 return assertNever(result);
         }

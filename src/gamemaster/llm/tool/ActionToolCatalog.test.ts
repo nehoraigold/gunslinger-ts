@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { z } from 'zod';
 
 import { ActionToolCatalog } from './ActionToolCatalog';
-import { Action, Verdict, defineActionOutcome } from '../../../engine/action';
+import { Action, ActionOutcome, defineActionOutcome } from '../../../engine/action';
 import { ZodSchema } from '../../../utils/schema';
 
 describe(ActionToolCatalog.name, () => {
@@ -19,7 +19,7 @@ describe(ActionToolCatalog.name, () => {
         name: 'move',
         schema: new ZodSchema(MoveLikeInputSchema),
         outcomeSchema: MoveLikeOutcomeSchema,
-        execute: () => Verdict.succeed({ roomId: 'room_1' }),
+        execute: () => ActionOutcome.succeed({ roomId: 'room_1' }),
     };
 
     const VoidLikeOutcomeSchema = defineActionOutcome(z.object({}), z.enum(['nope']));
@@ -29,7 +29,7 @@ describe(ActionToolCatalog.name, () => {
         name: 'checkInventory',
         schema: new ZodSchema(z.void()),
         outcomeSchema: VoidLikeOutcomeSchema,
-        execute: () => Verdict.succeed({}),
+        execute: () => ActionOutcome.succeed({}),
     };
 
     describe('listDefinitions', () => {

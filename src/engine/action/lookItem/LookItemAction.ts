@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { Action } from '../Action';
-import { Verdict } from '../Verdict';
-import { defineActionOutcome } from '../ActionOutcome';
+import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
 import { ItemType } from '../../state';
 import { Schema, ZodSchema } from '../../../utils/schema';
@@ -34,12 +33,12 @@ export class LookItemAction implements Action<LookItemInput, LookItemOutcome> {
         const qtyInRoom = ctx.requireCurrentRoom().inventory().quantityOf(itemId);
 
         if (qtyInInventory === 0 && qtyInRoom === 0) {
-            return Verdict.fail('item_not_present');
+            return ActionOutcome.fail('item_not_present');
         }
 
         const item = ctx.requireItem(itemId);
         const inInventory = qtyInInventory > 0;
-        return Verdict.succeed({
+        return ActionOutcome.succeed({
             itemId,
             name: item.name,
             description: item.description,
