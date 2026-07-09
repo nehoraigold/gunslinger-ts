@@ -77,6 +77,29 @@ describe(DefaultPlayer.name, () => {
         });
     });
 
+    describe('equipment', () => {
+        it('should reflect the slots held in player state', () => {
+            const state: PlayerState = {
+                id: 'player',
+                name: 'Player',
+                currentRoomId: 'room_1',
+                equipment: { weapon: 'rusty_revolver', armor: undefined },
+                inventory: {},
+                money: 0,
+            };
+            player = new DefaultPlayer(new RootValueStore(state));
+
+            expect(player.equipment().equippedIn('weapon')).to.equal('rusty_revolver');
+            expect(player.equipment().equippedIn('armor')).to.be.undefined;
+        });
+
+        it('should persist changes made through the returned equipment back into player state', () => {
+            player.equipment().equip('armor', 'leather_duster');
+
+            expect(player.equipment().equippedIn('armor')).to.equal('leather_duster');
+        });
+    });
+
     describe('wallet', () => {
         it('should reflect the money held in player state', () => {
             const state: PlayerState = {
