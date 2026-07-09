@@ -22,11 +22,12 @@ export class UnequipAction implements Action<UnequipInput, UnequipOutcome> {
 
     constructor(
         private readonly createEquipmentService: (ctx: Context) => EquipmentService = (ctx) =>
-            new DefaultEquipmentService(ctx, ctx.player().inventory(), ctx.player().equipment()),
+            new DefaultEquipmentService(ctx),
     ) {}
 
     execute(ctx: Context, input: UnequipInput): UnequipOutcome {
-        const result = this.createEquipmentService(ctx).unequip(input.slot);
+        const player = ctx.player();
+        const result = this.createEquipmentService(ctx).unequip(input.slot, player.inventory(), player.equipment());
         switch (result.type) {
             case 'unequipped':
                 return ActionOutcome.succeed({ itemId: result.itemId, slot: result.slot });

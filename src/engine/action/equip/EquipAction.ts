@@ -26,11 +26,12 @@ export class EquipAction implements Action<EquipInput, EquipOutcome> {
 
     constructor(
         private readonly createEquipmentService: (ctx: Context) => EquipmentService = (ctx) =>
-            new DefaultEquipmentService(ctx, ctx.player().inventory(), ctx.player().equipment()),
+            new DefaultEquipmentService(ctx),
     ) {}
 
     execute(ctx: Context, input: EquipInput): EquipOutcome {
-        const result = this.createEquipmentService(ctx).equip(input.itemId);
+        const player = ctx.player();
+        const result = this.createEquipmentService(ctx).equip(input.itemId, player.inventory(), player.equipment());
         switch (result.type) {
             case 'equipped':
                 return ActionOutcome.succeed({

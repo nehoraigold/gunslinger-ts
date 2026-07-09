@@ -4,13 +4,25 @@ import sinon from 'sinon';
 
 import { UnequipAction } from './UnequipAction';
 import { Context, GameContext } from '../../context';
-import { fakeContext } from '../../context/Context.test.utils';
+import { fakeContext, fakePlayer } from '../../context/Context.test.utils';
 import { GameTransaction } from '../../transaction';
 import { createGameState, ModifyState } from '../../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../entity';
+import { ItemState } from '../../state';
 import { UnequipOutcome } from '../../service/equipment/EquipOutcome';
 
 describe(UnequipAction.name, () => {
+    const revolver: ItemState = {
+        name: 'Rusty Revolver',
+        description: '',
+        type: 'weapon',
+        stackable: false,
+        value: 0,
+        weight: 0,
+        takeable: true,
+        droppable: true,
+    };
+
     describe('execute', () => {
         describe('wired to the real EquipmentService', () => {
             function createDefaultContext(modifyState?: ModifyState): Context {
@@ -24,14 +36,15 @@ describe(UnequipAction.name, () => {
 
             it('should return the equipped item to the inventory and empty the slot', () => {
                 const ctx = createDefaultContext((state) => {
-                    state.player.equipment.weapon = 'item_1';
+                    state.items.revolver = revolver;
+                    state.player.equipment.weapon = 'revolver';
                 });
 
                 const outcome = new UnequipAction().execute(ctx, { slot: 'weapon' });
 
-                expect(outcome).to.deep.equal({ result: 'success', data: { itemId: 'item_1', slot: 'weapon' } });
+                expect(outcome).to.deep.equal({ result: 'success', data: { itemId: 'revolver', slot: 'weapon' } });
                 expect(ctx.player().equipment().equippedIn('weapon')).to.be.undefined;
-                expect(ctx.player().inventory().has('item_1')).to.be.true;
+                expect(ctx.player().inventory().has('revolver')).to.be.true;
             });
 
             it('should fail with slot_empty when the slot holds nothing', () => {
@@ -48,19 +61,21 @@ describe(UnequipAction.name, () => {
                 return new UnequipAction(() => ({ equip: sinon.stub(), unequip: sinon.stub().returns(outcome) }));
             }
 
-            it('should translate an "unequipped" outcome into a success outcome', () => {
-                const action = actionReturning({ type: 'unequipped', itemId: 'revolver', slot: 'weapon' });
+            const ctx = () => fakeContext({ player: () => fakePlayer() });
 
-                const outcome = action.execute(fakeContext(), { slot: 'weapon' });
+            it('should translate an "unequipped" outcome into a success outcome', () => {
+                const action = actionReturning({ type: 'unequipped', itemId: 'rusty_revolver', slot: 'weapon' });
+
+                const outcome = action.execute(ctx(), { slot: 'weapon' });
 
                 expect(outcome).to.deep.equal({
                     result: 'success',
-                    data: { itemId: 'revolver', slot: 'weapon' },
+                    data: { itemId: 'rusty_revolver', slot: 'weapon' },
                 });
             });
 
             it('should translate a "slotEmpty" outcome into a slot_empty failure', () => {
-                const outcome = actionReturning({ type: 'slotEmpty' }).execute(fakeContext(), { slot: 'armor' });
+                const outcome = actionReturning({ type: 'slotEmpty' }).execute(ctx(), { slot: 'armor' });
 
                 expect(outcome).to.deep.include({ result: 'failure', reason: 'slot_empty' });
             });

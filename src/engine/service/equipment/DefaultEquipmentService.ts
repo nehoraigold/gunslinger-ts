@@ -5,41 +5,37 @@ import { EquipmentService } from './EquipmentService';
 import { EquipOutcome, UnequipOutcome } from './EquipOutcome';
 
 export class DefaultEquipmentService implements EquipmentService {
-    constructor(
-        private readonly items: ItemLookup,
-        private readonly inventory: Inventory,
-        private readonly equipment: Equipment,
-    ) {}
+    constructor(private readonly items: ItemLookup) {}
 
-    equip(itemId: ItemId): EquipOutcome {
+    equip(itemId: ItemId, inventory: Inventory, equipment: Equipment): EquipOutcome {
         const slot = equipSlotForItemType(this.items.requireItem(itemId).type);
         if (!slot) {
             return { type: 'notEquippable' };
         }
-        if (this.equipment.equippedIn(slot) === itemId) {
+        if (equipment.equippedIn(slot) === itemId) {
             return { type: 'alreadyEquipped' };
         }
-        if (!this.inventory.has(itemId)) {
+        if (!inventory.has(itemId)) {
             return { type: 'notCarried' };
         }
 
-        const displaced = this.equipment.equippedIn(slot);
-        this.inventory.remove(itemId);
-        this.equipment.equip(slot, itemId);
+        const displaced = equipment.equippedIn(slot);
+        inventory.remove(itemId);
+        equipment.equip(slot, itemId);
         if (displaced) {
-            this.inventory.add(displaced);
+            inventory.add(displaced);
         }
         return { type: 'equipped', itemId, slot, displaced };
     }
 
-    unequip(slot: EquipSlot): UnequipOutcome {
-        const itemId = this.equipment.equippedIn(slot);
+    unequip(slot: EquipSlot, inventory: Inventory, equipment: Equipment): UnequipOutcome {
+        const itemId = equipment.equippedIn(slot);
         if (!itemId) {
             return { type: 'slotEmpty' };
         }
 
-        this.equipment.unequip(slot);
-        this.inventory.add(itemId);
+        equipment.unequip(slot);
+        inventory.add(itemId);
         return { type: 'unequipped', itemId, slot };
     }
 }
