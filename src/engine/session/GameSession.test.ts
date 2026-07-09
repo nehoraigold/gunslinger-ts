@@ -124,7 +124,7 @@ describe(GameSession.name, () => {
     });
 
     describe('restoreState', () => {
-        const succeed = createStubAction(() => Verdict.succeed({ value: 'ok' }));
+        const succeed = createStubAction(() => ActionOutcome.succeed({ value: 'ok' }));
 
         it('should replace the state returned by getState', () => {
             const session = new GameSession(createGameState(), factories);
@@ -162,7 +162,7 @@ describe(GameSession.name, () => {
 
             const moveToRoom1 = createStubAction((ctx) => {
                 ctx.player().moveTo(ctx.room('room_1')!);
-                return Verdict.succeed({ value: 'ok' });
+                return ActionOutcome.succeed({ value: 'ok' });
             });
             session.playTurn(moveToRoom1, { value: 'ok' });
 
