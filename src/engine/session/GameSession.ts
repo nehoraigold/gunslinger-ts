@@ -4,9 +4,10 @@ import { StateManager, Transaction } from '../transaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
 import { PlayableSession } from './PlayableSession';
+import { RestorableSession } from './RestorableSession';
 import { OnTurnEffect } from './OnTurnEffect';
 
-export class GameSession implements PlayableSession {
+export class GameSession implements PlayableSession, RestorableSession {
     private readonly stateManager: StateManager;
 
     constructor(
@@ -19,6 +20,10 @@ export class GameSession implements PlayableSession {
 
     getState(): DeepReadonly<GameState> {
         return this.stateManager.getState();
+    }
+
+    restoreState(state: GameState): void {
+        this.stateManager.restore(state);
     }
 
     playTurn<InputT, OutcomeT extends { result: 'success' | 'failure' }>(

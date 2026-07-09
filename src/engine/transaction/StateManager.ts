@@ -2,6 +2,7 @@ import { Transaction } from './Transaction';
 import { GameTransaction } from './GameTransaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
+import { TransactionInProgressError, UnknownTransactionError } from '../error';
 
 export class StateManager {
     private state: DeepReadonly<GameState>;
@@ -15,9 +16,16 @@ export class StateManager {
         return this.state;
     }
 
+    restore(state: GameState): void {
+        if (this.openTx) {
+            throw new TransactionInProgressError('restore state');
+        }
+        this.state = state;
+    }
+
     beginTransaction(): Transaction {
         if (this.openTx) {
-            throw new Error('beginTransaction() called while a transaction is already open');
+            throw new TransactionInProgressError('begin a transaction');
         }
         this.openTx = new GameTransaction(this.state);
         return this.openTx;
@@ -36,7 +44,7 @@ export class StateManager {
 
     private assertOpen(tx: Transaction): void {
         if (tx !== this.openTx) {
-            throw new Error('tx is not the currently open transaction on this StateManager');
+            throw new UnknownTransactionError();
         }
     }
 }

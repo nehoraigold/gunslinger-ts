@@ -9,6 +9,7 @@ import { Context, Factories } from '../context';
 import { createGameState } from '../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../entity';
 import { ZodSchema, ParseError } from '../../utils/schema';
+import { TransactionInProgressError } from '../error';
 
 describe(GameSession.name, () => {
     const factories: Factories = {
@@ -119,6 +120,73 @@ describe(GameSession.name, () => {
 
             expect(outcome).to.deep.equal({ result: 'success', data: { value: 'ok' } });
             expect(session.getState().player.currentRoomId).to.equal('room_2');
+        });
+    });
+
+    describe('restoreState', () => {
+        const succeed = createStubAction(() => Verdict.succeed({ value: 'ok' }));
+
+        it('should replace the state returned by getState', () => {
+            const session = new GameSession(createGameState(), factories);
+            const loaded = createGameState((s) => {
+                s.player.currentRoomId = 'room_2';
+                s.turnCounter.count = 7;
+            });
+
+            session.restoreState(loaded);
+
+            expect(session.getState().player.currentRoomId).to.equal('room_2');
+            expect(session.getState().turnCounter.count).to.equal(7);
+        });
+
+        it('should not itself advance the turn counter', () => {
+            const session = new GameSession(createGameState(), factories);
+
+            session.restoreState(
+                createGameState((s) => {
+                    s.turnCounter.count = 7;
+                }),
+            );
+
+            expect(session.getState().turnCounter.count).to.equal(7);
+        });
+
+        it('should have subsequent turns operate on the restored state', () => {
+            const session = new GameSession(createGameState(), factories);
+            session.restoreState(
+                createGameState((s) => {
+                    s.player.currentRoomId = 'room_2';
+                    s.turnCounter.count = 7;
+                }),
+            );
+
+            const moveToRoom1 = createStubAction((ctx) => {
+                ctx.player().moveTo(ctx.room('room_1')!);
+                return Verdict.succeed({ value: 'ok' });
+            });
+            session.playTurn(moveToRoom1, { value: 'ok' });
+
+            expect(session.getState().player.currentRoomId).to.equal('room_1');
+            expect(session.getState().turnCounter.count).to.equal(8);
+        });
+
+        it('should throw if called while a turn is in progress', () => {
+            const session = new GameSession(createGameState(), factories);
+            const restoreMidTurn = createStubAction((): never => {
+                session.restoreState(createGameState());
+                throw new Error('unreachable');
+            });
+
+            expect(() => session.playTurn(restoreMidTurn, { value: 'ok' })).to.throw(TransactionInProgressError);
+        });
+
+        it('should leave the session usable after restore', () => {
+            const session = new GameSession(createGameState(), factories);
+            session.restoreState(createGameState());
+
+            const outcome = session.playTurn(succeed, { value: 'ok' });
+
+            expect(outcome).to.deep.equal({ result: 'success', data: { value: 'ok' } });
         });
     });
 

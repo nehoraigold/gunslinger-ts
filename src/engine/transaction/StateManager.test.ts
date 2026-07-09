@@ -4,6 +4,7 @@ import { expect } from 'chai';
 import { StateManager } from './StateManager';
 import { GameTransaction } from './GameTransaction';
 import { createGameState } from '../state/GameState.test.utils';
+import { TransactionInProgressError, UnknownTransactionError } from '../error';
 
 describe(StateManager.name, () => {
     describe('getState', () => {
@@ -12,6 +13,39 @@ describe(StateManager.name, () => {
             const manager = new StateManager(initialState);
 
             expect(manager.getState()).to.deep.equal(initialState);
+        });
+    });
+
+    describe('restore', () => {
+        it('should replace the state returned by getState', () => {
+            const manager = new StateManager(createGameState());
+            const restored = createGameState((s) => {
+                s.player.currentRoomId = 'room_2';
+            });
+
+            manager.restore(restored);
+
+            expect(manager.getState()).to.deep.equal(restored);
+        });
+
+        it('should throw when a transaction is open', () => {
+            const manager = new StateManager(createGameState());
+            manager.beginTransaction();
+
+            expect(() => manager.restore(createGameState())).to.throw(TransactionInProgressError);
+        });
+
+        it('should allow beginning a transaction from the restored state', () => {
+            const manager = new StateManager(createGameState());
+            manager.restore(
+                createGameState((s) => {
+                    s.player.currentRoomId = 'room_2';
+                }),
+            );
+
+            const tx = manager.beginTransaction();
+
+            expect(tx.player.get().currentRoomId).to.equal('room_2');
         });
     });
 
@@ -28,7 +62,7 @@ describe(StateManager.name, () => {
             const manager = new StateManager(createGameState());
             manager.beginTransaction();
 
-            expect(() => manager.beginTransaction()).to.throw(/already open/i);
+            expect(() => manager.beginTransaction()).to.throw(TransactionInProgressError);
         });
 
         it('should allow beginning a new transaction after the previous one was committed', () => {
@@ -63,7 +97,7 @@ describe(StateManager.name, () => {
             const manager = new StateManager(createGameState());
             const foreignTx = new GameTransaction(createGameState());
 
-            expect(() => manager.commit(foreignTx)).to.throw(/not the currently open transaction/i);
+            expect(() => manager.commit(foreignTx)).to.throw(UnknownTransactionError);
         });
 
         it('should throw when called a second time for the same transaction', () => {
@@ -71,7 +105,7 @@ describe(StateManager.name, () => {
             const tx = manager.beginTransaction();
             manager.commit(tx);
 
-            expect(() => manager.commit(tx)).to.throw(/not the currently open transaction/i);
+            expect(() => manager.commit(tx)).to.throw(UnknownTransactionError);
         });
     });
 
@@ -91,7 +125,7 @@ describe(StateManager.name, () => {
             const manager = new StateManager(createGameState());
             const foreignTx = new GameTransaction(createGameState());
 
-            expect(() => manager.rollback(foreignTx)).to.throw(/not the currently open transaction/i);
+            expect(() => manager.rollback(foreignTx)).to.throw(UnknownTransactionError);
         });
     });
 });

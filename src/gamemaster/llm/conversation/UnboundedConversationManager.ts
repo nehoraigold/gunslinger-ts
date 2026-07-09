@@ -2,7 +2,7 @@ import { ConversationManager } from './ConversationManager';
 import { ConversationMessage } from './ConversationMessage';
 
 export class UnboundedConversationManager implements ConversationManager {
-    private readonly messages: ConversationMessage[] = [];
+    private messages: ConversationMessage[] = [];
 
     appendTurn(messages: ConversationMessage[]): void {
         this.messages.push(...messages);
@@ -10,5 +10,9 @@ export class UnboundedConversationManager implements ConversationManager {
 
     getMessagesForNextRequest(): ConversationMessage[] {
         return [...this.messages];
+    }
+
+    clear(): void {
+        this.messages = [];
     }
 }

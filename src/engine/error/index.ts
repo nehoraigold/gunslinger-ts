@@ -3,3 +3,5 @@ export * from './ItemNotFoundError';
 export * from './NpcNotFoundError';
 export * from './InsufficientWalletBalanceError';
 export * from './NegativeWalletAmountError';
+export * from './TransactionInProgressError';
+export * from './UnknownTransactionError';

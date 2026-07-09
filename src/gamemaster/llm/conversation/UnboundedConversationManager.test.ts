@@ -31,4 +31,26 @@ describe(UnboundedConversationManager.name, () => {
             ]);
         });
     });
+
+    describe('clear', () => {
+        it('should discard all previously appended messages', () => {
+            const manager = new UnboundedConversationManager();
+            manager.appendTurn([{ role: 'user', text: 'go north' }]);
+            manager.appendTurn([{ role: 'assistant', text: 'You head north.' }]);
+
+            manager.clear();
+
+            expect(manager.getMessagesForNextRequest()).to.deep.equal([]);
+        });
+
+        it('should leave the manager usable for new turns after clearing', () => {
+            const manager = new UnboundedConversationManager();
+            manager.appendTurn([{ role: 'user', text: 'go north' }]);
+            manager.clear();
+
+            manager.appendTurn([{ role: 'user', text: 'look' }]);
+
+            expect(manager.getMessagesForNextRequest()).to.deep.equal([{ role: 'user', text: 'look' }]);
+        });
+    });
 });

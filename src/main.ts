@@ -13,6 +13,9 @@ import { LookNpcAction } from './engine/action/lookNpc/LookNpcAction';
 import { TalkToAction } from './engine/action/talkTo/TalkToAction';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
+import { SaveController } from './cli/save';
+import { MetaCommandHandler } from './cli/command';
+import { FileSessionRepository } from './persistence';
 import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
 import {
     GameMaster,
@@ -81,6 +84,8 @@ const session = new GameSession(createSampleWorldState(), {
     npc: new DefaultNpcFactory(),
 });
 
+const saveController = new SaveController(new FileSessionRepository(process.env.SAVE_DIR ?? './saves'), session);
+
 const toolCatalog = new ActionToolCatalog({
     move: {
         action: new MoveAction(),
@@ -141,6 +146,8 @@ const requestAssembler = new DefaultLLMRequestAssembler(
     toolCatalog.listDefinitions(),
 );
 
+const conversationManager = new UnboundedConversationManager();
+
 const gameMaster: GameMaster = new LLMGameMaster(
     session,
     new SequentialLLMLoop(
@@ -148,12 +155,13 @@ const gameMaster: GameMaster = new LLMGameMaster(
         requestAssembler,
         new DefaultToolCallDispatcher(toolCatalog),
     ),
-    new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), new UnboundedConversationManager()),
+    new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), conversationManager),
 );
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
 
 console.log(`Current room: ${session.getState().player.currentRoomId}`);
+console.log('Commands: "save [name]", "load <name>", "saves", "quit".');
 rl.prompt();
 
 // readline can emit several buffered `line` events synchronously in one tick (e.g. piped input,
@@ -162,6 +170,25 @@ let queue: Promise<void> = Promise.resolve();
 // Piped stdin hits EOF (and closes the interface) as soon as all input is read, well before a
 // pending turn's LLM round-trip finishes — this flag stops us from prompting on a closed interface.
 let closed = false;
+let autoSaveWarned = false;
+
+const metaCommands = new MetaCommandHandler(
+    saveController,
+    (out) => console.log(out),
+    () => conversationManager.clear(),
+);
+
+async function autoSave(): Promise<void> {
+    try {
+        await saveController.save();
+        autoSaveWarned = false;
+    } catch (error) {
+        if (!autoSaveWarned) {
+            console.error('Auto-save failed:', error instanceof Error ? error.message : error);
+            autoSaveWarned = true;
+        }
+    }
+}
 
 rl.on('line', (line) => {
     const input = line.trim();
@@ -178,11 +205,15 @@ rl.on('line', (line) => {
 
     queue = queue.then(async () => {
         try {
+            if (await metaCommands.handle(input)) {
+                return;
+            }
             const stream = gameMaster.handleInput(input);
             for await (const chunk of stream) {
                 process.stdout.write(chunk);
             }
             process.stdout.write('\n');
+            await autoSave();
         } catch (error) {
             console.error('Something went wrong:', error instanceof Error ? error.message : error);
         } finally {
