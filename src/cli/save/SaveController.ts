@@ -1,16 +1,7 @@
 import { RestorableSession } from '../../engine/session';
-import { RoomId } from '../../engine/state';
-import { SessionRepository } from '../../persistence';
-
-export type SaveResult = { status: 'saved'; name: string } | { status: 'invalid_name' };
-
-export type LoadResult =
-    | { status: 'loaded'; roomId: RoomId }
-    | { status: 'not_found' }
-    | { status: 'invalid_name' }
-    | { status: 'corrupt'; reason: string };
-
-export type SaveListing = { names: string[]; current: string };
+import { SessionRepository, InvalidSlotNameError } from '../../persistence';
+import { LoadResult } from './LoadResult';
+import { SaveListing } from './SaveListing';
 
 const DEFAULT_SLOT = 'autosave';
 const VALID_SLOT_NAME = /^[A-Za-z0-9_-]+$/;
@@ -26,31 +17,22 @@ export class SaveController {
         this.currentSlot = defaultSlot;
     }
 
-    async autosave(): Promise<void> {
+    currentSlotName(): string {
+        return this.currentSlot;
+    }
+
+    setCurrentSlotName(slot: string): void {
+        this.validateSlotName(slot);
+        this.currentSlot = slot;
+    }
+
+    async save(): Promise<void> {
         await this.repository.save(this.currentSlot, this.session.getState());
     }
 
-    async save(name?: string): Promise<SaveResult> {
-        const slot = name ?? this.currentSlot;
-        if (!VALID_SLOT_NAME.test(slot)) {
-            return { status: 'invalid_name' };
-        }
-        this.currentSlot = slot;
-        await this.repository.save(slot, this.session.getState());
-        return { status: 'saved', name: slot };
-    }
-
     async load(name: string): Promise<LoadResult> {
-        if (!VALID_SLOT_NAME.test(name)) {
-            return { status: 'invalid_name' };
-        }
-        let state;
-        try {
-            state = await this.repository.load(name);
-        } catch (error) {
-            return { status: 'corrupt', reason: (error as Error).message };
-        }
-        if (state === undefined) {
+        const state = await this.repository.load(name);
+        if (!state) {
             return { status: 'not_found' };
         }
         this.session.restoreState(state);
@@ -61,5 +43,11 @@ export class SaveController {
     async list(): Promise<SaveListing> {
         const names = await this.repository.list();
         return { names, current: this.currentSlot };
+    }
+
+    private validateSlotName(slot: string): void {
+        if (!VALID_SLOT_NAME.test(slot)) {
+            throw new InvalidSlotNameError(slot, "only letters, digits, '-' and '_' are allowed");
+        }
     }
 }

@@ -9,6 +9,7 @@ import { Context, Factories } from '../context';
 import { createGameState } from '../state/GameState.test.utils';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../entity';
 import { ZodSchema, ParseError } from '../../utils/schema';
+import { TransactionInProgressError } from '../error';
 
 describe(GameSession.name, () => {
     const factories: Factories = {
@@ -176,7 +177,7 @@ describe(GameSession.name, () => {
                 throw new Error('unreachable');
             });
 
-            expect(() => session.playTurn(restoreMidTurn, { value: 'ok' })).to.throw(/transaction is open/i);
+            expect(() => session.playTurn(restoreMidTurn, { value: 'ok' })).to.throw(TransactionInProgressError);
         });
 
         it('should leave the session usable after restore', () => {

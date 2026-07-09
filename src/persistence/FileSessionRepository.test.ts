@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { FileSessionRepository } from './FileSessionRepository';
+import { InvalidGameDataError, InvalidSlotNameError } from './error';
 import { GameState } from '../engine/state';
 import { createGameState } from '../engine/state/GameState.test.utils';
 
@@ -77,15 +78,14 @@ describe(FileSessionRepository.name, () => {
             expect(await repository.load('missing')).to.equal(undefined);
         });
 
-        it('should throw when the save file is not valid JSON', async () => {
+        it('should throw InvalidGameDataError when the save file is not valid JSON', async () => {
             const repository = new FileSessionRepository(baseDir);
             await writeFile(join(baseDir, 'corrupt.json'), '{ not json', 'utf-8');
 
             let thrown: Error | undefined;
             await repository.load('corrupt').catch((e: Error) => (thrown = e));
 
-            expect(thrown).to.be.instanceOf(Error);
-            expect(thrown!.message).to.match(/not valid json/i);
+            expect(thrown).to.be.instanceOf(InvalidGameDataError);
         });
     });
 
@@ -121,8 +121,7 @@ describe(FileSessionRepository.name, () => {
                 let thrown: Error | undefined;
                 await repository.save(unsafe, createGameState()).catch((e: Error) => (thrown = e));
 
-                expect(thrown, `expected save('${unsafe}') to reject`).to.be.instanceOf(Error);
-                expect(thrown!.message).to.match(/invalid save name/i);
+                expect(thrown, `expected save('${unsafe}') to reject`).to.be.instanceOf(InvalidSlotNameError);
             });
         }
 
@@ -132,8 +131,7 @@ describe(FileSessionRepository.name, () => {
             let thrown: Error | undefined;
             await repository.load('../escape').catch((e: Error) => (thrown = e));
 
-            expect(thrown).to.be.instanceOf(Error);
-            expect(thrown!.message).to.match(/invalid save name/i);
+            expect(thrown).to.be.instanceOf(InvalidSlotNameError);
         });
     });
 });

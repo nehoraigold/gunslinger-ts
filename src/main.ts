@@ -14,6 +14,7 @@ import { TalkToAction } from './engine/action/talkTo/TalkToAction';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
 import { SaveController } from './cli/save';
+import { MetaCommandHandler } from './cli/command';
 import { FileSessionRepository } from './persistence';
 import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
 import {
@@ -171,65 +172,21 @@ let queue: Promise<void> = Promise.resolve();
 let closed = false;
 let autoSaveWarned = false;
 
-const INVALID_NAME_MESSAGE = "Invalid save name — use letters, digits, '-' or '_'.";
+const metaCommands = new MetaCommandHandler(
+    saveController,
+    (out) => console.log(out),
+    () => conversationManager.clear(),
+);
 
 async function autoSave(): Promise<void> {
     try {
-        await saveController.autosave();
+        await saveController.save();
         autoSaveWarned = false;
     } catch (error) {
         if (!autoSaveWarned) {
             console.error('Auto-save failed:', error instanceof Error ? error.message : error);
             autoSaveWarned = true;
         }
-    }
-}
-
-// Save/load are session-lifecycle meta-commands handled at the CLI boundary — never sent to the
-// LLM and never a game turn. Returns true when the input was consumed as a meta-command.
-async function handleMetaCommand(input: string): Promise<boolean> {
-    const [command, ...rest] = input.split(/\s+/);
-    const argument = rest.join(' ');
-    switch (command.toLowerCase()) {
-        case 'save': {
-            const result = await saveController.save(argument || undefined);
-            console.log(result.status === 'saved' ? `Saved to "${result.name}".` : INVALID_NAME_MESSAGE);
-            return true;
-        }
-        case 'load': {
-            if (!argument) {
-                console.log('Load which save? Try "saves" to list them.');
-                return true;
-            }
-            const result = await saveController.load(argument);
-            switch (result.status) {
-                case 'loaded':
-                    conversationManager.clear();
-                    console.log(`Loaded "${argument}". Current room: ${result.roomId}`);
-                    break;
-                case 'not_found':
-                    console.log(`No save named "${argument}".`);
-                    break;
-                case 'invalid_name':
-                    console.log(INVALID_NAME_MESSAGE);
-                    break;
-                case 'corrupt':
-                    console.log(`Could not load "${argument}": ${result.reason}`);
-                    break;
-            }
-            return true;
-        }
-        case 'saves': {
-            const { names, current } = await saveController.list();
-            console.log(
-                names.length === 0
-                    ? 'No saves yet.'
-                    : `Saves: ${names.map((name) => (name === current ? `${name} (current)` : name)).join(', ')}`,
-            );
-            return true;
-        }
-        default:
-            return false;
     }
 }
 
@@ -248,7 +205,7 @@ rl.on('line', (line) => {
 
     queue = queue.then(async () => {
         try {
-            if (await handleMetaCommand(input)) {
+            if (await metaCommands.handle(input)) {
                 return;
             }
             const stream = gameMaster.handleInput(input);
