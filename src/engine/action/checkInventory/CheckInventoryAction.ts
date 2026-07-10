@@ -2,11 +2,15 @@ import { z } from 'zod';
 import { Action } from '../Action';
 import { ActionOutcome, defineActionOutcome } from '../ActionOutcome';
 import { Context } from '../../context';
+import { EquipSlot } from '../../state';
 import { Schema, ZodSchema } from '../../../utils/schema';
+
+const EQUIP_SLOTS: EquipSlot[] = ['weapon', 'armor'];
 
 const CheckInventoryInputSchema = z.void();
 const CheckInventorySuccessDataSchema = z.object({
     items: z.array(z.object({ itemId: z.string(), name: z.string(), quantity: z.number() })),
+    equipped: z.array(z.object({ slot: z.enum(['weapon', 'armor']), itemId: z.string(), name: z.string() })),
 });
 const CheckInventoryFailReasonSchema = z.never();
 const CheckInventoryOutcomeSchema = defineActionOutcome(
@@ -23,8 +27,8 @@ export class CheckInventoryAction implements Action<CheckInventoryInput, CheckIn
     readonly outcomeSchema = CheckInventoryOutcomeSchema;
 
     execute(ctx: Context): CheckInventoryOutcome {
-        const items = ctx
-            .player()
+        const player = ctx.player();
+        const items = player
             .inventory()
             .list()
             .map(({ itemId, quantity }) => ({
@@ -32,6 +36,10 @@ export class CheckInventoryAction implements Action<CheckInventoryInput, CheckIn
                 name: ctx.requireItem(itemId).name,
                 quantity,
             }));
-        return ActionOutcome.succeed({ items });
+        const equipped = EQUIP_SLOTS.flatMap((slot) => {
+            const itemId = player.equipment().equippedIn(slot);
+            return itemId === undefined ? [] : [{ slot, itemId, name: ctx.requireItem(itemId).name }];
+        });
+        return ActionOutcome.succeed({ items, equipped });
     }
 }
