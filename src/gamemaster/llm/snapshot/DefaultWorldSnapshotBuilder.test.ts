@@ -106,6 +106,32 @@ describe(DefaultWorldSnapshotBuilder.name, () => {
             expect(snapshot).to.match(/PEOPLE HERE:\s*Npc 1 \(id: npc_1\)/);
         });
 
+        it('should surface a merchant npc’s for-sale wares and buy interest', () => {
+            const state = createGameState((s) => {
+                s.rooms.room_1.npcIds = ['npc_1'];
+                s.npcs.npc_1.shop = {
+                    inventory: { item_1: 2 },
+                    listings: { item_1: { price: 7, forSale: true } },
+                    buys: ['consumable'],
+                };
+            });
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.include('sells Item 1 x2 @ 7 (id: item_1)');
+            expect(snapshot).to.include('buys item types: consumable');
+        });
+
+        it('should not surface shop details for a non-merchant npc', () => {
+            const state = createGameState((s) => {
+                s.rooms.room_1.npcIds = ['npc_1'];
+            });
+
+            const snapshot = builder.build(state);
+
+            expect(snapshot).to.not.include('sells');
+        });
+
         it('should report nothing carried when the player holds no items', () => {
             const state = createGameState();
 

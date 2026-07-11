@@ -84,4 +84,34 @@ describe(DefaultNpc.name, () => {
             expect(npc.wallet().balance()).to.equal(18);
         });
     });
+
+    describe('shop', () => {
+        it('should return undefined when the npc is not a merchant', () => {
+            expect(createDefaultNpc().shop()).to.be.undefined;
+        });
+
+        it('should expose a shop backed by the npc shop state when present', () => {
+            const npc = createDefaultNpc({
+                shop: {
+                    inventory: { rifle: 2 },
+                    listings: { rifle: { price: 8, forSale: true } },
+                    buys: ['weapon'],
+                },
+            });
+
+            const shop = npc.shop();
+
+            expect(shop?.priceOf('rifle')).to.equal(8);
+            expect(shop?.inventory().quantityOf('rifle')).to.equal(2);
+        });
+
+        it('should draw the shop purse from the npc money', () => {
+            const npc = createDefaultNpc({
+                money: 40,
+                shop: { inventory: {}, listings: {}, buys: [] },
+            });
+
+            expect(npc.shop()?.wallet().balance()).to.equal(40);
+        });
+    });
 });

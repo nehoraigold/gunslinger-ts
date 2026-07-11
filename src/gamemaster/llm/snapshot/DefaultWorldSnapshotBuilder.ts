@@ -1,5 +1,5 @@
 import { WorldSnapshotBuilder } from './WorldSnapshotBuilder';
-import { GameState, InventoryState, ItemId, NpcId, ExitState, RoomState } from '../../../engine/state';
+import { GameState, InventoryState, ItemId, NpcId, ExitState, RoomState, ShopState } from '../../../engine/state';
 import { DeepReadonly } from '../../../utils/types';
 
 export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
@@ -71,6 +71,24 @@ export class DefaultWorldSnapshotBuilder implements WorldSnapshotBuilder {
         if (npcIds.length === 0) {
             return ['  none'];
         }
-        return npcIds.map((npcId) => `  ${state.npcs[npcId]?.name ?? 'someone'} (id: ${npcId})`);
+        return npcIds.flatMap((npcId) => {
+            const npc = state.npcs[npcId];
+            const line = `  ${npc?.name ?? 'someone'} (id: ${npcId})`;
+            return npc?.shop ? [line, ...this.describeShop(state, npc.shop)] : [line];
+        });
+    }
+
+    private describeShop(state: DeepReadonly<GameState>, shop: DeepReadonly<ShopState>): string[] {
+        const forSale = Object.entries(shop.listings)
+            .filter(([itemId, listing]) => listing.forSale && (shop.inventory[itemId] ?? 0) > 0)
+            .map(
+                ([itemId, listing]) =>
+                    `      sells ${this.itemName(state, itemId)} x${shop.inventory[itemId]} @ ${listing.price} (id: ${itemId})`,
+            );
+        const lines = forSale.length > 0 ? forSale : ['      sells nothing right now'];
+        if (shop.buys.length > 0) {
+            lines.push(`      buys item types: ${shop.buys.join(', ')}`);
+        }
+        return lines;
     }
 }

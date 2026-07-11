@@ -87,6 +87,22 @@ export function createSampleWorldState(): GameState {
                 mood: 'guarded',
                 health: 10,
             },
+            peddler: {
+                name: 'Travelling Peddler',
+                appearance: 'A wiry peddler leans against a laden handcart, one eye on the road and one on your purse.',
+                dialogue: 'Fair prices for a fair traveller. Powder, iron, and oiled leather — what will it be?',
+                money: 100,
+                mood: 'friendly',
+                health: 10,
+                shop: {
+                    inventory: { rusty_revolver: 1, leather_duster: 1 },
+                    listings: {
+                        rusty_revolver: { price: 18, forSale: true },
+                        leather_duster: { price: 14, forSale: true },
+                    },
+                    buys: ['weapon', 'armor'],
+                },
+            },
         },
         rooms: {
             tower: {
@@ -161,7 +177,7 @@ export function createSampleWorldState(): GameState {
                     { direction: 'south', destinationRoomId: 'entrance' },
                 ],
                 inventory: { dry_fountain: 1 },
-                npcIds: ['hermit'],
+                npcIds: ['hermit', 'peddler'],
             },
             chapel: {
                 name: 'Ruined Chapel',
