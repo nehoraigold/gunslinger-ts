@@ -13,6 +13,8 @@ import { LookAction } from './engine/action/look/LookAction';
 import { LookItemAction } from './engine/action/lookItem/LookItemAction';
 import { LookNpcAction } from './engine/action/lookNpc/LookNpcAction';
 import { TalkToAction } from './engine/action/talkTo/TalkToAction';
+import { BuyAction } from './engine/action/buy/BuyAction';
+import { SellAction } from './engine/action/sell/SellAction';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
 import { createSampleWorldState } from './cli/sampleWorld';
 import { SaveController } from './cli/save';
@@ -152,6 +154,20 @@ const toolCatalog = new ActionToolCatalog({
             'Call when the player speaks to, greets, or asks something of a person present in the room (e.g. ' +
             '"talk to the hermit", "ask the guard about the key"). Pass the exact npc id from the snapshot. ' +
             "Returns the npc's single line of dialogue.",
+    },
+    buy: {
+        action: new BuyAction(),
+        description:
+            'Call when the player buys a for-sale item from a merchant present in the room (e.g. "buy the ' +
+            'rifle", "purchase two potions"). Pass the merchant npc id and the item id from the snapshot, plus ' +
+            'an optional quantity (default 1). Only wares the snapshot lists as for sale can be bought.',
+    },
+    sell: {
+        action: new SellAction(),
+        description:
+            'Call when the player sells an item from their inventory to a merchant present in the room (e.g. ' +
+            '"sell my revolver", "sell three pelts"). Pass the merchant npc id and the item id, plus an optional ' +
+            'quantity (default 1). The merchant only buys item types the snapshot says it buys.',
     },
 });
 
