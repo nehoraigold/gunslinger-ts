@@ -50,8 +50,8 @@ describe(SequentialLLMLoop.name, () => {
                 complete: sinon.stub().resolves({ text: 'You head north.', toolCalls: undefined } as LLMResponse),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ActionDispatcher = { dispatch: sinon.stub() };
-            const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher);
+            const actionDispatcher: ActionDispatcher = { dispatch: sinon.stub() };
+            const loop = new SequentialLLMLoop(llmClient, requestAssembler, actionDispatcher);
 
             const result = await loop.run(session, turn);
 
@@ -66,6 +66,7 @@ describe(SequentialLLMLoop.name, () => {
             const turn = fakeTurn({ complete: sinon.stub().returns(turnResult) });
             const requestAssembler = createRequestAssembler();
             const toolCall = { id: 'call_1', name: 'move', args: { direction: 'north' } };
+            const actionResult = { content: '{"result":"success"}' };
             const toolResult = { callId: 'call_1', name: 'move', content: '{"result":"success"}' };
             const llmClient: LLMClient = {
                 complete: sinon
@@ -76,12 +77,17 @@ describe(SequentialLLMLoop.name, () => {
                     .resolves({ text: 'You head north.', toolCalls: undefined } as LLMResponse),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ActionDispatcher = { dispatch: sinon.stub().returns(toolResult) };
-            const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher);
+            const actionDispatcher: ActionDispatcher = { dispatch: sinon.stub().returns(actionResult) };
+            const loop = new SequentialLLMLoop(llmClient, requestAssembler, actionDispatcher);
 
             const result = await loop.run(session, turn);
 
-            expect((toolCallDispatcher.dispatch as sinon.SinonStub).calledWith(session, toolCall)).to.be.true;
+            expect(
+                (actionDispatcher.dispatch as sinon.SinonStub).calledWith(session, {
+                    name: 'move',
+                    args: { direction: 'north' },
+                }),
+            ).to.be.true;
             expect((turn.recordToolRound as sinon.SinonStub).calledWith([toolCall], [toolResult], undefined)).to.be
                 .true;
             // The request must be re-assembled from the same turn after the tool round is recorded onto it.
@@ -99,10 +105,10 @@ describe(SequentialLLMLoop.name, () => {
                 complete: sinon.stub().resolves({ text: undefined, toolCalls: [toolCall] } as LLMResponse),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ActionDispatcher = {
-                dispatch: sinon.stub().returns({ callId: 'call_1', name: 'move', content: '{}' }),
+            const actionDispatcher: ActionDispatcher = {
+                dispatch: sinon.stub().returns({ content: '{}' }),
             };
-            const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher, 2);
+            const loop = new SequentialLLMLoop(llmClient, requestAssembler, actionDispatcher, 2);
 
             let error: unknown;
             try {
@@ -122,8 +128,8 @@ describe(SequentialLLMLoop.name, () => {
                 complete: sinon.stub().rejects(new Error('network down')),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ActionDispatcher = { dispatch: sinon.stub() };
-            const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher);
+            const actionDispatcher: ActionDispatcher = { dispatch: sinon.stub() };
+            const loop = new SequentialLLMLoop(llmClient, requestAssembler, actionDispatcher);
 
             let error: unknown;
             try {

@@ -1,6 +1,6 @@
-import { ActionInvocation } from '../dispatch';
+import { ToolCall } from './tool';
 
 export type LLMResponse = {
     text?: string;
-    toolCalls?: ActionInvocation[];
+    toolCalls?: ToolCall[];
 };

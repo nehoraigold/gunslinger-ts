@@ -1,5 +1,5 @@
 import { ConversationMessage } from '../conversation';
-import { ActionInvocation, ActionResult } from '../../dispatch';
+import { ToolCall, ToolResult } from '../tool';
 import { TurnResult } from './TurnResult';
 
 export interface TurnDraft {
@@ -7,7 +7,7 @@ export interface TurnDraft {
 
     recordUserRound(text: string): void;
 
-    recordToolRound(toolCalls: ActionInvocation[], results: ActionResult[], assistantText?: string): void;
+    recordToolRound(toolCalls: ToolCall[], results: ToolResult[], assistantText?: string): void;
 
     complete(text: string): TurnResult;
 }

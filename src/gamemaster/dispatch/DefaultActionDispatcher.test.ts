@@ -48,11 +48,9 @@ describe(DefaultActionDispatcher.name, () => {
             });
             const dispatcher = new DefaultActionDispatcher(createResolver({ stub: action }));
 
-            const result = dispatcher.dispatch(session, { id: 'call_1', name: 'stub', args: { value: 'ok' } });
+            const result = dispatcher.dispatch(session, { name: 'stub', args: { value: 'ok' } });
 
             expect(result).to.deep.equal({
-                callId: 'call_1',
-                name: 'stub',
                 content: JSON.stringify({ result: 'success', data: { value: 'ok' } }),
             });
             expect(session.getState().player.currentRoomId).to.equal('room_2');
@@ -66,26 +64,22 @@ describe(DefaultActionDispatcher.name, () => {
             });
             const dispatcher = new DefaultActionDispatcher(createResolver({ stub: action }));
 
-            const result = dispatcher.dispatch(session, { id: 'call_1', name: 'stub', args: { value: 'ok' } });
+            const result = dispatcher.dispatch(session, { name: 'stub', args: { value: 'ok' } });
 
             expect(result).to.deep.equal({
-                callId: 'call_1',
-                name: 'stub',
                 content: JSON.stringify({ result: 'failure', reason: 'nope', message: undefined }),
             });
             expect(session.getState().player.currentRoomId).to.equal('room_1');
         });
 
-        it('should return an unknown_tool failure when no action matches the invocation name', () => {
+        it('should return an unknown_action failure when no action matches the invocation name', () => {
             const session = new GameSession(createGameState(), factories);
             const dispatcher = new DefaultActionDispatcher(createResolver({}));
 
-            const result = dispatcher.dispatch(session, { id: 'call_1', name: 'nonexistent', args: {} });
+            const result = dispatcher.dispatch(session, { name: 'nonexistent', args: {} });
 
             expect(result).to.deep.equal({
-                callId: 'call_1',
-                name: 'nonexistent',
-                content: JSON.stringify({ result: 'failure', reason: 'unknown_tool', message: undefined }),
+                content: JSON.stringify({ result: 'failure', reason: 'unknown_action', message: undefined }),
             });
         });
 
@@ -96,11 +90,9 @@ describe(DefaultActionDispatcher.name, () => {
             });
             const dispatcher = new DefaultActionDispatcher(createResolver({ stub: action }));
 
-            const result = dispatcher.dispatch(session, { id: 'call_1', name: 'stub', args: { value: 42 } });
+            const result = dispatcher.dispatch(session, { name: 'stub', args: { value: 42 } });
 
             expect(result).to.deep.equal({
-                callId: 'call_1',
-                name: 'stub',
                 content: JSON.stringify({ result: 'failure', reason: 'invalid_input', message: undefined }),
             });
         });
@@ -112,11 +104,9 @@ describe(DefaultActionDispatcher.name, () => {
             });
             const dispatcher = new DefaultActionDispatcher(createResolver({ stub: action }));
 
-            const result = dispatcher.dispatch(session, { id: 'call_1', name: 'stub', args: { value: 'ok' } });
+            const result = dispatcher.dispatch(session, { name: 'stub', args: { value: 'ok' } });
 
             expect(result).to.deep.equal({
-                callId: 'call_1',
-                name: 'stub',
                 content: JSON.stringify({ result: 'failure', reason: 'internal_error', message: 'bug' }),
             });
         });
@@ -134,8 +124,8 @@ describe(DefaultActionDispatcher.name, () => {
                 createResolver({ throwing: throwingAction, moving: movingAction }),
             );
 
-            dispatcher.dispatch(session, { id: 'call_1', name: 'throwing', args: { value: 'ok' } });
-            const result = dispatcher.dispatch(session, { id: 'call_2', name: 'moving', args: { value: 'ok' } });
+            dispatcher.dispatch(session, { name: 'throwing', args: { value: 'ok' } });
+            const result = dispatcher.dispatch(session, { name: 'moving', args: { value: 'ok' } });
 
             expect(result.content).to.equal(JSON.stringify({ result: 'success', data: { value: 'ok' } }));
             expect(session.getState().player.currentRoomId).to.equal('room_2');

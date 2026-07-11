@@ -1,19 +1,16 @@
 import { ChatResponse } from 'ollama';
 import { LLMResponse } from '../LLMResponse';
-import { ActionInvocation } from '../../dispatch';
+import { ToolCall } from '../tool';
 
 export function fromOllamaResponse(response: ChatResponse): LLMResponse {
     const message = response.message;
     const text = message.content?.trim() || undefined;
-    const toolCalls = (message.tool_calls ?? []).map((call, index) => toActionInvocation(call, index));
+    const toolCalls = (message.tool_calls ?? []).map((call, index) => toToolCall(call, index));
 
     return { text, toolCalls: toolCalls.length > 0 ? toolCalls : undefined };
 }
 
-function toActionInvocation(
-    call: NonNullable<ChatResponse['message']['tool_calls']>[number],
-    index: number,
-): ActionInvocation {
+function toToolCall(call: NonNullable<ChatResponse['message']['tool_calls']>[number], index: number): ToolCall {
     return {
         id: `ollama_${call.function.name}_${index}`,
         name: call.function.name,

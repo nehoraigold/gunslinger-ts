@@ -1,7 +1,7 @@
 import { TurnDraft } from './TurnDraft';
 import { TurnResult } from './TurnResult';
 import { ConversationMessage } from '../conversation';
-import { ActionInvocation, ActionResult } from '../../dispatch';
+import { ToolCall, ToolResult } from '../tool';
 
 export class DefaultTurnDraft implements TurnDraft {
     private readonly newMessages: ConversationMessage[] = [];
@@ -20,7 +20,7 @@ export class DefaultTurnDraft implements TurnDraft {
         this.newMessages.push({ role: 'user', text });
     }
 
-    recordToolRound(toolCalls: ActionInvocation[], results: ActionResult[], assistantText?: string): void {
+    recordToolRound(toolCalls: ToolCall[], results: ToolResult[], assistantText?: string): void {
         this.newMessages.push({ role: 'assistant', text: assistantText, toolCalls });
         this.newMessages.push({ role: 'tool_results', results });
     }
