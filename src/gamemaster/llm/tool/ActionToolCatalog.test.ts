@@ -73,18 +73,19 @@ describe(ActionToolCatalog.name, () => {
         });
     });
 
-    describe('find', () => {
-        it('should return the entry registered under the given name', () => {
-            const entry = { action: moveLikeAction, description: 'Move the player.' };
-            const catalog = new ActionToolCatalog({ move: entry });
+    describe('resolve', () => {
+        it('should return the action registered under the given name', () => {
+            const catalog = new ActionToolCatalog({
+                move: { action: moveLikeAction, description: 'Move the player.' },
+            });
 
-            expect(catalog.find('move')).to.equal(entry);
+            expect(catalog.resolve('move')).to.equal(moveLikeAction);
         });
 
         it('should return undefined for an unregistered name', () => {
             const catalog = new ActionToolCatalog({});
 
-            expect(catalog.find('unknown')).to.equal(undefined);
+            expect(catalog.resolve('unknown')).to.equal(undefined);
         });
     });
 });

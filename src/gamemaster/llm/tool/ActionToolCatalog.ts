@@ -1,7 +1,9 @@
-import { ToolCatalog, ToolCatalogEntry } from './ToolCatalog';
+import { Action } from '../../../engine/action';
+import { ActionResolver } from '../../dispatch';
+import { ToolAdvertiser, ToolCatalogEntry } from './ToolAdvertiser';
 import { ToolDefinition } from './ToolDefinition';
 
-export class ActionToolCatalog implements ToolCatalog {
+export class ActionToolCatalog implements ActionResolver, ToolAdvertiser {
     constructor(private readonly entries: Readonly<Record<string, ToolCatalogEntry>>) {}
 
     listDefinitions(): ToolDefinition[] {
@@ -12,7 +14,7 @@ export class ActionToolCatalog implements ToolCatalog {
         }));
     }
 
-    find(name: string): ToolCatalogEntry | undefined {
-        return this.entries[name];
+    resolve(name: string): Action<any, any> | undefined {
+        return this.entries[name]?.action;
     }
 }

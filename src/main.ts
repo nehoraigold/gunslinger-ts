@@ -21,9 +21,9 @@ import { FileSessionRepository } from './persistence';
 import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
 import {
     GameMaster,
-    LLMGameMaster,
+    StreamingGameMaster,
     ActionToolCatalog,
-    DefaultToolCallDispatcher,
+    DefaultActionDispatcher,
     DefaultWorldSnapshotBuilder,
     StaticInstructionsProvider,
     UnboundedConversationManager,
@@ -31,6 +31,7 @@ import {
     OllamaLLMClient,
     DefaultTurnLifecycle,
     SequentialLLMLoop,
+    LLMTurnStrategy,
 } from './gamemaster';
 
 const SYSTEM_PROMPT = [
@@ -164,14 +165,16 @@ const requestAssembler = new DefaultLLMRequestAssembler(
 
 const conversationManager = new UnboundedConversationManager();
 
-const gameMaster: GameMaster = new LLMGameMaster(
+const gameMaster: GameMaster = new StreamingGameMaster(
     session,
-    new SequentialLLMLoop(
-        new OllamaLLMClient(ollama, model),
-        requestAssembler,
-        new DefaultToolCallDispatcher(toolCatalog),
+    new LLMTurnStrategy(
+        new SequentialLLMLoop(
+            new OllamaLLMClient(ollama, model),
+            requestAssembler,
+            new DefaultActionDispatcher(toolCatalog),
+        ),
+        new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), conversationManager),
     ),
-    new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), conversationManager),
 );
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });

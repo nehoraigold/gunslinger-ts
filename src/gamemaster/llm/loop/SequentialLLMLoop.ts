@@ -4,7 +4,8 @@ import { PlayableSession } from '../../../engine/session';
 import { getLogger } from '../../../utils/logger';
 import { LLMClient } from '../LLMClient';
 import { LLMRequestAssembler } from '../request';
-import { ToolCallDispatcher } from '../tool';
+import { ActionDispatcher } from '../../dispatch';
+import { ToolCall, ToolResult } from '../tool';
 import { TurnDraft, TurnResult } from '../turn';
 
 const DEFAULT_MAX_ROUNDS = 10;
@@ -15,7 +16,7 @@ export class SequentialLLMLoop implements LLMLoop {
     constructor(
         private readonly llmClient: LLMClient,
         private readonly requestAssembler: LLMRequestAssembler,
-        private readonly toolCallDispatcher: ToolCallDispatcher,
+        private readonly actionDispatcher: ActionDispatcher,
         private readonly maxRounds: number = DEFAULT_MAX_ROUNDS,
     ) {}
 
@@ -29,11 +30,16 @@ export class SequentialLLMLoop implements LLMLoop {
             }
 
             log.debug('tool round', { round, tools: response.toolCalls.map((call) => call.name) });
-            const results = response.toolCalls.map((call) => this.toolCallDispatcher.dispatch(session, call));
+            const results = response.toolCalls.map((call) => this.invokeAction(session, call));
             turn.recordToolRound(response.toolCalls, results, response.text);
         }
 
         log.warn('max rounds exceeded', { maxRounds: this.maxRounds });
         throw new MaxRoundsExceededError(this.maxRounds);
+    }
+
+    private invokeAction(session: PlayableSession, call: ToolCall): ToolResult {
+        const { content } = this.actionDispatcher.dispatch(session, { name: call.name, args: call.args });
+        return { callId: call.id, name: call.name, content };
     }
 }
