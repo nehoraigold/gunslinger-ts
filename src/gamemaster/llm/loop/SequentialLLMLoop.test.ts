@@ -6,7 +6,7 @@ import { SequentialLLMLoop } from './SequentialLLMLoop';
 import { MaxRoundsExceededError } from './error/MaxRoundsExceededError';
 import { LLMClient, LLMResponse } from '..';
 import { LLMRequestAssembler } from '../request';
-import { ToolCallDispatcher } from '../tool';
+import { ActionDispatcher } from '../../dispatch';
 import { TurnDraft, TurnResult } from '../turn';
 import { GameSession } from '../../../engine/session';
 import { Factories } from '../../../engine/context';
@@ -50,7 +50,7 @@ describe(SequentialLLMLoop.name, () => {
                 complete: sinon.stub().resolves({ text: 'You head north.', toolCalls: undefined } as LLMResponse),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ToolCallDispatcher = { dispatch: sinon.stub() };
+            const toolCallDispatcher: ActionDispatcher = { dispatch: sinon.stub() };
             const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher);
 
             const result = await loop.run(session, turn);
@@ -76,7 +76,7 @@ describe(SequentialLLMLoop.name, () => {
                     .resolves({ text: 'You head north.', toolCalls: undefined } as LLMResponse),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ToolCallDispatcher = { dispatch: sinon.stub().returns(toolResult) };
+            const toolCallDispatcher: ActionDispatcher = { dispatch: sinon.stub().returns(toolResult) };
             const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher);
 
             const result = await loop.run(session, turn);
@@ -99,7 +99,7 @@ describe(SequentialLLMLoop.name, () => {
                 complete: sinon.stub().resolves({ text: undefined, toolCalls: [toolCall] } as LLMResponse),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ToolCallDispatcher = {
+            const toolCallDispatcher: ActionDispatcher = {
                 dispatch: sinon.stub().returns({ callId: 'call_1', name: 'move', content: '{}' }),
             };
             const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher, 2);
@@ -122,7 +122,7 @@ describe(SequentialLLMLoop.name, () => {
                 complete: sinon.stub().rejects(new Error('network down')),
                 stream: sinon.stub(),
             };
-            const toolCallDispatcher: ToolCallDispatcher = { dispatch: sinon.stub() };
+            const toolCallDispatcher: ActionDispatcher = { dispatch: sinon.stub() };
             const loop = new SequentialLLMLoop(llmClient, requestAssembler, toolCallDispatcher);
 
             let error: unknown;

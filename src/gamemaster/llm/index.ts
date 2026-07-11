@@ -10,4 +10,4 @@ export * from './turn';
 export * from './request';
 export * from './loop';
 export * from './lifecycle';
-export * from './LLMGameMaster';
+export * from './LLMTurnStrategy';

@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 import { DefaultTurnDraft } from './DefaultTurnDraft';
 import { TurnDraft } from './TurnDraft';
-import { ToolCall, ToolResult } from '../tool';
+import { ActionInvocation, ActionResult } from '../../dispatch';
 import { ConversationMessage } from '../conversation';
 
 describe(DefaultTurnDraft.name, () => {
@@ -22,8 +22,8 @@ describe(DefaultTurnDraft.name, () => {
 
         it('should reflect messages recorded since construction', () => {
             const draft = createDraft();
-            const toolCalls: ToolCall[] = [{ id: 'call_1', name: 'move', args: { direction: 'north' } }];
-            const results: ToolResult[] = [{ callId: 'call_1', name: 'move', content: '{"result":"success"}' }];
+            const toolCalls: ActionInvocation[] = [{ id: 'call_1', name: 'move', args: { direction: 'north' } }];
+            const results: ActionResult[] = [{ callId: 'call_1', name: 'move', content: '{"result":"success"}' }];
 
             draft.recordUserRound('go north\n\nsnapshot');
             draft.recordToolRound(toolCalls, results);
@@ -53,8 +53,8 @@ describe(DefaultTurnDraft.name, () => {
     describe('recordToolRound', () => {
         it('should append the assistant tool-call message and a tool_results message', () => {
             const draft = createDraft();
-            const toolCalls: ToolCall[] = [{ id: 'call_1', name: 'move', args: { direction: 'north' } }];
-            const results: ToolResult[] = [{ callId: 'call_1', name: 'move', content: '{"result":"success"}' }];
+            const toolCalls: ActionInvocation[] = [{ id: 'call_1', name: 'move', args: { direction: 'north' } }];
+            const results: ActionResult[] = [{ callId: 'call_1', name: 'move', content: '{"result":"success"}' }];
 
             draft.recordToolRound(toolCalls, results, 'Let me check.');
 
@@ -79,8 +79,8 @@ describe(DefaultTurnDraft.name, () => {
 
         it('should return a TurnResult with the text and only the messages recorded during the turn', () => {
             const draft = createDraft();
-            const toolCalls: ToolCall[] = [{ id: 'call_1', name: 'move', args: { direction: 'north' } }];
-            const results: ToolResult[] = [{ callId: 'call_1', name: 'move', content: '{"result":"success"}' }];
+            const toolCalls: ActionInvocation[] = [{ id: 'call_1', name: 'move', args: { direction: 'north' } }];
+            const results: ActionResult[] = [{ callId: 'call_1', name: 'move', content: '{"result":"success"}' }];
             draft.recordUserRound('go north\n\nsnapshot');
             draft.recordToolRound(toolCalls, results);
 

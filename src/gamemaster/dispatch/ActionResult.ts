@@ -1,4 +1,4 @@
-export type ToolResult = {
+export type ActionResult = {
     callId: string;
     name: string;
     content: string;

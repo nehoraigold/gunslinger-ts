@@ -6,7 +6,6 @@ export interface ToolCatalogEntry {
     readonly description: string;
 }
 
-export interface ToolCatalog {
+export interface ToolAdvertiser {
     listDefinitions(): ToolDefinition[];
-    find(name: string): ToolCatalogEntry | undefined;
 }

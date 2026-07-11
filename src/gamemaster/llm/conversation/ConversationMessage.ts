@@ -1,6 +1,6 @@
-import { ToolCall, ToolResult } from '../tool';
+import { ActionInvocation, ActionResult } from '../../dispatch';
 
 export type ConversationMessage =
     | { role: 'user'; text: string }
-    | { role: 'assistant'; text?: string; toolCalls?: ToolCall[] }
-    | { role: 'tool_results'; results: ToolResult[] };
+    | { role: 'assistant'; text?: string; toolCalls?: ActionInvocation[] }
+    | { role: 'tool_results'; results: ActionResult[] };

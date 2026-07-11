@@ -4,7 +4,7 @@ import { PlayableSession } from '../../../engine/session';
 import { getLogger } from '../../../utils/logger';
 import { LLMClient } from '../LLMClient';
 import { LLMRequestAssembler } from '../request';
-import { ToolCallDispatcher } from '../tool';
+import { ActionDispatcher } from '../../dispatch';
 import { TurnDraft, TurnResult } from '../turn';
 
 const DEFAULT_MAX_ROUNDS = 10;
@@ -15,7 +15,7 @@ export class SequentialLLMLoop implements LLMLoop {
     constructor(
         private readonly llmClient: LLMClient,
         private readonly requestAssembler: LLMRequestAssembler,
-        private readonly toolCallDispatcher: ToolCallDispatcher,
+        private readonly toolCallDispatcher: ActionDispatcher,
         private readonly maxRounds: number = DEFAULT_MAX_ROUNDS,
     ) {}
 
