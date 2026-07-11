@@ -37,15 +37,15 @@ describe(DefaultShop.name, () => {
 
     describe('isForSale', () => {
         it('should be true for a listed, for-sale item', () => {
-            expect(createShop().shop.isForSale('rifle')).to.be.true;
+            expect(createShop().shop.sells('rifle')).to.be.true;
         });
 
         it('should be false for a listed item not for sale', () => {
-            expect(createShop().shop.isForSale('relic')).to.be.false;
+            expect(createShop().shop.sells('relic')).to.be.false;
         });
 
         it('should be false for an unlisted item', () => {
-            expect(createShop().shop.isForSale('unknown')).to.be.false;
+            expect(createShop().shop.sells('unknown')).to.be.false;
         });
     });
 

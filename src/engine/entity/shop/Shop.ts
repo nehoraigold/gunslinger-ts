@@ -6,6 +6,6 @@ export interface Shop {
     inventory(): Inventory;
     wallet(): Wallet;
     priceOf(itemId: ItemId): number | undefined;
-    isForSale(itemId: ItemId): boolean;
+    sells(itemId: ItemId): boolean;
     buys(itemType: ItemType): boolean;
 }

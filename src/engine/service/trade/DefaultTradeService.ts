@@ -1,9 +1,9 @@
 import { ItemId } from '../../state';
 import { Player, Shop } from '../../entity';
 import { assertNever } from '../../../utils/assertNever';
-import { InventoryService } from '../inventory/InventoryService';
-import { DefaultInventoryService } from '../inventory/DefaultInventoryService';
-import { ItemLookup } from '../inventory/ItemLookup';
+import { InventoryService } from '../inventory';
+import { DefaultInventoryService } from '../inventory';
+import { ItemLookup } from '../inventory';
 import { TradeService } from './TradeService';
 import { BuyOutcome, SellOutcome } from './TradeOutcome';
 
@@ -15,7 +15,7 @@ export class DefaultTradeService implements TradeService {
     }
 
     buy(itemId: ItemId, shop: Shop, buyer: Player, quantity = 1): BuyOutcome {
-        if (!shop.isForSale(itemId)) {
+        if (!shop.sells(itemId)) {
             return { type: 'notForSale' };
         }
         const unitPrice = shop.priceOf(itemId);

@@ -30,7 +30,7 @@ export class DefaultShop implements Shop {
         return this.store.get().listings[itemId]?.price;
     }
 
-    isForSale(itemId: ItemId): boolean {
+    sells(itemId: ItemId): boolean {
         return this.store.get().listings[itemId]?.forSale ?? false;
     }
 
