@@ -77,6 +77,16 @@ decisions here:
   (`GameState.test.utils.ts`, `sampleWorld.ts`, entity/action stubs) — enumerate them now.
 - Determinism check — same state + same action ⇒ same result; no randomness/wall-clock leaking in.
 - Test plan — the `describe`/`it` cases you'll write first.
+- **Diagram it if the design has more than one path to the same kind of output** (e.g. two strategies
+  that both end in narration, two resolvers that both dispatch an action). Sketch the flow — ASCII is
+  fine — tracing each path end-to-end to where they converge, *before* writing the prose design. Prose
+  like "A wraps B" or "A uses B to narrate" hides the failure mode: if the thing B does for A is itself a
+  multi-step process (its own begin/dispatch/complete cycle), B isn't a narrow collaborator, it's a second
+  peer pipeline dressed up as one — and that reads as fine in prose right up until someone diagrams it.
+  This exact miss cost the choice-menu feature (PR #15) two extra restructuring rounds after GATE 2
+  approval — a `ChoiceTurnStrategy` decorator hiding a resolver+narrator pair survived GATE 2, an 8-angle
+  `/code-review`, and a full human review pass, and only unwound once the user drew the actual flow.
+  Draw it here instead of paying for that in review rounds.
 
 ### GATE 2 — the user approves the technical design
 
@@ -117,6 +127,11 @@ Run all of, and fix what they surface, before involving the user again:
 - The pre-commit gate (`typecheck` + `test` + `lint`) — clean. This gate is the **single definition of
   done** that `/verify` and `open-pr` also reference; run it once here, don't re-litigate it downstream.
 
+If review (self or human, inline or live) flags the same seam more than once from different angles —
+"this decorator hides a collaborator," "this doesn't really do X" — that's a design smell, not a queue of
+independent nits. Don't keep patching the literal comment; step back and re-derive the shape (the flow
+diagram from Phase 1 is the tool for this) before making another pass.
+
 (Tracking these phases with the task tools is optional — the two gates and this checklist are the real
 checkpoints; ignore the "consider TaskCreate" nudges if you're keeping state in the conversation.)
 
@@ -130,3 +145,18 @@ trailers, and opens the PR for review. **It does not merge — the review is the
 
 Report the PR URL, a summary of what shipped, the key decisions and their rationale, and anything left
 for the reviewer's attention or deferred to a follow-up.
+
+## Retro — improve the skill
+
+Before ending the session, check this run against the skill's own guidance:
+- Did a gate need to loop back, or did review (self or human) catch something a gate should have caught?
+- Did any phase's guidance prove unnecessary, redundant, or wrong for this feature, or did you deviate
+  from it for good reason?
+- Is there a lesson here that generalizes to the *next* `/develop-feature` run, not just a one-off quirk
+  of this feature?
+
+If yes, edit this SKILL.md now, while the specifics are fresh — a concrete addition or correction tied to
+what actually happened (name the feature/PR, the failure mode, what would have caught it earlier), not a
+vague generality. Prefer tightening existing guidance over appending a new rule; if a step never earns its
+keep across runs, cut it rather than let the skill grow monotonically. Skip this step if nothing in the
+run diverged from or stress-tested the existing guidance — don't manufacture a lesson to fill it.

@@ -118,3 +118,17 @@ clean commit.
 
 Report: what was checked (with results), the action's final signature, the key design decisions and
 their rationale, and any follow-ups deferred.
+
+## 7. Retro — improve the skill
+
+Before ending the session, check this run against the skill's own steps:
+- Did the plan-mode gate (step 3) miss something that only surfaced during implementation or a later
+  review — a blast-radius file it didn't name, a service/method call it got wrong, a reference action
+  that turned out to be a bad model for this one?
+- Did you over-ask in step 2 (surface something the codebase already answered) or under-ask (guess at a
+  product decision that should have gone to the user)?
+- Is there a lesson here that generalizes to the *next* new action, not just a quirk of this one?
+
+If yes, edit this SKILL.md now, while the specifics are fresh — name the action and what actually went
+wrong, not a vague generality. Prefer tightening an existing step over adding a new one. Skip this step
+if the run went exactly as the skill predicted.

@@ -138,6 +138,11 @@ done
 
 For each, open the relevant files and decide. Rank a violation by how load-bearing the invariant is.
 
+**If you find a real smell that isn't one of the checks below, add it before you finish this audit** —
+append a bullet here with the CLAUDE.md rule it derives from (or note it's a new pattern CLAUDE.md should
+also capture). A checklist that only ever gets consulted and never grows misses the same smell again on
+the next audit.
+
 - **Test legitimacy — not just existence.** §2d proves a `*.test.ts` *exists*; it says nothing about
   whether the test is *honest*, and TDD/Clean Code is CLAUDE.md's #1 non-negotiable — so read the
   tests, don't just count them. Concrete smells this repo has produced: a parameterized test that
