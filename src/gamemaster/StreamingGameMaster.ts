@@ -2,6 +2,9 @@ import { GameMaster } from './GameMaster';
 import { TurnStrategy } from './TurnStrategy';
 import { AvailableChoice, ChoiceProvider } from './choice';
 import { PlayableSession } from '../engine/session';
+import { getLogger } from '../utils/logger';
+
+const log = getLogger('gamemaster.master');
 
 export class StreamingGameMaster implements GameMaster {
     private choices: AvailableChoice[] = [];
@@ -34,6 +37,7 @@ export class StreamingGameMaster implements GameMaster {
                     controller.enqueue(narration);
                     controller.close();
                 } catch (error) {
+                    log.error('turn failed', { message: error instanceof Error ? error.message : String(error) });
                     controller.error(error);
                 }
             },

@@ -3,6 +3,9 @@ import { PlayableSession } from '../../engine/session';
 import { ActionDispatcher } from '../dispatch';
 import { ChoiceProvider } from './provider/ChoiceProvider';
 import { OutcomeNarrator } from '../OutcomeNarrator';
+import { getLogger } from '../../utils/logger';
+
+const log = getLogger('gamemaster.choice');
 
 export class ChoiceTurnStrategy implements TurnStrategy {
     constructor(
@@ -14,6 +17,7 @@ export class ChoiceTurnStrategy implements TurnStrategy {
     async takeTurn(session: PlayableSession, choiceId: string): Promise<string> {
         const offered = this.choiceProvider.compute(session.getState()).find((o) => o.choice.id === choiceId);
         if (!offered) {
+            log.warn('unknown choice selected', { choiceId });
             return '';
         }
 
