@@ -3,6 +3,7 @@ import { Npc } from '../npc';
 import { Inventory, DefaultInventory } from '../inventory';
 import { Equipment, DefaultEquipment } from '../equipment';
 import { Wallet, DefaultWallet } from '../wallet';
+import { Vitals, DefaultVitals } from '../vitals';
 import { DerivedValueStore, PlayerStore } from '../../store';
 import { EquipmentState, InventoryState, NpcId, RoomId } from '../../state';
 import { Player } from './Player';
@@ -67,6 +68,17 @@ export class DefaultPlayer implements Player {
                 this.store.update((state) => {
                     state.money = money;
                 }),
+        );
+    }
+
+    vitals(): Vitals {
+        return new DefaultVitals(
+            () => this.store.get().health,
+            (health) =>
+                this.store.update((state) => {
+                    state.health = health;
+                }),
+            () => this.store.get().maxHealth,
         );
     }
 }

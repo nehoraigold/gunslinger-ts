@@ -25,6 +25,8 @@ describe(DefaultPlayer.name, () => {
             },
             inventory: {},
             money: 0,
+            health: 10,
+            maxHealth: 10,
         };
 
         const store = new RootValueStore(state);
@@ -69,6 +71,8 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: undefined, armor: undefined },
                 inventory: { coins: 3 },
                 money: 0,
+                health: 10,
+                maxHealth: 10,
             };
             player = new DefaultPlayer(new RootValueStore(state));
 
@@ -91,6 +95,8 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: 'rusty_revolver', armor: undefined },
                 inventory: {},
                 money: 0,
+                health: 10,
+                maxHealth: 10,
             };
             player = new DefaultPlayer(new RootValueStore(state));
 
@@ -118,6 +124,8 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: undefined, armor: undefined },
                 inventory: {},
                 money: 0,
+                health: 10,
+                maxHealth: 10,
                 conversationPartnerNpcId: 'hermit',
             };
             player = new DefaultPlayer(new RootValueStore(state));
@@ -161,6 +169,8 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: undefined, armor: undefined },
                 inventory: {},
                 money: 42,
+                health: 10,
+                maxHealth: 10,
             };
             player = new DefaultPlayer(new RootValueStore(state));
 

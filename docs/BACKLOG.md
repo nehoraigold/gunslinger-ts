@@ -28,7 +28,7 @@ Grounding:
 
 These are cross-cutting mechanisms that many later features consume. Highest leverage.
 
-### 0.1 World flags & a condition system  — size: M  ⭐ highest leverage
+### ~~0.1 World flags & a condition system~~ — size: M  ⭐ highest leverage — ✅ DONE (`feat/world-flags`, `feat/condition-system`, `feat/condition-why-failed`)
 A general key→value world-state store (`boolean | number | string`) plus a **data-driven
 condition predicate** (`flagEq/gte/lte`, `hasItem`, `roomVisited`, `npcMood`, `and/or/not`,
 `true/false` sentinels — the exact taxonomy `src_old/engine/condition` shipped).
@@ -41,7 +41,7 @@ formative item in the backlog.
 - Notes: model conditions as a plain evaluable domain type over `Context`; keep set-flag as an
   action/effect so the LLM can trigger world changes.
 
-### 0.2 Per-turn tick / time source  — size: S–M
+### ~~0.2 Per-turn tick / time source~~ — size: S–M — ✅ DONE (`feat/tick-time-source`; landed as the `TurnCounter`/`OnTurnEffect` seam, see `CLAUDE.md`)
 A monotonically advancing turn counter (already implied by `createdAtTurn`/`lastInteractedTurn`
 in `src_old`) exposed as an **injected `TickSource`**, plus a post-turn hook where
 turn-scoped systems can run.
@@ -51,14 +51,14 @@ quest timers all hang off. Cheap to build now, painful to retrofit later. (Cited
 example in the `develop-feature` skill.)
 - Depends on: nothing.
 
-### 0.3 Item economic & physical attributes  — size: S
+### ~~0.3 Item economic & physical attributes~~ — size: S — ✅ DONE (`feat/item-economic-physical-attributes`)
 Enrich `ItemState` with `value` (gold), `weight`, `takeable`, `droppable` (all present in
 `src_old`'s `Item`; current state has none of them). Wire `takeable`/`droppable` into the
 existing `pickUp`/`drop` actions.
 - Depends on: nothing. Pure enrichment of an existing entity → cheap.
 - Unlocks: trade, encumbrance, sellability.
 
-### 0.4 Currency (player + NPC gold)  — size: S
+### ~~0.4 Currency (player + NPC gold)~~ — size: S — ✅ DONE (`feat/currency-gold`, `Wallet` entity)
 Add `gold` to `PlayerState` and to NPCs. A primitive, but its own item so the trade/economy
 features build on a settled representation.
 - Depends on: nothing.
@@ -67,7 +67,7 @@ features build on a settled representation.
 
 ## Tier 1 — Core mechanics on top of the primitives
 
-### 1.1 Equip / unequip  — size: S
+### ~~1.1 Equip / unequip~~ — size: S — ✅ DONE (`feat/equip-unequip`, `checkInventory` shows equipped items)
 `PlayerState.equipment` already has `weapon`/`armor` slots — the **actions are just missing**.
 Add `equip`/`unequip` verbs, honoring item `type`.
 - Depends on: item types (already present). Optionally item `stats` (0.x) for requirements.
@@ -81,7 +81,7 @@ source (0.2); ship the instantaneous ones first.
 - Depends on: 0.1 (reveal/unlock via conditions), 0.2 (for over-time effects), player vitals (2.1) for heal/damage.
 - Notes: this is a *new invariant set* → likely its own service; one `use` action orchestrating it.
 
-### 1.3 Buying & selling (trade)  — size: M  ⭐ user-flagged foundational
+### ~~1.3 Buying & selling (trade)~~ — size: M  ⭐ user-flagged foundational — ✅ DONE (`feat/shop-buy-sell`, `feat/shop-choice-menu`; `ShopState`/`Shop` entity, `buy`/`sell` actions)
 NPC inventory entries with `forSale`/`price`/`quantity`, NPC `gold`, and a `trade` action with
 `buy`/`sell` directions (`src_old/engine/actions/trade.ts` is a near-complete reference).
 - Depends on: 0.3 (item value/droppable), 0.4 (currency), NPC inventory.
@@ -108,7 +108,7 @@ current single-key `lock`. E.g. an exit opens once a flag is set or an item is h
 
 ## Tier 2 — Character systems
 
-### 2.1 Player vitals (health)  — size: S–M
+### ~~2.1 Player vitals (health)~~ — size: S–M — ✅ DONE (`feat/player-vitals`; `Vitals`/`DefaultVitals` entity, `checkStatus` action)
 `health`/`maxHealth` on the player, with a `checkStatus` action and health rendered as
 **prose, not numbers** (`src_old` `HealthProse`). The precondition for heal/damage effects and combat.
 - Depends on: nothing structural.
@@ -161,7 +161,7 @@ NPCs drop a loot table on defeat; corpses/lootable inventory (`src_old` `LootEnt
 
 ## Tier 4 — Session & world infrastructure
 
-### 4.1 Save / load persistence  — size: M
+### ~~4.1 Save / load persistence~~ — size: M — ✅ DONE (`feat/save-load-persistence`, `FileSessionRepository`)
 Serialize/restore committed `GameState` through the existing `SessionRepository` seam
 (`src/persistence/` — already stubbed as the "in-memory now, files/DB later" home). File-backed
 first. `src_old` had `GameStorage`.
@@ -193,14 +193,15 @@ spawn an NPC line). Pure content once 0.1 + 0.2 exist.
 
 Delivers something playable and demonstrates the primitives paying off:
 
-1. **0.1 Flags & conditions** — the keystone.
-2. **0.3 Item attributes** + **0.4 currency** — cheap primitives.
-3. **1.1 Equip/unequip** — near-free win, validates the loop.
-4. **1.3 Buying & selling** — the user-flagged foundational feature, now cleanly supported.
-5. **0.2 Tick source** — land the seam before anything time-based.
-6. **4.1 Save/load** — makes iterative playtesting real.
+1. ~~**0.1 Flags & conditions** — the keystone.~~ ✅ DONE
+2. ~~**0.3 Item attributes** + **0.4 currency** — cheap primitives.~~ ✅ DONE
+3. ~~**1.1 Equip/unequip** — near-free win, validates the loop.~~ ✅ DONE
+4. ~~**1.3 Buying & selling** — the user-flagged foundational feature, now cleanly supported.~~ ✅ DONE
+5. ~~**0.2 Tick source** — land the seam before anything time-based.~~ ✅ DONE
+6. ~~**4.1 Save/load** — makes iterative playtesting real.~~ ✅ DONE
 
-After that, pick a vertical (combat *or* quests) once 2.1 vitals and the RNG seam exist.
+The original MVP loop is complete. Next: pick a vertical (combat *or* quests) once 2.1 vitals and
+the RNG seam exist.
 
 ---
 

@@ -10,5 +10,7 @@ export type PlayerState = {
     equipment: EquipmentState;
     inventory: InventoryState;
     money: number;
+    health: number;
+    maxHealth: number;
     conversationPartnerNpcId?: NpcId;
 };
