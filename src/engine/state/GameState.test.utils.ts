@@ -46,6 +46,7 @@ const npc1: NpcState = {
     money: 0,
     mood: 'neutral',
     health: 10,
+    inventory: {},
 };
 
 const npc2: NpcState = {
@@ -55,6 +56,7 @@ const npc2: NpcState = {
     money: 0,
     mood: 'neutral',
     health: 10,
+    inventory: {},
 };
 
 const room1: RoomState = {

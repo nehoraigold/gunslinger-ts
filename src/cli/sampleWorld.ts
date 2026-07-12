@@ -87,6 +87,7 @@ export function createSampleWorldState(): GameState {
                 money: 5,
                 mood: 'guarded',
                 health: 10,
+                inventory: {},
             },
             peddler: {
                 name: 'Travelling Peddler',
@@ -95,6 +96,7 @@ export function createSampleWorldState(): GameState {
                 money: 100,
                 mood: 'friendly',
                 health: 10,
+                inventory: {},
                 shop: {
                     inventory: { rusty_revolver: 1, leather_duster: 1 },
                     listings: {

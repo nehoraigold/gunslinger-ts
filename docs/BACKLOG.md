@@ -88,7 +88,7 @@ NPC inventory entries with `forSale`/`price`/`quantity`, NPC `gold`, and a `trad
 - Notes: NPC inventory is the new sub-model here; keep prices/gold out of narration (the LLM
   narrates the exchange, never the numbers — `src_old` annotated its schema for exactly this).
 
-### 1.4 Give item to NPC  — size: S
+### ~~1.4 Give item to NPC~~ — size: S — ✅ DONE (`feat/give-item-to-npc`; general-purpose `NpcState.inventory`, `give` action)
 A `give` verb transferring an item from player to NPC. Underpins quest turn-ins and gifting.
 - Depends on: NPC inventory (from 1.3).
 
