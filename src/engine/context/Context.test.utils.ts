@@ -1,5 +1,5 @@
 import { Context } from './Context';
-import { Equipment, Inventory, Item, Player, Room, Wallet } from '../entity';
+import { Equipment, Inventory, Item, Npc, Player, Room, Wallet } from '../entity';
 
 export function fakeInventory(overrides: Partial<Inventory> = {}): Inventory {
     return {
@@ -49,10 +49,27 @@ export function fakeItem(overrides: Partial<Item> = {}): Item {
 export function fakePlayer(overrides: Partial<Player> = {}): Player {
     return {
         currentRoomId: 'room_1',
+        conversationPartnerId: undefined,
         moveTo: () => {},
+        converseWith: () => {},
+        endConversation: () => {},
         inventory: () => fakeInventory(),
         equipment: () => fakeEquipment(),
         wallet: () => fakeWallet(),
+        ...overrides,
+    };
+}
+
+export function fakeNpc(overrides: Partial<Npc> = {}): Npc {
+    return {
+        id: 'npc_1',
+        name: 'Npc 1',
+        appearance: '',
+        dialogue: '',
+        mood: 'neutral',
+        isAlive: () => true,
+        wallet: () => fakeWallet(),
+        shop: () => undefined,
         ...overrides,
     };
 }

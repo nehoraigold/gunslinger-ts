@@ -1,9 +1,10 @@
 import { Room } from '../room';
+import { Npc } from '../npc';
 import { Inventory, DefaultInventory } from '../inventory';
 import { Equipment, DefaultEquipment } from '../equipment';
 import { Wallet, DefaultWallet } from '../wallet';
 import { DerivedValueStore, PlayerStore } from '../../store';
-import { EquipmentState, InventoryState, RoomId } from '../../state';
+import { EquipmentState, InventoryState, NpcId, RoomId } from '../../state';
 import { Player } from './Player';
 
 export class DefaultPlayer implements Player {
@@ -13,9 +14,25 @@ export class DefaultPlayer implements Player {
         return this.store.get().currentRoomId;
     }
 
+    get conversationPartnerId(): NpcId | undefined {
+        return this.store.get().conversationPartnerNpcId;
+    }
+
     moveTo(room: Room): void {
         this.store.update((state) => {
             state.currentRoomId = room.id;
+        });
+    }
+
+    converseWith(npc: Npc): void {
+        this.store.update((state) => {
+            state.conversationPartnerNpcId = npc.id;
+        });
+    }
+
+    endConversation(): void {
+        this.store.update((state) => {
+            state.conversationPartnerNpcId = undefined;
         });
     }
 

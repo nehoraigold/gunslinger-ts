@@ -5,6 +5,11 @@ import { DefaultPlayer } from './DefaultPlayer';
 import { RootValueStore } from '../../store';
 import { PlayerState } from '../../state';
 import { DefaultRoom } from '../room';
+import { Npc } from '../npc';
+
+function npc(id: string): Npc {
+    return { id } as Npc;
+}
 
 describe(DefaultPlayer.name, () => {
     let player: DefaultPlayer;
@@ -97,6 +102,53 @@ describe(DefaultPlayer.name, () => {
             player.equipment().equip('armor', 'leather_duster');
 
             expect(player.equipment().equippedIn('armor')).to.equal('leather_duster');
+        });
+    });
+
+    describe('conversationPartnerId', () => {
+        it('should be undefined when no conversation is in progress', () => {
+            expect(player.conversationPartnerId).to.be.undefined;
+        });
+
+        it('should reflect the conversation partner held in player state', () => {
+            const state: PlayerState = {
+                id: 'player',
+                name: 'Player',
+                currentRoomId: 'room_1',
+                equipment: { weapon: undefined, armor: undefined },
+                inventory: {},
+                money: 0,
+                conversationPartnerNpcId: 'hermit',
+            };
+            player = new DefaultPlayer(new RootValueStore(state));
+
+            expect(player.conversationPartnerId).to.equal('hermit');
+        });
+    });
+
+    describe('converseWith', () => {
+        it('should set the conversation partner', () => {
+            player.converseWith(npc('hermit'));
+
+            expect(player.conversationPartnerId).to.equal('hermit');
+        });
+
+        it('should replace any existing conversation partner', () => {
+            player.converseWith(npc('hermit'));
+
+            player.converseWith(npc('peddler'));
+
+            expect(player.conversationPartnerId).to.equal('peddler');
+        });
+    });
+
+    describe('endConversation', () => {
+        it('should clear the conversation partner', () => {
+            player.converseWith(npc('hermit'));
+
+            player.endConversation();
+
+            expect(player.conversationPartnerId).to.be.undefined;
         });
     });
 

@@ -16,6 +16,7 @@ import { TalkToAction } from './engine/action/talkTo/TalkToAction';
 import { BuyAction } from './engine/action/buy/BuyAction';
 import { SellAction } from './engine/action/sell/SellAction';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
+import { DefaultDialogueService, CleanupConversationTurnEffect } from './engine/service/dialogue';
 import { createSampleWorldState } from './cli/sampleWorld';
 import { SaveController } from './cli/save';
 import { MetaCommandHandler } from './cli/command';
@@ -34,6 +35,10 @@ import {
     DefaultTurnLifecycle,
     SequentialLLMLoop,
     LLMTurnStrategy,
+    ChoiceTurnStrategy,
+    CompositeChoiceProvider,
+    ShopChoiceProvider,
+    LLMOutcomeNarrator,
 } from './gamemaster';
 
 const SYSTEM_PROMPT = [
@@ -83,11 +88,17 @@ configureLogging({
     sink: new ConsoleLogSink(),
 });
 
-const session = new GameSession(createSampleWorldState(), {
-    room: new DefaultRoomFactory(),
-    item: new DefaultItemFactory(),
-    npc: new DefaultNpcFactory(),
-});
+const dialogueService = new DefaultDialogueService();
+
+const session = new GameSession(
+    createSampleWorldState(),
+    {
+        room: new DefaultRoomFactory(),
+        item: new DefaultItemFactory(),
+        npc: new DefaultNpcFactory(),
+    },
+    [new CleanupConversationTurnEffect(dialogueService)],
+);
 
 const saveController = new SaveController(new FileSessionRepository(process.env.SAVE_DIR ?? './saves'), session);
 
@@ -149,7 +160,7 @@ const toolCatalog = new ActionToolCatalog({
             '"examine the guard"). Pass the exact npc id from the snapshot. Returns the npc\'s name and appearance.',
     },
     talkTo: {
-        action: new TalkToAction(),
+        action: new TalkToAction(dialogueService),
         description:
             'Call when the player speaks to, greets, or asks something of a person present in the room (e.g. ' +
             '"talk to the hermit", "ask the guard about the key"). Pass the exact npc id from the snapshot. ' +
@@ -173,6 +184,7 @@ const toolCatalog = new ActionToolCatalog({
 
 const ollama = new Ollama(process.env.OLLAMA_HOST ? { host: process.env.OLLAMA_HOST } : undefined);
 const model = process.env.OLLAMA_MODEL ?? 'gpt-oss:20b';
+const ollamaClient = new OllamaLLMClient(ollama, model);
 
 const requestAssembler = new DefaultLLMRequestAssembler(
     new StaticInstructionsProvider(SYSTEM_PROMPT),
@@ -180,18 +192,21 @@ const requestAssembler = new DefaultLLMRequestAssembler(
 );
 
 const conversationManager = new UnboundedConversationManager();
+const turnLifecycle = new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), conversationManager);
+const actionDispatcher = new DefaultActionDispatcher(toolCatalog);
 
-const gameMaster: GameMaster = new StreamingGameMaster(
-    session,
-    new LLMTurnStrategy(
-        new SequentialLLMLoop(
-            new OllamaLLMClient(ollama, model),
-            requestAssembler,
-            new DefaultActionDispatcher(toolCatalog),
-        ),
-        new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), conversationManager),
-    ),
+const turnStrategy = new LLMTurnStrategy(
+    new SequentialLLMLoop(ollamaClient, requestAssembler, actionDispatcher),
+    turnLifecycle,
 );
+const choiceProvider = new CompositeChoiceProvider([new ShopChoiceProvider()]);
+const choiceTurnStrategy = new ChoiceTurnStrategy(
+    actionDispatcher,
+    choiceProvider,
+    new LLMOutcomeNarrator(turnLifecycle, requestAssembler, ollamaClient),
+);
+
+const gameMaster: GameMaster = new StreamingGameMaster(session, turnStrategy, choiceTurnStrategy, choiceProvider);
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
 
@@ -212,6 +227,24 @@ const metaCommands = new MetaCommandHandler(
     (out) => console.log(out),
     () => conversationManager.clear(),
 );
+
+function printChoices(): void {
+    const choices = gameMaster.currentChoices();
+    if (choices.length === 0) {
+        return;
+    }
+    console.log('Also available:');
+    choices.forEach((choice, i) => console.log(`  [${i + 1}] ${choice.label}`));
+}
+
+function streamFor(input: string): ReadableStream<string> {
+    const choices = gameMaster.currentChoices();
+    const choiceIndex = Number(input);
+    if (Number.isInteger(choiceIndex) && choiceIndex >= 1 && choiceIndex <= choices.length) {
+        return gameMaster.selectChoice(choices[choiceIndex - 1].id);
+    }
+    return gameMaster.handleInput(input);
+}
 
 async function autoSave(): Promise<void> {
     try {
@@ -243,11 +276,12 @@ rl.on('line', (line) => {
             if (await metaCommands.handle(input)) {
                 return;
             }
-            const stream = gameMaster.handleInput(input);
+            const stream = streamFor(input);
             for await (const chunk of stream) {
                 process.stdout.write(chunk);
             }
             process.stdout.write('\n');
+            printChoices();
             await autoSave();
         } catch (error) {
             console.error('Something went wrong:', error instanceof Error ? error.message : error);

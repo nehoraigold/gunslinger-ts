@@ -52,6 +52,22 @@ describe(TalkToAction.name, () => {
             expect(ctx.flags().get('talked_to_npc_1')).to.equal(true);
         });
 
+        it('should start a conversation with the npc on success', () => {
+            const ctx = createDefaultContext(withNpcInRoom('npc_1'));
+
+            new TalkToAction().execute(ctx, { npcId: 'npc_1' });
+
+            expect(ctx.player().conversationPartnerId).to.equal('npc_1');
+        });
+
+        it('should not start a conversation when the talk fails', () => {
+            const ctx = createDefaultContext();
+
+            new TalkToAction().execute(ctx, { npcId: 'npc_1' });
+
+            expect(ctx.player().conversationPartnerId).to.be.undefined;
+        });
+
         it('should fail with npc_not_present when the npc exists but is in another room', () => {
             const ctx = createDefaultContext();
 
