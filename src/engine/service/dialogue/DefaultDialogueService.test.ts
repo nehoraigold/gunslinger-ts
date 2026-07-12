@@ -3,49 +3,48 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { DefaultDialogueService } from './DefaultDialogueService';
-import { fakeContext, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
+import { fakeNpc, fakePlayer, fakeRoom } from '../../context/Context.test.utils';
 
 describe(DefaultDialogueService.name, () => {
-    describe('startConversation', () => {
+    describe('converseWith', () => {
         it('should start the conversation on the given player', () => {
             const service = new DefaultDialogueService();
-            const player = fakePlayer({ startConversation: sinon.stub() });
+            const player = fakePlayer({ converseWith: sinon.stub() });
+            const npc = fakeNpc({ id: 'hermit' });
 
-            service.startConversation(player, 'hermit');
+            service.converseWith(player, npc);
 
-            expect((player.startConversation as sinon.SinonStub).calledWith('hermit')).to.be.true;
+            expect((player.converseWith as sinon.SinonStub).calledWith(npc)).to.be.true;
         });
     });
 
-    describe('apply', () => {
+    describe('endStaleConversation', () => {
         it('should do nothing when there is no conversation in progress', () => {
             const service = new DefaultDialogueService();
             const player = fakePlayer({ conversationPartnerId: undefined, endConversation: sinon.stub() });
-            const context = fakeContext({ player: () => player });
+            const room = fakeRoom();
 
-            service.apply(context);
+            service.endStaleConversation(player, room);
 
             expect((player.endConversation as sinon.SinonStub).called).to.be.false;
         });
 
-        it('should leave the conversation in progress when the partner is still in the current room', () => {
+        it('should leave the conversation in progress when the partner is still in the room', () => {
             const service = new DefaultDialogueService();
             const player = fakePlayer({ conversationPartnerId: 'hermit', endConversation: sinon.stub() });
             const room = fakeRoom({ npcIds: () => ['hermit'] });
-            const context = fakeContext({ player: () => player, requireCurrentRoom: () => room });
 
-            service.apply(context);
+            service.endStaleConversation(player, room);
 
             expect((player.endConversation as sinon.SinonStub).called).to.be.false;
         });
 
-        it('should end the conversation when the partner has left the current room', () => {
+        it('should end the conversation when the partner has left the room', () => {
             const service = new DefaultDialogueService();
             const player = fakePlayer({ conversationPartnerId: 'hermit', endConversation: sinon.stub() });
             const room = fakeRoom({ npcIds: () => [] });
-            const context = fakeContext({ player: () => player, requireCurrentRoom: () => room });
 
-            service.apply(context);
+            service.endStaleConversation(player, room);
 
             expect((player.endConversation as sinon.SinonStub).called).to.be.true;
         });

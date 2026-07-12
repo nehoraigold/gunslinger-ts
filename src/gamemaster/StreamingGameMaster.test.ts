@@ -17,6 +17,14 @@ describe(StreamingGameMaster.name, () => {
         npc: new DefaultNpcFactory(),
     };
 
+    function fakeChoiceResolver(overrides: Partial<ChoiceResolver> = {}): ChoiceResolver {
+        return {
+            refreshChoices: sinon.stub().returns([]),
+            selectChoice: sinon.stub(),
+            ...overrides,
+        };
+    }
+
     async function readAll(stream: ReadableStream<string>): Promise<string[]> {
         const chunks: string[] = [];
         for await (const chunk of stream) {
@@ -28,11 +36,9 @@ describe(StreamingGameMaster.name, () => {
     describe('handleInput', () => {
         it('should stream the strategy narration as a single chunk', async () => {
             const session = new GameSession(createGameState(), factories);
-            const turnStrategy: TurnStrategy & ChoiceResolver = {
-                takeTurn: sinon.stub().resolves({ narration: 'You head north.', choices: [] }),
-                selectChoice: sinon.stub(),
-            };
-            const gameMaster = new StreamingGameMaster(session, turnStrategy);
+            const turnStrategy: TurnStrategy = { takeTurn: sinon.stub().resolves('You head north.') };
+            const choiceResolver = fakeChoiceResolver();
+            const gameMaster = new StreamingGameMaster(session, turnStrategy, choiceResolver);
 
             const chunks = await readAll(gameMaster.handleInput('go north'));
 
@@ -42,11 +48,8 @@ describe(StreamingGameMaster.name, () => {
 
         it('should error the stream when the strategy rejects', async () => {
             const session = new GameSession(createGameState(), factories);
-            const turnStrategy: TurnStrategy & ChoiceResolver = {
-                takeTurn: sinon.stub().rejects(new Error('boom')),
-                selectChoice: sinon.stub(),
-            };
-            const gameMaster = new StreamingGameMaster(session, turnStrategy);
+            const turnStrategy: TurnStrategy = { takeTurn: sinon.stub().rejects(new Error('boom')) };
+            const gameMaster = new StreamingGameMaster(session, turnStrategy, fakeChoiceResolver());
 
             let error: unknown;
             try {
@@ -58,34 +61,34 @@ describe(StreamingGameMaster.name, () => {
             expect(error).to.be.instanceOf(Error);
         });
 
-        it('should make the resulting choices available via currentChoices', async () => {
+        it('should refresh and expose the resulting choices via currentChoices', async () => {
             const session = new GameSession(createGameState(), factories);
             const choice = { id: 'buy:item_1', label: 'Buy Item 1 — 18g' };
-            const turnStrategy: TurnStrategy & ChoiceResolver = {
-                takeTurn: sinon.stub().resolves({ narration: 'You talk to the peddler.', choices: [choice] }),
-                selectChoice: sinon.stub(),
-            };
-            const gameMaster = new StreamingGameMaster(session, turnStrategy);
+            const turnStrategy: TurnStrategy = { takeTurn: sinon.stub().resolves('You talk to the peddler.') };
+            const choiceResolver = fakeChoiceResolver({ refreshChoices: sinon.stub().returns([choice]) });
+            const gameMaster = new StreamingGameMaster(session, turnStrategy, choiceResolver);
 
             await readAll(gameMaster.handleInput('talk to peddler'));
 
             expect(gameMaster.currentChoices()).to.deep.equal([choice]);
+            expect((choiceResolver.refreshChoices as sinon.SinonStub).calledWith(session)).to.be.true;
         });
     });
 
     describe('selectChoice', () => {
-        it('should stream the narration from the strategy and update currentChoices', async () => {
+        it('should stream the narration from the resolver and refresh currentChoices', async () => {
             const session = new GameSession(createGameState(), factories);
-            const turnStrategy: TurnStrategy & ChoiceResolver = {
-                takeTurn: sinon.stub(),
-                selectChoice: sinon.stub().resolves({ narration: 'You buy Item 1.', choices: [] }),
-            };
-            const gameMaster = new StreamingGameMaster(session, turnStrategy);
+            const turnStrategy: TurnStrategy = { takeTurn: sinon.stub() };
+            const choiceResolver = fakeChoiceResolver({
+                selectChoice: sinon.stub().resolves('You buy Item 1.'),
+                refreshChoices: sinon.stub().returns([]),
+            });
+            const gameMaster = new StreamingGameMaster(session, turnStrategy, choiceResolver);
 
             const chunks = await readAll(gameMaster.selectChoice('buy:item_1'));
 
             expect(chunks).to.deep.equal(['You buy Item 1.']);
-            expect((turnStrategy.selectChoice as sinon.SinonStub).calledWith(session, 'buy:item_1')).to.be.true;
+            expect((choiceResolver.selectChoice as sinon.SinonStub).calledWith(session, 'buy:item_1')).to.be.true;
             expect(gameMaster.currentChoices()).to.deep.equal([]);
         });
     });

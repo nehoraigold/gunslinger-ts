@@ -1,6 +1,7 @@
 import { PlayableSession } from '../engine/session';
-import { TurnOutput } from './TurnOutput';
+import { AvailableChoice } from './choice';
 
 export interface ChoiceResolver {
-    selectChoice(session: PlayableSession, choiceId: string): Promise<TurnOutput>;
+    refreshChoices(session: PlayableSession): AvailableChoice[];
+    selectChoice(session: PlayableSession, choiceId: string): Promise<string>;
 }

@@ -1,18 +1,14 @@
-import { NpcId } from '../../state';
-import { Player } from '../../entity';
-import { Context } from '../../context';
-import { OnTurnEffect } from '../../session/OnTurnEffect';
+import { Npc, Player, Room } from '../../entity';
 import { DialogueService } from './DialogueService';
 
-export class DefaultDialogueService implements DialogueService, OnTurnEffect {
-    startConversation(player: Player, npcId: NpcId): void {
-        player.startConversation(npcId);
+export class DefaultDialogueService implements DialogueService {
+    converseWith(player: Player, npc: Npc): void {
+        player.converseWith(npc);
     }
 
-    apply(context: Context): void {
-        const player = context.player();
+    endStaleConversation(player: Player, room: Room): void {
         const partnerId = player.conversationPartnerId;
-        if (partnerId !== undefined && !context.requireCurrentRoom().npcIds().includes(partnerId)) {
+        if (partnerId !== undefined && !room.npcIds().includes(partnerId)) {
             player.endConversation();
         }
     }

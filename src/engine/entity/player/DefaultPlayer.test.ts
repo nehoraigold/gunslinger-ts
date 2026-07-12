@@ -5,6 +5,11 @@ import { DefaultPlayer } from './DefaultPlayer';
 import { RootValueStore } from '../../store';
 import { PlayerState } from '../../state';
 import { DefaultRoom } from '../room';
+import { Npc } from '../npc';
+
+function npc(id: string): Npc {
+    return { id } as Npc;
+}
 
 describe(DefaultPlayer.name, () => {
     let player: DefaultPlayer;
@@ -121,17 +126,17 @@ describe(DefaultPlayer.name, () => {
         });
     });
 
-    describe('startConversation', () => {
+    describe('converseWith', () => {
         it('should set the conversation partner', () => {
-            player.startConversation('hermit');
+            player.converseWith(npc('hermit'));
 
             expect(player.conversationPartnerId).to.equal('hermit');
         });
 
         it('should replace any existing conversation partner', () => {
-            player.startConversation('hermit');
+            player.converseWith(npc('hermit'));
 
-            player.startConversation('peddler');
+            player.converseWith(npc('peddler'));
 
             expect(player.conversationPartnerId).to.equal('peddler');
         });
@@ -139,7 +144,7 @@ describe(DefaultPlayer.name, () => {
 
     describe('endConversation', () => {
         it('should clear the conversation partner', () => {
-            player.startConversation('hermit');
+            player.converseWith(npc('hermit'));
 
             player.endConversation();
 

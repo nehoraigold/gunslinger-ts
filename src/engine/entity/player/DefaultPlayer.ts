@@ -1,4 +1,5 @@
 import { Room } from '../room';
+import { Npc } from '../npc';
 import { Inventory, DefaultInventory } from '../inventory';
 import { Equipment, DefaultEquipment } from '../equipment';
 import { Wallet, DefaultWallet } from '../wallet';
@@ -23,9 +24,9 @@ export class DefaultPlayer implements Player {
         });
     }
 
-    startConversation(npcId: NpcId): void {
+    converseWith(npc: Npc): void {
         this.store.update((state) => {
-            state.conversationPartnerNpcId = npcId;
+            state.conversationPartnerNpcId = npc.id;
         });
     }
 

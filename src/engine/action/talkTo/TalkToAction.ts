@@ -32,7 +32,7 @@ export class TalkToAction implements Action<TalkToInput, TalkToOutcome> {
 
         const npc = ctx.requireNpc(npcId);
         ctx.flags().set(`talked_to_${npcId}`, true);
-        this.dialogueService.startConversation(ctx.player(), npcId);
+        this.dialogueService.converseWith(ctx.player(), npc);
         return ActionOutcome.succeed({
             npcId,
             name: npc.name,

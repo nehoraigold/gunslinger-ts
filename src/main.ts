@@ -16,7 +16,7 @@ import { TalkToAction } from './engine/action/talkTo/TalkToAction';
 import { BuyAction } from './engine/action/buy/BuyAction';
 import { SellAction } from './engine/action/sell/SellAction';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
-import { DefaultDialogueService } from './engine/service/dialogue';
+import { DefaultDialogueService, CleanupConversationTurnEffect } from './engine/service/dialogue';
 import { createSampleWorldState } from './cli/sampleWorld';
 import { SaveController } from './cli/save';
 import { MetaCommandHandler } from './cli/command';
@@ -35,7 +35,7 @@ import {
     DefaultTurnLifecycle,
     SequentialLLMLoop,
     LLMTurnStrategy,
-    ChoiceTurnStrategy,
+    DefaultChoiceResolver,
     CompositeChoiceProvider,
     ShopChoiceProvider,
     LLMOutcomeNarrator,
@@ -97,7 +97,7 @@ const session = new GameSession(
         item: new DefaultItemFactory(),
         npc: new DefaultNpcFactory(),
     },
-    [dialogueService],
+    [new CleanupConversationTurnEffect(dialogueService)],
 );
 
 const saveController = new SaveController(new FileSessionRepository(process.env.SAVE_DIR ?? './saves'), session);
@@ -195,15 +195,17 @@ const conversationManager = new UnboundedConversationManager();
 const turnLifecycle = new DefaultTurnLifecycle(new DefaultWorldSnapshotBuilder(), conversationManager);
 const actionDispatcher = new DefaultActionDispatcher(toolCatalog);
 
-const gameMaster: GameMaster = new StreamingGameMaster(
-    session,
-    new ChoiceTurnStrategy(
-        new LLMTurnStrategy(new SequentialLLMLoop(ollamaClient, requestAssembler, actionDispatcher), turnLifecycle),
-        actionDispatcher,
-        new CompositeChoiceProvider([new ShopChoiceProvider()]),
-        new LLMOutcomeNarrator(turnLifecycle, requestAssembler, ollamaClient),
-    ),
+const turnStrategy = new LLMTurnStrategy(
+    new SequentialLLMLoop(ollamaClient, requestAssembler, actionDispatcher),
+    turnLifecycle,
 );
+const choiceResolver = new DefaultChoiceResolver(
+    actionDispatcher,
+    new CompositeChoiceProvider([new ShopChoiceProvider()]),
+    new LLMOutcomeNarrator(turnLifecycle, requestAssembler, ollamaClient),
+);
+
+const gameMaster: GameMaster = new StreamingGameMaster(session, turnStrategy, choiceResolver);
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
 

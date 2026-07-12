@@ -1,6 +1,6 @@
-import { NpcId } from '../../state';
-import { Player } from '../../entity';
+import { Npc, Player, Room } from '../../entity';
 
 export interface DialogueService {
-    startConversation(player: Player, npcId: NpcId): void;
+    converseWith(player: Player, npc: Npc): void;
+    endStaleConversation(player: Player, room: Room): void;
 }
