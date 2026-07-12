@@ -3,9 +3,12 @@ import { Context, Factories, GameContext } from '../context';
 import { StateManager, Transaction } from '../transaction';
 import { GameState } from '../state';
 import { DeepReadonly } from '../../utils/types';
+import { getLogger } from '../../utils/logger';
 import { PlayableSession } from './PlayableSession';
 import { RestorableSession } from './RestorableSession';
 import { OnTurnEffect } from './OnTurnEffect';
+
+const log = getLogger('engine.session');
 
 export class GameSession implements PlayableSession, RestorableSession {
     private readonly stateManager: StateManager;
@@ -41,10 +44,18 @@ export class GameSession implements PlayableSession, RestorableSession {
                 this.advanceTurn(context);
                 succeeded = true;
             }
+            log.debug('turn played', { action: action.name, result: outcome.result });
             return outcome;
+        } catch (error) {
+            log.error('action threw', { action: action.name, message: this.messageFor(error) });
+            throw error;
         } finally {
             this.settle(tx, succeeded);
         }
+    }
+
+    private messageFor(error: unknown): string {
+        return error instanceof Error ? error.message : String(error);
     }
 
     private advanceTurn(context: Context): void {

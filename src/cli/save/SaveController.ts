@@ -1,10 +1,13 @@
 import { RestorableSession } from '../../engine/session';
 import { SessionRepository, InvalidSlotNameError } from '../../persistence';
+import { getLogger } from '../../utils/logger';
 import { LoadResult } from './LoadResult';
 import { SaveListing } from './SaveListing';
 
 const DEFAULT_SLOT = 'autosave';
 const VALID_SLOT_NAME = /^[A-Za-z0-9_-]+$/;
+
+const log = getLogger('cli.save');
 
 export class SaveController {
     private currentSlot: string;
@@ -28,15 +31,18 @@ export class SaveController {
 
     async save(): Promise<void> {
         await this.repository.save(this.currentSlot, this.session.getState());
+        log.info('game saved', { slot: this.currentSlot });
     }
 
     async load(name: string): Promise<LoadResult> {
         const state = await this.repository.load(name);
         if (!state) {
+            log.warn('load failed: save not found', { slot: name });
             return { status: 'not_found' };
         }
         this.session.restoreState(state);
         this.currentSlot = name;
+        log.info('game loaded', { slot: name, roomId: state.player.currentRoomId });
         return { status: 'loaded', roomId: state.player.currentRoomId };
     }
 

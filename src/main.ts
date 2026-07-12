@@ -21,7 +21,7 @@ import { createSampleWorldState } from './cli/sampleWorld';
 import { SaveController } from './cli/save';
 import { MetaCommandHandler } from './cli/command';
 import { FileSessionRepository } from './persistence';
-import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel } from './utils/logger';
+import { configureLogging, closeLogging, ConsoleLogSink, parseLogLevel, getLogger } from './utils/logger';
 import {
     GameMaster,
     StreamingGameMaster,
@@ -87,6 +87,8 @@ configureLogging({
     level: parseLogLevel(process.env.LOG_LEVEL, 'info'),
     sink: new ConsoleLogSink(),
 });
+
+const log = getLogger('cli.main');
 
 const dialogueService = new DefaultDialogueService();
 
@@ -210,8 +212,12 @@ const gameMaster: GameMaster = new StreamingGameMaster(session, turnStrategy, ch
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
 
-console.log(`Current room: ${session.getState().player.currentRoomId}`);
-console.log('Commands: "save [name]", "load <name>", "saves", "quit".');
+function print(line: string): void {
+    process.stdout.write(`${line}\n`);
+}
+
+print(`Current room: ${session.getState().player.currentRoomId}`);
+print('Commands: "save [name]", "load <name>", "saves", "quit".');
 rl.prompt();
 
 // readline can emit several buffered `line` events synchronously in one tick (e.g. piped input,
@@ -222,19 +228,15 @@ let queue: Promise<void> = Promise.resolve();
 let closed = false;
 let autoSaveWarned = false;
 
-const metaCommands = new MetaCommandHandler(
-    saveController,
-    (out) => console.log(out),
-    () => conversationManager.clear(),
-);
+const metaCommands = new MetaCommandHandler(saveController, print, () => conversationManager.clear());
 
 function printChoices(): void {
     const choices = gameMaster.currentChoices();
     if (choices.length === 0) {
         return;
     }
-    console.log('Also available:');
-    choices.forEach((choice, i) => console.log(`  [${i + 1}] ${choice.label}`));
+    print('Also available:');
+    choices.forEach((choice, i) => print(`  [${i + 1}] ${choice.label}`));
 }
 
 function streamFor(input: string): ReadableStream<string> {
@@ -252,7 +254,7 @@ async function autoSave(): Promise<void> {
         autoSaveWarned = false;
     } catch (error) {
         if (!autoSaveWarned) {
-            console.error('Auto-save failed:', error instanceof Error ? error.message : error);
+            log.error('auto-save failed', { message: error instanceof Error ? error.message : String(error) });
             autoSaveWarned = true;
         }
     }
@@ -284,7 +286,8 @@ rl.on('line', (line) => {
             printChoices();
             await autoSave();
         } catch (error) {
-            console.error('Something went wrong:', error instanceof Error ? error.message : error);
+            log.error('turn failed', { input, message: error instanceof Error ? error.message : String(error) });
+            print('Something went wrong.');
         } finally {
             if (!closed) rl.prompt();
         }
@@ -295,7 +298,7 @@ rl.on('close', () => {
     closed = true;
     void queue.then(async () => {
         await closeLogging();
-        console.log('Goodbye.');
+        print('Goodbye.');
         process.exit(0);
     });
 });
