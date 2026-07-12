@@ -35,7 +35,7 @@ import {
     DefaultTurnLifecycle,
     SequentialLLMLoop,
     LLMTurnStrategy,
-    DefaultChoiceResolver,
+    ChoiceTurnStrategy,
     CompositeChoiceProvider,
     ShopChoiceProvider,
     LLMOutcomeNarrator,
@@ -199,13 +199,14 @@ const turnStrategy = new LLMTurnStrategy(
     new SequentialLLMLoop(ollamaClient, requestAssembler, actionDispatcher),
     turnLifecycle,
 );
-const choiceResolver = new DefaultChoiceResolver(
+const choiceProvider = new CompositeChoiceProvider([new ShopChoiceProvider()]);
+const choiceTurnStrategy = new ChoiceTurnStrategy(
     actionDispatcher,
-    new CompositeChoiceProvider([new ShopChoiceProvider()]),
+    choiceProvider,
     new LLMOutcomeNarrator(turnLifecycle, requestAssembler, ollamaClient),
 );
 
-const gameMaster: GameMaster = new StreamingGameMaster(session, turnStrategy, choiceResolver);
+const gameMaster: GameMaster = new StreamingGameMaster(session, turnStrategy, choiceTurnStrategy, choiceProvider);
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: '> ' });
 

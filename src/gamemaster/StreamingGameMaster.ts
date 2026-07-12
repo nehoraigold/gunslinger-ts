@@ -1,7 +1,6 @@
 import { GameMaster } from './GameMaster';
 import { TurnStrategy } from './TurnStrategy';
-import { ChoiceResolver } from './ChoiceResolver';
-import { AvailableChoice } from './choice';
+import { AvailableChoice, ChoiceProvider } from './choice';
 import { PlayableSession } from '../engine/session';
 
 export class StreamingGameMaster implements GameMaster {
@@ -10,7 +9,8 @@ export class StreamingGameMaster implements GameMaster {
     constructor(
         private readonly session: PlayableSession,
         private readonly turnStrategy: TurnStrategy,
-        private readonly choiceResolver: ChoiceResolver,
+        private readonly choiceTurnStrategy: TurnStrategy,
+        private readonly choiceProvider: ChoiceProvider,
     ) {}
 
     handleInput(rawText: string): ReadableStream<string> {
@@ -18,7 +18,7 @@ export class StreamingGameMaster implements GameMaster {
     }
 
     selectChoice(choiceId: string): ReadableStream<string> {
-        return this.streamOutput(() => this.choiceResolver.selectChoice(this.session, choiceId));
+        return this.streamOutput(() => this.choiceTurnStrategy.takeTurn(this.session, choiceId));
     }
 
     currentChoices(): AvailableChoice[] {
@@ -30,7 +30,7 @@ export class StreamingGameMaster implements GameMaster {
             start: async (controller) => {
                 try {
                     const narration = await produceNarration();
-                    this.choices = this.choiceResolver.refreshChoices(this.session);
+                    this.choices = this.choiceProvider.compute(this.session.getState()).map((o) => o.choice);
                     controller.enqueue(narration);
                     controller.close();
                 } catch (error) {
