@@ -1,4 +1,5 @@
 import { TurnStrategy } from '../TurnStrategy';
+import { TurnOutput } from '../TurnOutput';
 import { PlayableSession } from '../../engine/session';
 import { LLMLoop } from './loop';
 import { TurnLifecycle } from './lifecycle';
@@ -9,9 +10,10 @@ export class LLMTurnStrategy implements TurnStrategy {
         private readonly turnLifecycle: TurnLifecycle,
     ) {}
 
-    async takeTurn(session: PlayableSession, rawInput: string): Promise<string> {
+    async takeTurn(session: PlayableSession, rawInput: string): Promise<TurnOutput> {
         const turn = this.turnLifecycle.begin(session.getState(), rawInput);
         const result = await this.llmLoop.run(session, turn);
-        return this.turnLifecycle.end(result);
+        const narration = this.turnLifecycle.end(result);
+        return { narration, choices: [] };
     }
 }

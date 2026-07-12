@@ -100,6 +100,53 @@ describe(DefaultPlayer.name, () => {
         });
     });
 
+    describe('conversationPartnerId', () => {
+        it('should be undefined when no conversation is in progress', () => {
+            expect(player.conversationPartnerId).to.be.undefined;
+        });
+
+        it('should reflect the conversation partner held in player state', () => {
+            const state: PlayerState = {
+                id: 'player',
+                name: 'Player',
+                currentRoomId: 'room_1',
+                equipment: { weapon: undefined, armor: undefined },
+                inventory: {},
+                money: 0,
+                conversationPartnerNpcId: 'hermit',
+            };
+            player = new DefaultPlayer(new RootValueStore(state));
+
+            expect(player.conversationPartnerId).to.equal('hermit');
+        });
+    });
+
+    describe('startConversation', () => {
+        it('should set the conversation partner', () => {
+            player.startConversation('hermit');
+
+            expect(player.conversationPartnerId).to.equal('hermit');
+        });
+
+        it('should replace any existing conversation partner', () => {
+            player.startConversation('hermit');
+
+            player.startConversation('peddler');
+
+            expect(player.conversationPartnerId).to.equal('peddler');
+        });
+    });
+
+    describe('endConversation', () => {
+        it('should clear the conversation partner', () => {
+            player.startConversation('hermit');
+
+            player.endConversation();
+
+            expect(player.conversationPartnerId).to.be.undefined;
+        });
+    });
+
     describe('wallet', () => {
         it('should reflect the money held in player state', () => {
             const state: PlayerState = {

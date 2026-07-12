@@ -45,9 +45,9 @@ describe(LLMTurnStrategy.name, () => {
             const llmLoop: LLMLoop = { run: sinon.stub().resolves(loopResult) };
             const strategy = new LLMTurnStrategy(llmLoop, turnLifecycle);
 
-            const narration = await strategy.takeTurn(session, 'go north');
+            const output = await strategy.takeTurn(session, 'go north');
 
-            expect(narration).to.equal('You head north.');
+            expect(output).to.deep.equal({ narration: 'You head north.', choices: [] });
             expect((turnLifecycle.begin as sinon.SinonStub).calledWith(session.getState(), 'go north')).to.be.true;
             expect((llmLoop.run as sinon.SinonStub).calledWith(session, turn)).to.be.true;
             expect((turnLifecycle.end as sinon.SinonStub).calledWith(loopResult)).to.be.true;

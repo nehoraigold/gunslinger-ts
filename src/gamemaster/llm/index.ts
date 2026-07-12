@@ -11,3 +11,4 @@ export * from './request';
 export * from './loop';
 export * from './lifecycle';
 export * from './LLMTurnStrategy';
+export * from './LLMOutcomeNarrator';

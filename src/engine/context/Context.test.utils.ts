@@ -49,7 +49,10 @@ export function fakeItem(overrides: Partial<Item> = {}): Item {
 export function fakePlayer(overrides: Partial<Player> = {}): Player {
     return {
         currentRoomId: 'room_1',
+        conversationPartnerId: undefined,
         moveTo: () => {},
+        startConversation: () => {},
+        endConversation: () => {},
         inventory: () => fakeInventory(),
         equipment: () => fakeEquipment(),
         wallet: () => fakeWallet(),
