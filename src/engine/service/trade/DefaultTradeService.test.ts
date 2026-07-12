@@ -26,6 +26,8 @@ function itemLookup(): ItemLookup {
         weight: 0,
         takeable: true,
         droppable: true,
+        useEffect: undefined,
+        consumedOnUse: false,
     });
     return { item: (id) => (ITEMS[id] ? build(id) : undefined), requireItem: build };
 }

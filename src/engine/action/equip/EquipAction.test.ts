@@ -21,6 +21,7 @@ describe(EquipAction.name, () => {
         weight: 0,
         takeable: true,
         droppable: true,
+        consumedOnUse: false,
     };
     const potion: ItemState = { ...revolver, name: 'Healing Potion', type: 'consumable', stackable: true };
 

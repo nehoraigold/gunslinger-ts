@@ -9,6 +9,7 @@ import { EquipAction } from './engine/action/equip/EquipAction';
 import { UnequipAction } from './engine/action/unequip/UnequipAction';
 import { CheckInventoryAction } from './engine/action/checkInventory/CheckInventoryAction';
 import { CheckStatusAction } from './engine/action/checkStatus/CheckStatusAction';
+import { UseAction } from './engine/action/use/UseAction';
 import { UnlockAction } from './engine/action/unlock/UnlockAction';
 import { LookAction } from './engine/action/look/LookAction';
 import { LookItemAction } from './engine/action/lookItem/LookItemAction';
@@ -143,6 +144,13 @@ const toolCatalog = new ActionToolCatalog({
         description:
             'Call when the player asks about their health, condition, or how badly hurt they are (e.g. "how am ' +
             'I doing", "check my health", "am I hurt"). Returns a coarse health description, never exact numbers.',
+    },
+    use: {
+        action: new UseAction(),
+        description:
+            'Call when the player uses, drinks, reads, applies, or otherwise activates a carried item for its ' +
+            'effect (e.g. "use the healing potion", "read the scroll"). Pass the exact item id from the ' +
+            'snapshot. Only items with a use effect can be used; some are consumed, others are not.',
     },
     look: {
         action: new LookAction(),

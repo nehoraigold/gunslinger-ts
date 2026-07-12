@@ -18,6 +18,7 @@ describe(DefaultEquipmentService.name, () => {
         weight: 2,
         takeable: true,
         droppable: true,
+        consumedOnUse: false,
     };
     const saber: ItemState = { ...weapon, name: 'Steel Saber' };
     const armor: ItemState = { ...weapon, name: 'Leather Duster', type: 'armor' };
@@ -26,7 +27,7 @@ describe(DefaultEquipmentService.name, () => {
     function createItemLookup(items: Record<string, ItemState>): ItemLookup {
         const item = (id: string) => {
             const state = items[id];
-            return state && { id, ...state };
+            return state && { id, ...state, useEffect: state.useEffect };
         };
         return {
             item,

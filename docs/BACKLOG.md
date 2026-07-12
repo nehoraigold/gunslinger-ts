@@ -73,13 +73,18 @@ Add `equip`/`unequip` verbs, honoring item `type`.
 - Depends on: item types (already present). Optionally item `stats` (0.x) for requirements.
 - Notes: smallest real win; slots already modeled. (Cited in `develop-feature` skill.)
 
-### 1.2 Item usage & effects  — size: M
+### ~~1.2 Item usage & effects~~ — size: M — ✅ DONE, instantaneous effects only (`feat/item-use-effects`; `src/engine/effect/`, `UseItemService`, `use` action)
 A `use <item>` action dispatching a **data-driven effect** (`heal`, `damage`, `unlock`,
 `revealItem`, `revealLore`, `applyBuff`, `poison` — `src_old/engine/item/UseEffect.ts`), with a
 small effect-handler registry and `consumedOnUse`. Some effects (poison/buff) require the tick
 source (0.2); ship the instantaneous ones first.
 - Depends on: 0.1 (reveal/unlock via conditions), 0.2 (for over-time effects), player vitals (2.1) for heal/damage.
 - Notes: this is a *new invariant set* → likely its own service; one `use` action orchestrating it.
+- Shipped `heal`/`damage`/`unlock`/`revealItem`/`revealLore` (the instantaneous ones) via an
+  extensible registry mirroring `src/engine/condition/` (`ItemEffect`/`EffectApplier`/`applyItemEffect`,
+  one small file per effect under `effect/effects/`) — adding a new effect is one new union variant
+  plus one new applier file plus one registry entry, exhaustively checked by TS. `applyBuff`/`poison`
+  are deferred to 2.3 (status effects over time), which needs the tick source as a consumer.
 
 ### ~~1.3 Buying & selling (trade)~~ — size: M  ⭐ user-flagged foundational — ✅ DONE (`feat/shop-buy-sell`, `feat/shop-choice-menu`; `ShopState`/`Shop` entity, `buy`/`sell` actions)
 NPC inventory entries with `forSale`/`price`/`quantity`, NPC `gold`, and a `trade` action with

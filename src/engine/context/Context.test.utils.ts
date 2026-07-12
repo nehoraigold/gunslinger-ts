@@ -53,6 +53,8 @@ export function fakeItem(overrides: Partial<Item> = {}): Item {
         weight: 0,
         takeable: true,
         droppable: true,
+        useEffect: undefined,
+        consumedOnUse: false,
         ...overrides,
     };
 }
