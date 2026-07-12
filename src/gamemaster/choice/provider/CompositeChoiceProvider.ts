@@ -1,5 +1,5 @@
-import { GameState } from '../../engine/state';
-import { DeepReadonly } from '../../utils/types';
+import { GameState } from '../../../engine/state';
+import { DeepReadonly } from '../../../utils/types';
 import { ChoiceProvider, OfferedChoice } from './ChoiceProvider';
 
 export class CompositeChoiceProvider implements ChoiceProvider {

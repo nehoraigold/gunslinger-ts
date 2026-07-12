@@ -1,6 +1,6 @@
-import { GameState } from '../../engine/state';
-import { DeepReadonly } from '../../utils/types';
-import { ActionInvocation } from '../dispatch';
+import { GameState } from '../../../engine/state';
+import { DeepReadonly } from '../../../utils/types';
+import { ActionInvocation } from '../../dispatch';
 
 export type AvailableChoice = {
     id: string;

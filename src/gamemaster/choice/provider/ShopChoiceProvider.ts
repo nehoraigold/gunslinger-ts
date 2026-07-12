@@ -1,5 +1,5 @@
-import { GameState, ItemId, ShopState } from '../../engine/state';
-import { DeepReadonly } from '../../utils/types';
+import { GameState, ItemId, ShopState } from '../../../engine/state';
+import { DeepReadonly } from '../../../utils/types';
 import { ChoiceProvider, OfferedChoice } from './ChoiceProvider';
 
 export class ShopChoiceProvider implements ChoiceProvider {

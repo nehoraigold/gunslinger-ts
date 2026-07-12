@@ -3,13 +3,13 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { ChoiceTurnStrategy } from './ChoiceTurnStrategy';
-import { ActionDispatcher } from './dispatch';
-import { ChoiceProvider, OfferedChoice } from './choice';
-import { OutcomeNarrator } from './OutcomeNarrator';
-import { GameSession } from '../engine/session';
-import { Factories } from '../engine/context';
-import { createGameState } from '../engine/state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../engine/entity';
+import { ActionDispatcher } from '../dispatch';
+import { ChoiceProvider, OfferedChoice } from './provider/ChoiceProvider';
+import { OutcomeNarrator } from '../OutcomeNarrator';
+import { GameSession } from '../../engine/session';
+import { Factories } from '../../engine/context';
+import { createGameState } from '../../engine/state/GameState.test.utils';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../engine/entity';
 
 describe(ChoiceTurnStrategy.name, () => {
     const factories: Factories = {

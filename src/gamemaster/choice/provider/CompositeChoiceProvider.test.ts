@@ -3,7 +3,7 @@ import { expect } from 'chai';
 
 import { CompositeChoiceProvider } from './CompositeChoiceProvider';
 import { ChoiceProvider, OfferedChoice } from './ChoiceProvider';
-import { createGameState } from '../../engine/state/GameState.test.utils';
+import { createGameState } from '../../../engine/state/GameState.test.utils';
 
 function fakeProvider(offered: OfferedChoice[]): ChoiceProvider {
     return { compute: () => offered };

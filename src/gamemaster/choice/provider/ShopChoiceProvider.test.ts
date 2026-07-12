@@ -2,8 +2,8 @@ import { describe, it } from 'mocha';
 import { expect } from 'chai';
 
 import { ShopChoiceProvider } from './ShopChoiceProvider';
-import { createGameState } from '../../engine/state/GameState.test.utils';
-import { GameState } from '../../engine/state';
+import { createGameState } from '../../../engine/state/GameState.test.utils';
+import { GameState } from '../../../engine/state';
 
 function withConversationPartner(npcId: string): (state: GameState) => void {
     return (state) => {

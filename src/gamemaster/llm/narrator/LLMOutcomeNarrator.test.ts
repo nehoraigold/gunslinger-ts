@@ -3,15 +3,15 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 
 import { LLMOutcomeNarrator } from './LLMOutcomeNarrator';
-import { TurnLifecycle } from './lifecycle';
-import { LLMRequestAssembler } from './request';
-import { LLMClient } from './LLMClient';
-import { TurnDraft, TurnResult } from './turn';
-import { LLMRequest } from './LLMRequest';
-import { GameSession } from '../../engine/session';
-import { Factories } from '../../engine/context';
-import { createGameState } from '../../engine/state/GameState.test.utils';
-import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../engine/entity';
+import { TurnLifecycle } from '../lifecycle';
+import { LLMRequestAssembler } from '../request';
+import { LLMClient } from '../LLMClient';
+import { TurnDraft, TurnResult } from '../turn';
+import { LLMRequest } from '../LLMRequest';
+import { GameSession } from '../../../engine/session';
+import { Factories } from '../../../engine/context';
+import { createGameState } from '../../../engine/state/GameState.test.utils';
+import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../../../engine/entity';
 
 describe(LLMOutcomeNarrator.name, () => {
     const factories: Factories = {

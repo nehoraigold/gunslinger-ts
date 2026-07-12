@@ -1,9 +1,9 @@
-import { OutcomeNarrator } from '../OutcomeNarrator';
-import { PlayableSession } from '../../engine/session';
-import { ActionInvocation, ActionResult } from '../dispatch';
-import { LLMClient } from './LLMClient';
-import { LLMRequestAssembler } from './request';
-import { TurnLifecycle } from './lifecycle';
+import { OutcomeNarrator } from '../../OutcomeNarrator';
+import { PlayableSession } from '../../../engine/session';
+import { ActionInvocation, ActionResult } from '../../dispatch';
+import { LLMClient } from '../LLMClient';
+import { LLMRequestAssembler } from '../request';
+import { TurnLifecycle } from '../lifecycle';
 
 const CHOICE_CALL_ID = 'choice';
 const CHOICE_DESCRIPTION = '(the player selects a menu option)';

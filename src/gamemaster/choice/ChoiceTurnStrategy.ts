@@ -1,8 +1,8 @@
-import { TurnStrategy } from './TurnStrategy';
-import { PlayableSession } from '../engine/session';
-import { ActionDispatcher } from './dispatch';
-import { ChoiceProvider } from './choice';
-import { OutcomeNarrator } from './OutcomeNarrator';
+import { TurnStrategy } from '../TurnStrategy';
+import { PlayableSession } from '../../engine/session';
+import { ActionDispatcher } from '../dispatch';
+import { ChoiceProvider } from './provider/ChoiceProvider';
+import { OutcomeNarrator } from '../OutcomeNarrator';
 
 export class ChoiceTurnStrategy implements TurnStrategy {
     constructor(
