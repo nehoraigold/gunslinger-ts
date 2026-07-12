@@ -1,5 +1,6 @@
 import { NpcMood } from './NpcMood';
 import { ShopState } from './ShopState';
+import { InventoryState } from '../inventory';
 
 export type NpcState = {
     name: string;
@@ -8,5 +9,6 @@ export type NpcState = {
     money: number;
     mood: NpcMood;
     health: number;
+    inventory: InventoryState;
     shop?: ShopState;
 };

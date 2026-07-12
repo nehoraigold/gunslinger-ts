@@ -15,6 +15,7 @@ import { LookNpcAction } from './engine/action/lookNpc/LookNpcAction';
 import { TalkToAction } from './engine/action/talkTo/TalkToAction';
 import { BuyAction } from './engine/action/buy/BuyAction';
 import { SellAction } from './engine/action/sell/SellAction';
+import { GiveAction } from './engine/action/give/GiveAction';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
 import { DefaultDialogueService, CleanupConversationTurnEffect } from './engine/service/dialogue';
 import { createSampleWorldState } from './cli/sampleWorld';
@@ -181,6 +182,13 @@ const toolCatalog = new ActionToolCatalog({
             'Call when the player sells an item from their inventory to a merchant present in the room (e.g. ' +
             '"sell my revolver", "sell three pelts"). Pass the merchant npc id and the item id, plus an optional ' +
             'quantity (default 1). The merchant only buys item types the snapshot says it buys.',
+    },
+    give: {
+        action: new GiveAction(),
+        description:
+            'Call when the player gives, hands, offers, or turns in a carried item to a person present in the ' +
+            'room (e.g. "give the key to the hermit", "hand over the letter"). Pass the npc id and the item id ' +
+            'from the snapshot, plus an optional quantity (default 1).',
     },
 });
 

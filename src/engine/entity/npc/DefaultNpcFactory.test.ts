@@ -16,6 +16,7 @@ describe(DefaultNpcFactory.name, () => {
                 money: 0,
                 mood: 'neutral',
                 health: 10,
+                inventory: {},
             });
             const factory = new DefaultNpcFactory();
 

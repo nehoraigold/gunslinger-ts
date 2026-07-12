@@ -1,8 +1,9 @@
 import { Npc } from './Npc';
-import { NpcId, NpcMood, ShopState } from '../../state';
+import { NpcId, NpcMood, ShopState, InventoryState } from '../../state';
 import { DerivedValueStore, NpcStore } from '../../store';
 import { Wallet, DefaultWallet } from '../wallet';
 import { Shop, DefaultShop } from '../shop';
+import { Inventory, DefaultInventory } from '../inventory';
 
 export class DefaultNpc implements Npc {
     constructor(
@@ -52,5 +53,17 @@ export class DefaultNpc implements Npc {
                 }),
         );
         return new DefaultShop(shopStore, this.wallet());
+    }
+
+    inventory(): Inventory {
+        return new DefaultInventory(
+            new DerivedValueStore<InventoryState>(
+                () => this.store.get().inventory,
+                (inventory) =>
+                    this.store.update((state) => {
+                        state.inventory = inventory;
+                    }),
+            ),
+        );
     }
 }

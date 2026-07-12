@@ -70,6 +70,7 @@ export function fakeNpc(overrides: Partial<Npc> = {}): Npc {
         isAlive: () => true,
         wallet: () => fakeWallet(),
         shop: () => undefined,
+        inventory: () => fakeInventory(),
         ...overrides,
     };
 }

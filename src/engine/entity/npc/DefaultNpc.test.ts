@@ -14,6 +14,7 @@ describe(DefaultNpc.name, () => {
             money: 0,
             mood: 'neutral',
             health: 10,
+            inventory: {},
             ...state,
         });
         return new DefaultNpc('marshal', store);
@@ -82,6 +83,22 @@ describe(DefaultNpc.name, () => {
             npc.wallet().debit(12);
 
             expect(npc.wallet().balance()).to.equal(18);
+        });
+    });
+
+    describe('inventory', () => {
+        it('should reflect the quantities held in npc state', () => {
+            const npc = createDefaultNpc({ inventory: { rifle: 2 } });
+
+            expect(npc.inventory().quantityOf('rifle')).to.equal(2);
+        });
+
+        it('should persist changes made through the returned inventory back into npc state', () => {
+            const npc = createDefaultNpc();
+
+            npc.inventory().add('rifle');
+
+            expect(npc.inventory().quantityOf('rifle')).to.equal(1);
         });
     });
 
