@@ -18,10 +18,9 @@ describe(CheckStatusAction.name, () => {
         });
     }
 
-    function withHealth(health: number, maxHealth: number): (state: GameState) => void {
+    function withHealth(current: number, max: number): (state: GameState) => void {
         return (state) => {
-            state.player.health = health;
-            state.player.maxHealth = maxHealth;
+            state.player.health = { current, max };
         };
     }
 

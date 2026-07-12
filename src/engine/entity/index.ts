@@ -7,7 +7,7 @@ export * from './room';
 export * from './inventory';
 export * from './equipment';
 export * from './wallet';
-export * from './vitals';
+export * from './health';
 export * from './shop';
 export * from './lock';
 export * from './exit';

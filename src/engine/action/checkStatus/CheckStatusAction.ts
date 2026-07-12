@@ -21,9 +21,9 @@ export class CheckStatusAction implements Action<CheckStatusInput, CheckStatusOu
     readonly outcomeSchema = CheckStatusOutcomeSchema;
 
     execute(ctx: Context): CheckStatusOutcome {
-        const vitals = ctx.player().vitals();
+        const health = ctx.player().health();
         return ActionOutcome.succeed({
-            health: deriveHealthProse(vitals.current(), vitals.max()),
+            health: deriveHealthProse(health.current(), health.max()),
         });
     }
 }

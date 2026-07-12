@@ -1,5 +1,5 @@
 import { Context } from './Context';
-import { Equipment, Inventory, Item, Npc, Player, Room, Vitals, Wallet } from '../entity';
+import { Equipment, Health, Inventory, Item, Npc, Player, Room, Wallet } from '../entity';
 
 export function fakeInventory(overrides: Partial<Inventory> = {}): Inventory {
     return {
@@ -31,7 +31,7 @@ export function fakeWallet(overrides: Partial<Wallet> = {}): Wallet {
     };
 }
 
-export function fakeVitals(overrides: Partial<Vitals> = {}): Vitals {
+export function fakeHealth(overrides: Partial<Health> = {}): Health {
     return {
         current: () => 10,
         max: () => 10,
@@ -67,7 +67,7 @@ export function fakePlayer(overrides: Partial<Player> = {}): Player {
         inventory: () => fakeInventory(),
         equipment: () => fakeEquipment(),
         wallet: () => fakeWallet(),
-        vitals: () => fakeVitals(),
+        health: () => fakeHealth(),
         ...overrides,
     };
 }
