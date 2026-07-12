@@ -1,6 +1,7 @@
 import { Item } from './Item';
 import { ItemId, ItemType } from '../../state';
 import { ItemStore } from '../../store';
+import { ItemEffect } from '../../effect';
 
 export class DefaultItem implements Item {
     constructor(
@@ -38,5 +39,13 @@ export class DefaultItem implements Item {
 
     get droppable(): boolean {
         return this.store.get().droppable;
+    }
+
+    get useEffect(): ItemEffect | undefined {
+        return this.store.get().useEffect;
+    }
+
+    get consumedOnUse(): boolean {
+        return this.store.get().consumedOnUse;
     }
 }

@@ -21,6 +21,7 @@ describe(UnequipAction.name, () => {
         weight: 0,
         takeable: true,
         droppable: true,
+        consumedOnUse: false,
     };
 
     describe('execute', () => {

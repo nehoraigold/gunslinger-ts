@@ -23,6 +23,7 @@ export function createSampleWorldState(): GameState {
                 weight: 0,
                 takeable: true,
                 droppable: true,
+                consumedOnUse: false,
             },
             iron_key: {
                 name: 'Iron Key',
@@ -33,6 +34,7 @@ export function createSampleWorldState(): GameState {
                 weight: 1,
                 takeable: true,
                 droppable: true,
+                consumedOnUse: false,
             },
             dry_fountain: {
                 name: 'Dry Fountain',
@@ -43,6 +45,7 @@ export function createSampleWorldState(): GameState {
                 weight: 2000,
                 takeable: false,
                 droppable: true,
+                consumedOnUse: false,
             },
             cursed_amulet: {
                 name: 'Cursed Amulet',
@@ -55,6 +58,7 @@ export function createSampleWorldState(): GameState {
                 weight: 1,
                 takeable: true,
                 droppable: true,
+                consumedOnUse: false,
             },
             rusty_revolver: {
                 name: 'Rusty Revolver',
@@ -65,6 +69,7 @@ export function createSampleWorldState(): GameState {
                 weight: 3,
                 takeable: true,
                 droppable: true,
+                consumedOnUse: false,
             },
             leather_duster: {
                 name: 'Leather Duster',
@@ -75,6 +80,7 @@ export function createSampleWorldState(): GameState {
                 weight: 4,
                 takeable: true,
                 droppable: true,
+                consumedOnUse: false,
             },
         },
         npcs: {

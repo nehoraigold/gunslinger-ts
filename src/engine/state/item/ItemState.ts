@@ -1,4 +1,5 @@
 import { ItemType } from './ItemType';
+import { ItemEffect } from '../../effect/ItemEffect';
 
 export type ItemState = {
     name: string;
@@ -9,4 +10,6 @@ export type ItemState = {
     weight: number;
     takeable: boolean;
     droppable: boolean;
+    useEffect?: ItemEffect;
+    consumedOnUse: boolean;
 };

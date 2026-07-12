@@ -18,6 +18,7 @@ describe(DefaultItemFactory.name, () => {
                 weight: 0,
                 takeable: true,
                 droppable: true,
+                consumedOnUse: false,
             });
             const factory = new DefaultItemFactory();
 

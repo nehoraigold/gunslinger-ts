@@ -16,7 +16,7 @@ describe(DefaultInventoryService.name, () => {
     function createItemLookup(items: Record<string, ItemState>): ItemLookup {
         const item = (id: string) => {
             const state = items[id];
-            return state && { id, ...state };
+            return state && { id, ...state, useEffect: state.useEffect };
         };
         return {
             item,
@@ -42,6 +42,7 @@ describe(DefaultInventoryService.name, () => {
                     weight: 0,
                     takeable: true,
                     droppable: true,
+                    consumedOnUse: false,
                 },
             });
             const service = new DefaultInventoryService(items);
@@ -66,6 +67,7 @@ describe(DefaultInventoryService.name, () => {
                     weight: 0,
                     takeable: true,
                     droppable: true,
+                    consumedOnUse: false,
                 },
             });
             const service = new DefaultInventoryService(items);
@@ -100,6 +102,7 @@ describe(DefaultInventoryService.name, () => {
                     weight: 0,
                     takeable: true,
                     droppable: true,
+                    consumedOnUse: false,
                 },
             });
             const service = new DefaultInventoryService(items);
@@ -124,6 +127,7 @@ describe(DefaultInventoryService.name, () => {
                     weight: 0,
                     takeable: true,
                     droppable: true,
+                    consumedOnUse: false,
                 },
             });
             const service = new DefaultInventoryService(items);
@@ -148,6 +152,7 @@ describe(DefaultInventoryService.name, () => {
                     weight: 0,
                     takeable: true,
                     droppable: true,
+                    consumedOnUse: false,
                 },
             });
             const service = new DefaultInventoryService(items);
@@ -170,6 +175,7 @@ describe(DefaultInventoryService.name, () => {
                     weight: 0,
                     takeable: true,
                     droppable: true,
+                    consumedOnUse: false,
                 },
             });
             const service = new DefaultInventoryService(items);
@@ -194,6 +200,7 @@ describe(DefaultInventoryService.name, () => {
                     weight: 0,
                     takeable: true,
                     droppable: true,
+                    consumedOnUse: false,
                 },
             });
             const service = new DefaultInventoryService(items);

@@ -26,6 +26,7 @@ const item1: ItemState = {
     weight: 0,
     takeable: true,
     droppable: true,
+    consumedOnUse: false,
 };
 
 const item2: ItemState = {
@@ -37,6 +38,7 @@ const item2: ItemState = {
     weight: 0,
     takeable: true,
     droppable: true,
+    consumedOnUse: false,
 };
 
 const npc1: NpcState = {

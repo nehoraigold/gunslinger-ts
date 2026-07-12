@@ -16,6 +16,7 @@ describe(DefaultItem.name, () => {
             weight: 0,
             takeable: true,
             droppable: true,
+            consumedOnUse: false,
             ...state,
         });
         return new DefaultItem('iron_key', store);
@@ -108,6 +109,34 @@ describe(DefaultItem.name, () => {
             const item = createDefaultItem({ droppable: false });
 
             expect(item.droppable).to.be.false;
+        });
+    });
+
+    describe('useEffect', () => {
+        it('should return undefined when the item state has no use effect', () => {
+            const item = createDefaultItem();
+
+            expect(item.useEffect).to.be.undefined;
+        });
+
+        it('should return the use effect from the item state', () => {
+            const item = createDefaultItem({ useEffect: { type: 'heal', amount: 5 } });
+
+            expect(item.useEffect).to.deep.equal({ type: 'heal', amount: 5 });
+        });
+    });
+
+    describe('consumedOnUse', () => {
+        it('should return true if the item state is consumed on use', () => {
+            const item = createDefaultItem({ consumedOnUse: true });
+
+            expect(item.consumedOnUse).to.be.true;
+        });
+
+        it('should return false if the item state is not consumed on use', () => {
+            const item = createDefaultItem({ consumedOnUse: false });
+
+            expect(item.consumedOnUse).to.be.false;
         });
     });
 });
