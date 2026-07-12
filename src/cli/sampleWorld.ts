@@ -11,6 +11,7 @@ export function createSampleWorldState(): GameState {
             equipment: { weapon: undefined, armor: undefined },
             inventory: { cursed_amulet: 1 },
             money: 20,
+            health: { current: 20, max: 20 },
         },
         items: {
             coins: {

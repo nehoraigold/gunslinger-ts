@@ -8,6 +8,7 @@ import { DropAction } from './engine/action/drop/DropAction';
 import { EquipAction } from './engine/action/equip/EquipAction';
 import { UnequipAction } from './engine/action/unequip/UnequipAction';
 import { CheckInventoryAction } from './engine/action/checkInventory/CheckInventoryAction';
+import { CheckStatusAction } from './engine/action/checkStatus/CheckStatusAction';
 import { UnlockAction } from './engine/action/unlock/UnlockAction';
 import { LookAction } from './engine/action/look/LookAction';
 import { LookItemAction } from './engine/action/lookItem/LookItemAction';
@@ -135,6 +136,12 @@ const toolCatalog = new ActionToolCatalog({
     checkInventory: {
         action: new CheckInventoryAction(),
         description: 'Call when the player asks what they are carrying (e.g. "check my inventory", "what do I have").',
+    },
+    checkStatus: {
+        action: new CheckStatusAction(),
+        description:
+            'Call when the player asks about their health, condition, or how badly hurt they are (e.g. "how am ' +
+            'I doing", "check my health", "am I hurt"). Returns a coarse health description, never exact numbers.',
     },
     look: {
         action: new LookAction(),

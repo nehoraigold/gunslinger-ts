@@ -25,6 +25,7 @@ describe(DefaultPlayer.name, () => {
             },
             inventory: {},
             money: 0,
+            health: { current: 10, max: 10 },
         };
 
         const store = new RootValueStore(state);
@@ -69,6 +70,7 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: undefined, armor: undefined },
                 inventory: { coins: 3 },
                 money: 0,
+                health: { current: 10, max: 10 },
             };
             player = new DefaultPlayer(new RootValueStore(state));
 
@@ -91,6 +93,7 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: 'rusty_revolver', armor: undefined },
                 inventory: {},
                 money: 0,
+                health: { current: 10, max: 10 },
             };
             player = new DefaultPlayer(new RootValueStore(state));
 
@@ -118,6 +121,7 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: undefined, armor: undefined },
                 inventory: {},
                 money: 0,
+                health: { current: 10, max: 10 },
                 conversationPartnerNpcId: 'hermit',
             };
             player = new DefaultPlayer(new RootValueStore(state));
@@ -161,6 +165,7 @@ describe(DefaultPlayer.name, () => {
                 equipment: { weapon: undefined, armor: undefined },
                 inventory: {},
                 money: 42,
+                health: { current: 10, max: 10 },
             };
             player = new DefaultPlayer(new RootValueStore(state));
 
@@ -171,6 +176,30 @@ describe(DefaultPlayer.name, () => {
             player.wallet().credit(10);
 
             expect(player.wallet().balance()).to.equal(10);
+        });
+    });
+
+    describe('health', () => {
+        it('should reflect the health held in player state', () => {
+            const state: PlayerState = {
+                id: 'player',
+                name: 'Player',
+                currentRoomId: 'room_1',
+                equipment: { weapon: undefined, armor: undefined },
+                inventory: {},
+                money: 0,
+                health: { current: 6, max: 10 },
+            };
+            player = new DefaultPlayer(new RootValueStore(state));
+
+            expect(player.health().current()).to.equal(6);
+            expect(player.health().max()).to.equal(10);
+        });
+
+        it('should persist changes made through the returned health back into player state', () => {
+            player.health().damage(4);
+
+            expect(player.health().current()).to.equal(6);
         });
     });
 });

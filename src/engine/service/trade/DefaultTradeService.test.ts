@@ -39,6 +39,7 @@ function createPlayer(money: number, inventory: InventoryState): DefaultPlayer {
             equipment: { weapon: undefined, armor: undefined },
             inventory,
             money,
+            health: { current: 10, max: 10 },
         }),
     );
 }

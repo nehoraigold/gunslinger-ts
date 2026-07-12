@@ -14,6 +14,7 @@ const player: PlayerState = {
     },
     inventory: {},
     money: 0,
+    health: { current: 20, max: 20 },
 };
 
 const item1: ItemState = {

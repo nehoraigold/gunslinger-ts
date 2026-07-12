@@ -4,6 +4,7 @@ import { Npc } from '../npc';
 import { Inventory } from '../inventory';
 import { Equipment } from '../equipment';
 import { Wallet } from '../wallet';
+import { Health } from '../health';
 
 export interface Player {
     currentRoomId: RoomId;
@@ -14,4 +15,5 @@ export interface Player {
     inventory(): Inventory;
     equipment(): Equipment;
     wallet(): Wallet;
+    health(): Health;
 }

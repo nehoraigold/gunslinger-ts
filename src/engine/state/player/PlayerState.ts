@@ -2,6 +2,7 @@ import { EquipmentState } from './EquipmentState';
 import { RoomId } from '../room';
 import { InventoryState } from '../inventory';
 import { NpcId } from '../npc';
+import { HealthState } from '../health';
 
 export type PlayerState = {
     id: 'player';
@@ -10,5 +11,6 @@ export type PlayerState = {
     equipment: EquipmentState;
     inventory: InventoryState;
     money: number;
+    health: HealthState;
     conversationPartnerNpcId?: NpcId;
 };
