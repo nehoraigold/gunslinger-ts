@@ -120,3 +120,15 @@ Report, per comment: the verdict (directive/suggestion/question), what you did (
 gate/verify result. Confirm the push landed (`local == remote HEAD`) and that the unrelated-file/stray-commit
 cleanup, if any, is reflected in `git diff origin/main --stat`. **Stop there — do not merge or enable
 auto-merge.** The reviewer re-reviews; the merge is theirs.
+
+## 7. Retro — improve the skill
+
+Before ending the session, check this run against step 2's classification: did any comment get
+misclassified — a question you treated as a directive (unwanted churn), a directive you softened into a
+suggestion, a "suggestion" that was actually load-bearing? Did the reviewer come back with a follow-up
+that a sharper first read would have caught? Since this skill runs cold every time (no memory of prior
+runs), a misclassification pattern that isn't written down here will just recur on the next PR.
+
+If something generalizes, edit this SKILL.md now — add the concrete failure mode to step 2's guidance
+(the "mis-reading a question as a mandate" line started this way) rather than a vague reminder to "be
+careful." Skip this step if every comment landed as classified on the first pass.
