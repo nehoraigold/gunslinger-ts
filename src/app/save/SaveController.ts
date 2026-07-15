@@ -7,7 +7,7 @@ import { SaveListing } from './SaveListing';
 const DEFAULT_SLOT = 'autosave';
 const VALID_SLOT_NAME = /^[A-Za-z0-9_-]+$/;
 
-const log = getLogger('cli.save');
+const log = getLogger('app.save');
 
 export class SaveController {
     private currentSlot: string;

@@ -1,4 +1,4 @@
-import { SaveController } from '../save';
+import { SaveController } from '../../app/save';
 import { InvalidGameDataError, InvalidSlotNameError } from '../../persistence';
 
 const INVALID_NAME_MESSAGE = "Invalid save name — use letters, digits, '-' or '_'.";

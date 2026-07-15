@@ -213,7 +213,7 @@ the RNG seam exist.
 > It cuts across the tiers above rather than sitting in one.
 
 ### Where authoring stands today (the gap this epic closes)
-- **Worlds are hand-written raw `GameState` literals** (`src/cli/sampleWorld.ts`): a large nested
+- **Worlds are hand-written raw `GameState` literals** (`src/app/sampleWorld.ts`): a large nested
   object wiring rooms → items/NPCs/exits **by bare string id**, with **no check that referenced
   ids exist**. A typo'd `destinationRoomId` or `keyItemId` is a silent runtime bug, not a
   compile/author-time error.

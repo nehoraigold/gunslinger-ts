@@ -29,8 +29,9 @@ entities, state, transactions.
 - Build the `GameSession` with **all** entity factories it requires — `Factories` is
   `{ room, item, npc }` today, so import `DefaultRoomFactory` + `DefaultItemFactory` +
   `DefaultNpcFactory` (a missing one is a typecheck error, not a silent skip). Also import the actions
-  you're driving + `createSampleWorldState` (`src/cli/sampleWorld.ts`). If a new entity type is added
-  later, this factory set grows — mirror `main.ts`'s composition root, which is the source of truth.
+  you're driving + `createSampleWorldState` (`src/app/sampleWorld.ts`). If a new entity type is added
+  later, this factory set grows — mirror `src/app/buildGameApp.ts`, the composition root and source of
+  truth (`src/main.ts` is just the thin CLI entrypoint that calls it).
 - Assert against `session.getState()` between turns — it returns the **committed** state, so it
   proves transactions commit/roll back correctly across turns. For a **read-only** action, snapshot
   `JSON.stringify(getState())` before and after and assert equality to prove it mutated nothing.
@@ -41,7 +42,7 @@ entities, state, transactions.
 ```ts
 import { GameSession } from './engine/session';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from './engine/entity';
-import { createSampleWorldState } from './cli/sampleWorld';
+import { createSampleWorldState } from './app/sampleWorld';
 // import the action classes you're driving, e.g.:
 // import { LookAction } from './engine/action/look/LookAction';
 

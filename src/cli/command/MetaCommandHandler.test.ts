@@ -2,7 +2,7 @@ import { describe, it, beforeEach } from 'mocha';
 import { expect } from 'chai';
 
 import { MetaCommandHandler } from './MetaCommandHandler';
-import { SaveController } from '../save';
+import { SaveController } from '../../app/save';
 import { RestorableSession } from '../../engine/session';
 import { GameState } from '../../engine/state';
 import { DeepReadonly } from '../../utils/types';
