@@ -6,7 +6,7 @@ import sinon from 'sinon';
 import { TerminalDriver } from './TerminalDriver';
 import { GameApp } from '../app';
 import { SaveController } from '../app/save';
-import { GameMaster, ConversationManager } from '../gamemaster';
+import { GameMaster } from '../gamemaster';
 import { GameSession } from '../engine/session';
 import { Factories } from '../engine/context';
 import { DefaultRoomFactory, DefaultItemFactory, DefaultNpcFactory } from '../engine/entity';
@@ -38,22 +38,14 @@ describe(TerminalDriver.name, () => {
         };
     }
 
-    function fakeConversationManager(): ConversationManager {
-        return {
-            appendTurn: sinon.stub(),
-            getMessagesForNextRequest: sinon.stub().returns([]),
-            clear: sinon.stub(),
-        };
-    }
-
     function buildApp(overrides: Partial<GameApp> = {}): GameApp {
         const session = new GameSession(createGameState(), factories);
         const saveController = new SaveController(new InMemorySessionRepository(), session);
         return {
-            session,
             saveController,
             gameMaster: fakeGameMaster(),
-            conversationManager: fakeConversationManager(),
+            currentRoomId: () => session.getState().player.currentRoomId,
+            resetConversation: sinon.stub(),
             ...overrides,
         };
     }

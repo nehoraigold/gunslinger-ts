@@ -1,10 +1,10 @@
-import { GameSession } from '../engine/session';
-import { GameMaster, ConversationManager } from '../gamemaster';
+import { RoomId } from '../engine/state';
+import { GameMaster } from '../gamemaster';
 import { SaveController } from './save';
 
 export interface GameApp {
-    readonly session: GameSession;
-    readonly saveController: SaveController;
     readonly gameMaster: GameMaster;
-    readonly conversationManager: ConversationManager;
+    readonly saveController: SaveController;
+    currentRoomId(): RoomId;
+    resetConversation(): void;
 }

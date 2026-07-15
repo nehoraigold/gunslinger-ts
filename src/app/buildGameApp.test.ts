@@ -7,15 +7,14 @@ describe(buildGameApp.name, () => {
     it('should build a fully-wired GameApp from config, without any network calls', () => {
         const app = buildGameApp({ ollamaModel: 'test-model', saveDir: './does-not-matter' });
 
-        expect(app.session).to.exist;
         expect(app.saveController).to.exist;
         expect(app.gameMaster).to.exist;
-        expect(app.conversationManager).to.exist;
+        expect(app.currentRoomId()).to.exist;
     });
 
     it('should start the session in the sample world entrance room', () => {
         const app = buildGameApp({ ollamaModel: 'test-model', saveDir: './does-not-matter' });
 
-        expect(app.session.getState().player.currentRoomId).to.equal('entrance');
+        expect(app.currentRoomId()).to.equal('entrance');
     });
 });

@@ -1,6 +1,7 @@
 import * as readline from 'node:readline';
 
 import { GameApp } from '../app';
+import { AvailableChoice } from '../gamemaster';
 import { getLogger } from '../utils/logger';
 import { MetaCommandHandler } from './command';
 
@@ -32,12 +33,12 @@ export class TerminalDriver {
         this.metaCommands = new MetaCommandHandler(
             app.saveController,
             (line) => this.print(line),
-            () => app.conversationManager.clear(),
+            () => app.resetConversation(),
         );
     }
 
     run(): Promise<void> {
-        this.print(`Current room: ${this.app.session.getState().player.currentRoomId}`);
+        this.print(`Current room: ${this.app.currentRoomId()}`);
         this.print('Commands: "save [name]", "load <name>", "saves", "quit".');
         this.rl.prompt();
 
@@ -80,11 +81,7 @@ export class TerminalDriver {
             if (await this.metaCommands.handle(input)) {
                 return;
             }
-            const stream = this.streamFor(input);
-            for await (const chunk of stream) {
-                this.output.write(chunk);
-            }
-            this.output.write('\n');
+            await this.printTurnOutput(this.streamFor(input));
             this.printChoices();
             await this.autoSave();
         } catch (error) {
@@ -95,13 +92,28 @@ export class TerminalDriver {
         }
     }
 
+    private async printTurnOutput(stream: ReadableStream<string>): Promise<void> {
+        for await (const chunk of stream) {
+            this.output.write(chunk);
+        }
+        this.output.write('\n');
+    }
+
     private streamFor(input: string): ReadableStream<string> {
+        const choice = this.matchingChoice(input);
+        if (choice) {
+            return this.app.gameMaster.selectChoice(choice.id);
+        }
+        return this.app.gameMaster.handleInput(input);
+    }
+
+    private matchingChoice(input: string): AvailableChoice | undefined {
         const choices = this.app.gameMaster.currentChoices();
         const choiceIndex = Number(input);
         if (Number.isInteger(choiceIndex) && choiceIndex >= 1 && choiceIndex <= choices.length) {
-            return this.app.gameMaster.selectChoice(choices[choiceIndex - 1].id);
+            return choices[choiceIndex - 1];
         }
-        return this.app.gameMaster.handleInput(input);
+        return undefined;
     }
 
     private printChoices(): void {
